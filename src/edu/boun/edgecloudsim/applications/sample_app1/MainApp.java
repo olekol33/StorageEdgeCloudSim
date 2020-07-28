@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.io.File;
 
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -24,7 +25,7 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class MainApp {
-	
+
 	/**
 	 * Creates main() to run this example
 	 */
@@ -54,6 +55,23 @@ public class MainApp {
 			edgeDevicesFile = "scripts/sample_app1/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
+		File file = new File(outputFolder);
+		File parent = file.getParentFile();
+		if (!parent.exists()) {
+			System.out.println("No parent");
+			parent.mkdir();
+			file.mkdir();
+			System.out.println("Folder created");
+		}
+		else if (!file.exists()) {
+			System.out.println("No sub folder");
+			parent.mkdir();
+			file.mkdir();
+			System.out.println("Sub dolder created");
+		}
+		else {
+			System.out.println("Output folder exists");
+		}
 
 		//load settings from configuration file
 		SimSettings SS = SimSettings.getInstance();
@@ -61,7 +79,7 @@ public class MainApp {
 			SimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}
-		
+
 		if(SS.getFileLoggingEnabled()){
 			SimLogger.enableFileLog();
 			SimUtils.cleanOutputFolder(outputFolder);
