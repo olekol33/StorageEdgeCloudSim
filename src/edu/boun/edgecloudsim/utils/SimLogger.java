@@ -44,6 +44,8 @@ public class SimLogger {
 	private String outputFolder;
 	private Map<Integer, LogItem> taskMap;
 	private LinkedList<VmLoadLogItem> vmLoadList;
+	//TRUE if generate graphs in Matlab, FALSE if python
+	Boolean MATLAB = Boolean.FALSE;
 
 	private static SimLogger singleton = new SimLogger();
 
@@ -244,16 +246,22 @@ public class SimLogger {
 				genericFiles[i] = new File(outputFolder, filePrefix + "_" + fileName);
 				genericFWs[i] = new FileWriter(genericFiles[i], true);
 				genericBWs[i] = new BufferedWriter(genericFWs[i]);
-				appendToFile(genericBWs[i], "#auto generated file!");
+				if(MATLAB)
+					appendToFile(genericBWs[i], "#auto generated file!");
 			}
 
 			if (SimSettings.getInstance().getDeepFileLoggingEnabled()) {
 				appendToFile(successBW, "#auto generated file!");
 				appendToFile(failBW, "#auto generated file!");
 			}
-
-			appendToFile(vmLoadBW, "#auto generated file!");
-			appendToFile(locationBW, "#auto generated file!");
+			if(MATLAB) {
+				appendToFile(vmLoadBW, "#auto generated file!");
+				appendToFile(locationBW, "#auto generated file!");
+			}
+			else {
+				appendToFile(vmLoadBW, "#time;loadOnEdge;loadOnCloud;loadOnMobile");
+				appendToFile(locationBW, "#Time;Attractiveness 0;Attractiveness 1;Attractiveness 2");
+			}
 		}
 
 		// extract the result of each task and write it to the file if required
@@ -538,12 +546,30 @@ public class SimLogger {
 						+ Integer.toString(failedTaskDuetoLanBw[i]) + SimSettings.DELIMITER
 						+ Integer.toString(failedTaskDuetoManBw[i]) + SimSettings.DELIMITER
 						+ Integer.toString(failedTaskDuetoWanBw[i]);
-
-				appendToFile(genericBWs[i], genericResult1);
-				appendToFile(genericBWs[i], genericResult2);
-				appendToFile(genericBWs[i], genericResult3);
-				appendToFile(genericBWs[i], genericResult4);
-				appendToFile(genericBWs[i], genericResult5);
+				if(MATLAB) {
+					appendToFile(genericBWs[i], genericResult1);
+					appendToFile(genericBWs[i], genericResult2);
+					appendToFile(genericBWs[i], genericResult3);
+					appendToFile(genericBWs[i], genericResult4);
+					appendToFile(genericBWs[i], genericResult5);
+				}
+				else {
+					appendToFile(genericBWs[i], "#completedTask;failedTask;uncompletedTask;failedTaskDuetoBw;serviceTime;" +
+							"processingTime;networkDelay;0;cost;failedTaskDueToVmCapacity;failedTaskDuetoMobility");
+					appendToFile(genericBWs[i], genericResult1);
+					appendToFile(genericBWs[i], "#completedTaskOnEdge;failedTaskOnEdge;uncompletedTaskOnEdge;0;" +
+							"serviceTimeOnEdge;processingTimeOnEdge;0;vmLoadOnEdgefailedTaskDueToVmCapacityOnEdge");
+					appendToFile(genericBWs[i], genericResult2);
+					appendToFile(genericBWs[i], "#completedTaskOnCloud;failedTaskOnCloud;uncompletedTaskOnCloud;0;" +
+							"serviceTimeOnCloud;processingTimeOnCloud;0;vmLoadOnClould;failedTaskDueToVmCapacityOnCloud");
+					appendToFile(genericBWs[i], genericResult3);
+					appendToFile(genericBWs[i], "#completedTaskOnMobile;failedTaskOnMobile;uncompletedTaskOnMobile;0;serviceTimeOnMobile;" +
+							"processingTimeOnMobile;0;vmLoadOnMobile;failedTaskDueToVmCapacityOnMobile");
+					appendToFile(genericBWs[i], genericResult4);
+					appendToFile(genericBWs[i], "#lanDelay;manDelay;wanDelay;0;failedTaskDuetoLanBw;" +
+							"failedTaskDuetoManBw;failedTaskDuetoWanBw");
+					appendToFile(genericBWs[i], genericResult5);
+				}
 			}
 
 			// close open files
