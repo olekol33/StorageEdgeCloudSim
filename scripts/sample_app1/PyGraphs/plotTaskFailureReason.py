@@ -1,6 +1,6 @@
 from plotGenericResult import *
 def plotTaskFailureReason():
-
+    print("Running " + plotTaskFailureReason.__name__)
     plotGenericResult(TotalTasks, failedTaskDueToVmCapacity, 'Failed Task due to VM Capacity (%)', 'ALL_APPS', 'percentage_for_failed')
     plotGenericResult(TotalTasks, failedTaskDueToVmCapacity, 'Failed Task due to VM Capacity for Augmented Reality App (%)', 'AUGMENTED_REALITY', 'for_failed')
     plotGenericResult(TotalTasks, failedTaskDueToVmCapacity, 'Failed Task due to VM Capacity for Health App (%)', 'HEALTH_APP', 'for_failed')
@@ -25,4 +25,3 @@ def plotTaskFailureReason():
     plotGenericResult(NetworkData, failedTaskDuetoWanBw, 'Failed Tasks due to WAN failure for Infotainment App (%)', 'INFOTAINMENT_APP', 'for_failed')
     plotGenericResult(NetworkData, failedTaskDuetoWanBw, 'Failed Tasks due to WAN failure for Heavy Comp. App (%)', 'HEAVY_COMP_APP', 'for_failed')
 
-plotTaskFailureReason()

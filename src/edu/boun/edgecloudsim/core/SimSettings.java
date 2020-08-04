@@ -34,7 +34,7 @@ public class SimSettings {
 	private Document edgeDevicesDoc = null;
 	
 	public static final double CLIENT_ACTIVITY_START_TIME = 10;
-	
+
 	//enumarations for the VM types
 	public static enum VM_TYPES { MOBILE_VM, EDGE_VM, CLOUD_VM }
 	
@@ -89,6 +89,13 @@ public class SimSettings {
     
     // mean waiting time (minute) is stored for each place types
     private double[] mobilityLookUpTable;
+
+    //grid properties
+
+	private int X_RANGE;
+	private int Y_RANGE;
+	private int HOST_RADIUS;
+
     
     // following values are stored for each applications defined in applications.xml
     // [0] usage percentage (%)
@@ -118,7 +125,7 @@ public class SimSettings {
 		}
 		return instance;
 	}
-	
+
 	/**
 	 * Reads configuration file and stores information to local variables
 	 * @param propertiesFile
@@ -171,7 +178,11 @@ public class SimSettings {
 			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
 			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
 			double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
-			
+
+			X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
+			Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
+			HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
+
 			//mean waiting time (minute)
 			mobilityLookUpTable = new double[]{
 				place1_mean_waiting_time, //ATTRACTIVENESS_L1
@@ -489,6 +500,18 @@ public class SimSettings {
 	public String getTaskName(int taskType)
 	{
 		return taskNames[taskType];
+	}
+
+	public int getXRange() {
+		return X_RANGE;
+	}
+
+	public int getYRange() {
+		return Y_RANGE;
+	}
+
+	public int getHostRadius() {
+		return HOST_RADIUS;
 	}
 	
 	private void isAttribtuePresent(Element element, String key) {

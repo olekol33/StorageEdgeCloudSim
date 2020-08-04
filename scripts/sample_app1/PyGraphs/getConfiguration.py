@@ -59,3 +59,4 @@ def getConfiguration(argType):
         ret_val={':k*',':ko',':ks',':kv',':kp',':kd',':kx',':kh'}; %line style (marker) of the colerfull line
     end
 end"""
+

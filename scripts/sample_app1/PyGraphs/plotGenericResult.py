@@ -115,15 +115,18 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     for i in range(numOfMobileDevices):
         types[0][i]=startOfMobileDeviceLoop+(i*stepOfMobileDeviceLoop)
         xIndex.append(startOfMobileDeviceLoop + (i* stepOfMobileDeviceLoop))
-
+    fig,ax = plt.subplots(1,1)
     for j,scen in enumerate(scenarioType):
         yIndex = []
         for i in range(numOfMobileDevices):
             yIndex.append(results[j][i])
-        plt.scatter(xIndex, yIndex, marker = marker[j])
-        plt.plot(xIndex, yIndex, marker = marker[j], label=scen)
-    plt.legend()
-    plt.xlabel("Number of Mobile Devices")
-    plt.ylabel(yLabel)
-    plt.show()
+        ax.scatter(xIndex, yIndex, marker = marker[j])
+        ax.plot(xIndex, yIndex, marker = marker[j], label=scen)
+    ax.legend()
+    ax.set_xlabel("Number of Mobile Devices")
+    ax.set_ylabel(yLabel)
+    fig.savefig(folderPath + '\\fig\\' + yLabel+ '.png', bbox_inches='tight')
+    plt.close(fig)
+
+
 

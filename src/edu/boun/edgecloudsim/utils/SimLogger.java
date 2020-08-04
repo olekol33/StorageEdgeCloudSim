@@ -20,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -27,7 +28,11 @@ import java.util.stream.IntStream;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
+import edu.boun.edgecloudsim.edge_server.EdgeHost;
+import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
+import org.cloudbus.cloudsim.Datacenter;
+import org.cloudbus.cloudsim.Host;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
@@ -153,9 +158,9 @@ public class SimLogger {
 	public void simStopped() throws IOException {
 		int numOfAppTypes = SimSettings.getInstance().getTaskLookUpTable().length;
 
-		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null;
-		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null;
-		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null;
+		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null;
+		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null;
+		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null;
 
 		// Save generic results to file for each app type. last index is average
 		// of all app types
@@ -231,6 +236,10 @@ public class SimLogger {
 			locationFW = new FileWriter(locationFile, true);
 			locationBW = new BufferedWriter(locationFW);
 
+			gridLocationFile = new File(outputFolder, filePrefix + "_GRID_LOCATION.log");
+			gridLocationFW = new FileWriter(gridLocationFile, true);
+			gridLocationBW = new BufferedWriter(gridLocationFW);
+
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				String fileName = "ALL_APPS_GENERIC.log";
 
@@ -262,6 +271,7 @@ public class SimLogger {
 				appendToFile(vmLoadBW, "#time;loadOnEdge;loadOnCloud;loadOnMobile");
 				appendToFile(locationBW, "#Time;Attractiveness 0;Attractiveness 1;Attractiveness 2");
 			}
+			appendToFile(gridLocationBW, "ItemType;ItemID;xPos;yPos");
 		}
 
 		// extract the result of each task and write it to the file if required
@@ -455,6 +465,27 @@ public class SimLogger {
 				locationBW.newLine();
 			}
 
+			//Oleg: Log location of mobile devices after warm up period (assuming no mobility)
+			for (int i = 0; i < SimManager.getInstance().getEdgeServerManager().getDatacenterList().size(); i++) {
+				List<? extends EdgeHost> hostList = SimManager.getInstance().getEdgeServerManager().getDatacenterList().get(i).getHostList();
+				for (int j = 0; j < hostList.size(); j++) {
+					EdgeHost host = hostList.get(j);
+					gridLocationBW.write("Host" + SimSettings.DELIMITER + host.getId() + SimSettings.DELIMITER +
+							host.getLocation().getXPos() + SimSettings.DELIMITER + host.getLocation().getYPos());
+					gridLocationBW.newLine();
+
+				}
+			}
+			for (int i = 0; i < SimManager.getInstance().getNumOfMobileDevice(); i++) {
+
+				Location loc = SimManager.getInstance().getMobilityModel().getLocation(i, SimSettings.getInstance().getWarmUpPeriod());
+
+				gridLocationBW.write("Mobile" + SimSettings.DELIMITER + i + SimSettings.DELIMITER + loc.getXPos() +
+						SimSettings.DELIMITER + loc.getYPos());
+				gridLocationBW.newLine();
+			}
+
+
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 
 				if (i < numOfAppTypes) {
@@ -579,6 +610,7 @@ public class SimLogger {
 			}
 			vmLoadBW.close();
 			locationBW.close();
+			gridLocationBW.close();
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				if (i < numOfAppTypes) {
 					// if related app is not used in this simulation, just

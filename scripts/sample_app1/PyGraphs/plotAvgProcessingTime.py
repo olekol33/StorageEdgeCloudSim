@@ -1,6 +1,6 @@
 from plotGenericResult import *
 def plotAvgProcessingTime():
-
+    print("Running " + plotAvgProcessingTime.__name__)
     plotGenericResult(TotalTasks, processingTime, 'Processing Time (sec)', 'ALL_APPS', '')
     plotGenericResult(TotalTasks, processingTime, 'Processing Time for Augmented Reality App (sec)', 'AUGMENTED_REALITY', '')
     plotGenericResult(TotalTasks, processingTime, 'Processing Time for Health App (sec)', 'HEALTH_APP', '')
@@ -19,4 +19,3 @@ def plotAvgProcessingTime():
     plotGenericResult(CloudTasks, processingTime, 'Processing Time on Cloud for Infotainment App (sec)', 'INFOTAINMENT_APP', '')
     plotGenericResult(CloudTasks, processingTime, 'Processing Time on Cloud for Heavy Computation App (sec)', 'HEAVY_COMP_APP', '')
 
-plotAvgProcessingTime()

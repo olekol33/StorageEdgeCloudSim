@@ -1,6 +1,6 @@
 from plotGenericResult import *
 def plotAvgServiceTime():
-
+    print("Running " + plotAvgServiceTime.__name__)
     plotGenericResult(TotalTasks, serviceTime, 'Service Time (sec)', 'ALL_APPS', '')
     plotGenericResult(TotalTasks, serviceTime, 'Service Time for Augmented Reality App (sec)', 'AUGMENTED_REALITY', '')
     plotGenericResult(TotalTasks, serviceTime, 'Service Time for Health App (sec)', 'HEALTH_APP', '')

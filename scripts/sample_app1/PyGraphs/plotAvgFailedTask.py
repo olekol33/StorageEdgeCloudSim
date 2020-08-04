@@ -1,5 +1,6 @@
 from plotGenericResult import *
 def plotAvgFailedTask():
+    print("Running " + plotAvgFailedTask.__name__)
     plotGenericResult(TotalTasks, failedTask, 'Failed Tasks (%)', 'ALL_APPS', 'percentage_for_all')
     plotGenericResult(TotalTasks, failedTask, 'Failed Tasks for Augmented Reality App (%)', 'AUGMENTED_REALITY', 'percentage_for_all')
     plotGenericResult(TotalTasks, failedTask, 'Failed Tasks for Health App (%)', 'HEALTH_APP', 'percentage_for_all')
@@ -17,5 +18,3 @@ def plotAvgFailedTask():
     plotGenericResult(CloudTasks, failedTask, 'Failed Tasks on Cloud for Health App (%)', 'HEALTH_APP', 'percentage_for_all')
     plotGenericResult(CloudTasks, failedTask, 'Failed Tasks on Cloud for Infotainment App (%)', 'INFOTAINMENT_APP', 'percentage_for_all')
     plotGenericResult(CloudTasks, failedTask, 'Failed Tasks on Cloud for Heavy Comp. App (%)', 'HEAVY_COMP_APP', 'percentage_for_all')
-
-plotAvgFailedTask()
