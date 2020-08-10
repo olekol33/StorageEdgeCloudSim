@@ -60,10 +60,10 @@ public class ObjectGenerator {
         List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);
         for (int i=0; i<numOfDataObjects; i++){
             Map<String, String> map = new HashMap<String,String>();
-            map.put("id", Integer.toString(i));
+            map.put("id", "d" + Integer.toString(i));
             map.put("size", objectSize);
             map.put("type", "data");
-            map.put("location", "");
+//            map.put("location", "");
             listOfDataObjects.add(map);
         }
         return listOfDataObjects;
@@ -76,7 +76,8 @@ public class ObjectGenerator {
 
         for (Map<String,String> KV : listOfDataObjects){
                 // Name is collection of data IDs
-                parityName += KV.get("id") + "-";
+                String id = (KV.get("id")).replaceAll("[^\\d.]", "");
+                parityName += id + "-";
                 int dataObjectSize = Integer.parseInt(KV.get("size"));
                 // Size is as of largest data object
                 if (dataObjectSize > objectSize)
@@ -96,7 +97,6 @@ public class ObjectGenerator {
     //Randomly selects a host and places all objects sequentially from it
     private List<Integer> sequentialRandomPlacement(int numOfHosts, int numofObjectsInStripe){
         int hostID = Math.abs(getRandomGenerator().nextInt()%numOfHosts);
-        System.out.println(hostID);
         List<Integer> hosts = new ArrayList<>(numofObjectsInStripe);
         for (int i=0; i<numofObjectsInStripe;i++){
             hosts.add((hostID+i)%numOfHosts);
@@ -161,10 +161,11 @@ public class ObjectGenerator {
 
         List<List<Map>> listOfStripes = new ArrayList();
         List<Map> dataObjects = createDataObjects(numOfDataObjects, this.objectSize);
+        List<Set<Integer>> existingStripes = new ArrayList();
         // For each stripe
         for (int i = 0; i< numOfStripes; i++){
             List<Map> dataList = new ArrayList();
-            List<Integer> listOfIndices = new ArrayList<>(numOfDataInStripe);
+            Set<Integer> listOfIndices = new HashSet<Integer>();
             // Collect data objects with Zipf distribution
             for (int j = 0; j<numOfDataInStripe; j++) {
                 int objectID = getZipf(numOfDataObjects)-1;
@@ -176,6 +177,14 @@ public class ObjectGenerator {
                     listOfIndices.add(objectID);
                     dataList.add(dataObjects.get(objectID));
                 }
+            }
+            //Check for duplicacy
+            if (existingStripes.contains(listOfIndices)){
+                i--;
+                continue;
+            }
+            else{
+                existingStripes.add(listOfIndices);
             }
             // Calculate parity for the data objects
             List<Map> parityList = createParityObjects(numOfParityInStripe, dataList);
@@ -190,9 +199,6 @@ public class ObjectGenerator {
         }
         return listOfStripes;
     }
-
-
-
 
 
 
