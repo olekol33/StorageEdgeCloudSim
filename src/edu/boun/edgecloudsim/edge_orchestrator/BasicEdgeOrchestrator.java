@@ -14,6 +14,7 @@ package edu.boun.edgecloudsim.edge_orchestrator;
 
 import java.util.List;
 
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -49,13 +50,14 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 
 	@Override
 	//Oleg: Set type of device to offload. When single tier - it's edge host.
+	//TODO: Need both edge and cloud
 	public int getDeviceToOffload(Task task) {
 		int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		if(!simScenario.equals("SINGLE_TIER")){
 			//decide to use cloud or Edge VM
 			int CloudVmPicker = SimUtils.getRandomNumber(0, 100);
 			
-			if(CloudVmPicker <= SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][1])
+			if(CloudVmPicker <= SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][LoadGeneratorModel.PROB_CLOUD_SELECTION])
 				result = SimSettings.CLOUD_DATACENTER_ID;
 			else
 				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
@@ -144,6 +146,7 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 			int tries = 0;
 			while(tries < vmArray.size()){
 				lastSelectedVmIndexes[relatedHostId] = (lastSelectedVmIndexes[relatedHostId]+1) % vmArray.size();
+				//Oleg: vm_utilization_on_edge
 				double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(lastSelectedVmIndexes[relatedHostId]).getVmType());
 				double targetVmCapacity = (double)100 - vmArray.get(lastSelectedVmIndexes[relatedHostId]).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
 				if(requiredCapacity <= targetVmCapacity){

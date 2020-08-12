@@ -17,6 +17,7 @@
 
 package edu.boun.edgecloudsim.applications.sample_app2;
 
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import edu.boun.edgecloudsim.core.SimManager;
@@ -193,19 +194,19 @@ public class SampleNetworkModel extends NetworkModel {
 		int numOfApp = SimSettings.getInstance().getTaskLookUpTable().length;
 		SimSettings SS = SimSettings.getInstance();
 		for(int taskIndex=0; taskIndex<numOfApp; taskIndex++) {
-			if(SS.getTaskLookUpTable()[taskIndex][0] == 0) {
+			if(SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.USAGE_PERCENTAGE] == 0) {
 				SimLogger.printLine("Usage percantage of task " + taskIndex + " is 0! Terminating simulation...");
 				System.exit(0);
 			}
 			else{
-				double weight = SS.getTaskLookUpTable()[taskIndex][0]/(double)100;
+				double weight = SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.USAGE_PERCENTAGE]/(double)100;
 				
 				//assume half of the tasks use the MAN at the beginning
-				ManPoissonMeanForDownload += ((SS.getTaskLookUpTable()[taskIndex][2])*weight) * 4;
+				ManPoissonMeanForDownload += ((SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.POISSON_INTERARRIVAL])*weight) * 4;
 				ManPoissonMeanForUpload = ManPoissonMeanForDownload;
 				
-				avgManTaskInputSize += SS.getTaskLookUpTable()[taskIndex][5]*weight;
-				avgManTaskOutputSize += SS.getTaskLookUpTable()[taskIndex][6]*weight;
+				avgManTaskInputSize += SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.DATA_UPLOAD]*weight;
+				avgManTaskOutputSize += SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.DATA_DOWNLOAD]*weight;
 			}
 		}
 

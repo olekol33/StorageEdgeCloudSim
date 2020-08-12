@@ -22,6 +22,23 @@ public abstract class LoadGeneratorModel {
 	protected int numberOfMobileDevices;
 	protected double simulationTime;
 	protected String simScenario;
+
+	public static final int USAGE_PERCENTAGE = 0;
+	public static final int PROB_CLOUD_SELECTION = 1;
+	public static final int POISSON_INTERARRIVAL = 2;
+	public static final int ACTIVE_PERIOD = 3;
+	public static final int IDLE_PERIOD = 4;
+	public static final int DATA_UPLOAD = 5;
+	public static final int DATA_DOWNLOAD = 6;
+	public static final int TASK_LENGTH = 7;
+	public static final int REQUIRED_CORE = 8;
+	public static final int VM_UTILIZATION_ON_EDGE = 9;
+	public static final int VM_UTILIZATION_ON_CLOUD = 10;
+	public static final int VM_UTILIZATION_ON_MOBILE = 11;
+
+	public static final int LIST_DATA_UPLOAD = 0;
+	public static final int LIST_DATA_DOWNLOAD = 1;
+	public static final int LIST_TASK_LENGTH = 2;
 	
 	public LoadGeneratorModel(int _numberOfMobileDevices, double _simulationTime, String _simScenario){
 		numberOfMobileDevices=_numberOfMobileDevices;

@@ -27,18 +27,6 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 	public IdleActiveLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario) {
 		super(_numberOfMobileDevices, _simulationTime, _simScenario);
 	}
-	private static final int USAGE_PERCENTAGE = 0;
-	private static final int PROB_CLOUD_SELECTION = 1;
-	private static final int POISSON_INTERARRIVAL = 2;
-	private static final int ACTIVE_PERIOD = 3;
-	private static final int IDLE_PERIOD = 4;
-	private static final int DATA_UPLOAD = 5;
-	private static final int DATA_DOWNLOAD = 6;
-	private static final int TASK_LENGTH = 7;
-	private static final int REQUIRED_CORE = 8;
-	private static final int VM_UTILIZATION_ON_EDGE = 9;
-	private static final int VM_UTILIZATION_ON_CLOUD = 10;
-	private static final int VM_UTILIZATION_ON_MOBILE = 11;
 
 	@Override
 	public void initializeModel() {
@@ -52,9 +40,9 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 			if(SimSettings.getInstance().getTaskLookUpTable()[i][USAGE_PERCENTAGE] ==0)
 				continue;
 			
-			expRngList[i][0] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
-			expRngList[i][1] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
-			expRngList[i][2] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
+			expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
+			expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
+			expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
 		}
 		
 		//Each mobile device utilizes an app type (task type)
@@ -63,8 +51,10 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 			int randomTaskType = -1;
 			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
 			double taskTypePercentage = 0;
+			//TODO: Problematic, always starts with 0 when selecting tasks
 			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
 				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][USAGE_PERCENTAGE];
+				// Oleg: Select task if accumulated taskTypePercentage is more than random taskTypeSelector
 				if(taskTypeSelector <= taskTypePercentage){
 					randomTaskType = j;
 					break;

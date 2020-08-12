@@ -10,6 +10,7 @@
 
 package edu.boun.edgecloudsim.network;
 
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import edu.boun.edgecloudsim.core.SimManager;
@@ -42,16 +43,16 @@ public class MM1Queue extends NetworkModel {
 		double numOfTaskType = 0;
 		SimSettings SS = SimSettings.getInstance();
 		for (int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
-			double weight = SS.getTaskLookUpTable()[i][0]/(double)100;
+			double weight = SS.getTaskLookUpTable()[i][LoadGeneratorModel.USAGE_PERCENTAGE]/(double)100;
 			if(weight != 0) {
-				WlanPoissonMean += (SS.getTaskLookUpTable()[i][2])*weight;
+				WlanPoissonMean += (SS.getTaskLookUpTable()[i][LoadGeneratorModel.POISSON_INTERARRIVAL])*weight;
 				
-				double percentageOfCloudCommunication = SS.getTaskLookUpTable()[i][1];
+				double percentageOfCloudCommunication = SS.getTaskLookUpTable()[i][LoadGeneratorModel.PROB_CLOUD_SELECTION];
 				WanPoissonMean += (WlanPoissonMean)*((double)100/percentageOfCloudCommunication)*weight;
 				
-				avgTaskInputSize += SS.getTaskLookUpTable()[i][5]*weight;
+				avgTaskInputSize += SS.getTaskLookUpTable()[i][LoadGeneratorModel.DATA_UPLOAD]*weight;
 				
-				avgTaskOutputSize += SS.getTaskLookUpTable()[i][6]*weight;
+				avgTaskOutputSize += SS.getTaskLookUpTable()[i][LoadGeneratorModel.DATA_DOWNLOAD]*weight;
 				
 				numOfTaskType++;
 			}

@@ -10,6 +10,7 @@
 
 package edu.boun.edgecloudsim.utils;
 
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import edu.boun.edgecloudsim.core.SimSettings;
@@ -36,11 +37,11 @@ public class TaskProperty {
     	startTime=_startTime;
     	taskType=_taskType;
     	
-    	inputFileSize = (long)expRngList[_taskType][0].sample();
-    	outputFileSize =(long)expRngList[_taskType][1].sample();
-    	length = (long)expRngList[_taskType][2].sample();
+    	inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
+    	outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
+    	length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
     	
-    	pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][8];
+    	pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
 	}
     
     public double getStartTime(){
