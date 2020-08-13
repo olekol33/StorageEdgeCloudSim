@@ -1,7 +1,9 @@
 //TODO: Create redis connection exceptions
 //TODO: Add constants (PARITY,DATA,MD) to parity (object:md*)
-package edu.boun.edgecloudsim.task_generator;
+package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.storage.ObjectGenerator;
+import edu.boun.edgecloudsim.utils.SimLogger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
@@ -18,9 +20,13 @@ public class RedisListHandler {
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis
     public static void createList(){
+        int numOfDataObjects = 50;
+        int numOfStripes = 100;
+        int numOfDataInStripe = 2;
+        int numOfParityInStripe = 1;
         Jedis jedis = new Jedis("localhost", 6379);
 //        List<List<Map>> listOfStripes = ObjectGenerator.getListOfStripes();
-        ObjectGenerator OG = new ObjectGenerator(50,100,2,1);
+        ObjectGenerator OG = new ObjectGenerator(numOfDataObjects,numOfStripes,numOfDataInStripe,numOfParityInStripe);
         List<List<Map>> listOfStripes = OG.getListOfStripes();
         int i = 0;
         for (List<Map> stripe : listOfStripes){
@@ -29,6 +35,8 @@ public class RedisListHandler {
             }
         }
         jedis.close();
+        SimLogger.print("Created Redis KV with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
+                ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
         //Closing
 //        closeConnection();
 
@@ -60,14 +68,14 @@ public class RedisListHandler {
 
     public static String getObjectLocations(String objectID){
         Jedis jedis = new Jedis("localhost", 6379);
-        String locations =  jedis.hget(objectID,"locations");
+        String locations =  jedis.hget("object:"+objectID,"locations");
         jedis.close();
         return locations;
     }
 
     public static String getObjectSize(String objectID){
         Jedis jedis = new Jedis("localhost", 6379);
-        String size =  jedis.hget(objectID,"size");
+        String size =  jedis.hget("object:"+objectID,"size");
         return size;
     }
     //Returns data object IDs in index 0 and parity in index 1

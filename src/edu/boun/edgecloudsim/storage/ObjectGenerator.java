@@ -1,7 +1,7 @@
 //Written by Oleg Kolosov
 // Create stripes of object in Redis for the simulator
 //TODO: Check location distribution
-package edu.boun.edgecloudsim.task_generator;
+package edu.boun.edgecloudsim.storage;
 
 
 import org.apache.commons.math3.distribution.ZipfDistribution;
@@ -19,7 +19,7 @@ public class ObjectGenerator {
     private int numOfDataInStripe = 2;
     private int numOfParityInStripe = 1;
     private RandomGenerator rand = null;
-    private int seed = 42;
+    static public int seed = 42;
     private String objectSize = "16"; //bytes
     private double zipfExponent = 1.07;
     private List<List<Map>> listOfStripes;

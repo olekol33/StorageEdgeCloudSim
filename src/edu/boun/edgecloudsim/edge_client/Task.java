@@ -24,6 +24,11 @@ public class Task extends Cloudlet {
 	private int vmIndex;
 	private int datacenterId;
 
+	//storage
+	private String stripeID;
+	private String objectID;
+	private int hostID;
+
 	public Task(int _mobileDeviceId, int cloudletId, long cloudletLength, int pesNumber,
 			long cloudletFileSize, long cloudletOutputSize,
 			UtilizationModel utilizationModelCpu,
@@ -35,7 +40,6 @@ public class Task extends Cloudlet {
 		
 		mobileDeviceId = _mobileDeviceId;
 	}
-
 	
 	public void setSubmittedLocation(Location _submittedLocation){
 		submittedLocation =_submittedLocation;
@@ -80,4 +84,27 @@ public class Task extends Cloudlet {
 	public int getTaskType(){
 		return type;
 	}
+
+	public String getStripeID() {
+		return stripeID;
+	}
+	public void setStripeID(String stripeID) {
+		this.stripeID = stripeID;
+	}
+	public int getHostID() {
+		return hostID;
+	}
+
+	public void setHostID(int hostID) {
+		this.hostID = hostID;
+	}
+
+	public String getObjectID() {
+		return objectID;
+	}
+
+	public void setObjectID(String objectID) {
+		this.objectID = objectID;
+	}
+
 }

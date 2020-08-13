@@ -31,8 +31,8 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	private int numberOfHost; //used by load balancer
-	private int lastSelectedHostIndex; //used by load balancer
-	private int[] lastSelectedVmIndexes; //used by each host individually
+	int lastSelectedHostIndex; //used by load balancer
+	int[] lastSelectedVmIndexes; //used by each host individually
 	
 	public BasicEdgeOrchestrator(String _policy, String _simScenario) {
 		super(_policy, _simScenario);

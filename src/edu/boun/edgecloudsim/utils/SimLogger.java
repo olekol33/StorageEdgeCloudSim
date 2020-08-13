@@ -110,6 +110,11 @@ public class SimLogger {
 		// printLine(taskId+"->"+taskStartTime);
 		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize));
 	}
+	//Storage
+	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
+					   int taskOutputSize, String stripeID, String objectID) {
+		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize));
+	}
 
 	public void taskStarted(int taskId, double time) {
 		taskMap.get(taskId).taskStarted(time);
@@ -762,6 +767,9 @@ class LogItem {
 	private double bwCost;
 	private double cpuCost;
 	private boolean isInWarmUpPeriod;
+	//storage
+	private String stripeID;
+	private String objectID;
 
 	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize) {
 		taskType = _taskType;
@@ -771,6 +779,18 @@ class LogItem {
 		networkError = NETWORK_ERRORS.NONE;
 		status = SimLogger.TASK_STATUS.CREATED;
 		taskEndTime = 0;
+	}
+	//Storage
+	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _stripeID, String _objectID) {
+		taskType = _taskType;
+		taskLenght = _taskLenght;
+		taskInputType = _taskInputType;
+		taskOutputSize = _taskOutputSize;
+		networkError = NETWORK_ERRORS.NONE;
+		status = SimLogger.TASK_STATUS.CREATED;
+		taskEndTime = 0;
+		stripeID = _stripeID;
+		objectID = _objectID;
 	}
 	
 	public void taskStarted(double time) {

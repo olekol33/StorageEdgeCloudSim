@@ -179,9 +179,17 @@ public class SimSettings {
 			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
 			double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
 
-			X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
-			Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
-			HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
+			try {
+
+				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
+				Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
+				HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
+			}
+			catch (Exception e){
+				X_RANGE = -1;
+				Y_RANGE = -1;
+				HOST_RADIUS = -1;
+			}
 
 			//mean waiting time (minute)
 			mobilityLookUpTable = new double[]{
@@ -543,7 +551,7 @@ public class SimSettings {
 			doc.getDocumentElement().normalize();
 
 			NodeList appList = doc.getElementsByTagName("application");
-			taskLookUpTable = new double[appList.getLength()][13];
+			taskLookUpTable = new double[appList.getLength()][14];
 			taskNames = new String[appList.getLength()];
 			for (int i = 0; i < appList.getLength(); i++) {
 				Node appNode = appList.item(i);
@@ -580,7 +588,16 @@ public class SimSettings {
 				double vm_utilization_on_cloud = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_cloud").item(0).getTextContent());
 				double vm_utilization_on_mobile = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_mobile").item(0).getTextContent());
 				double delay_sensitivity = Double.parseDouble(appElement.getElementsByTagName("delay_sensitivity").item(0).getTextContent());
-				
+				//Oleg
+				try {
+					double sampling_method = Integer.parseInt(appElement.getElementsByTagName("sampling_method").item(0).getTextContent());
+					taskLookUpTable[i][13] = sampling_method; //0 - with replacement, 1 - without replacement
+				}
+				catch (Exception e)
+				{
+					double sampling_method = -1;
+				}
+
 			    taskLookUpTable[i][0] = usage_percentage; //usage percentage [0-100]
 			    taskLookUpTable[i][1] = prob_cloud_selection; //prob. of selecting cloud [0-100]
 			    taskLookUpTable[i][2] = poisson_interarrival; //poisson mean (sec)
@@ -594,6 +611,7 @@ public class SimSettings {
 			    taskLookUpTable[i][10] = vm_utilization_on_cloud; //vm utilization on cloud vm [0-100]
 			    taskLookUpTable[i][11] = vm_utilization_on_mobile; //vm utilization on mobile vm [0-100]
 			    taskLookUpTable[i][12] = delay_sensitivity; //delay_sensitivity [0-1]
+
 			}
 	
 		} catch (Exception e) {

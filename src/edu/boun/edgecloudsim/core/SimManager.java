@@ -214,7 +214,13 @@ public class SimManager extends SimEntity {
 			case CREATE_TASK:
 				try {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
-					mobileDeviceManager.submitTask(edgeTask);						
+					//storage
+					///Send task for each object read
+					if (edgeTask.getStripeID() != null){
+						mobileDeviceManager.submitTask(edgeTask);
+					}
+					else
+						mobileDeviceManager.submitTask(edgeTask);
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(0);

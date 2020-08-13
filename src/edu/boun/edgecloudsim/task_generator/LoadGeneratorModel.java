@@ -35,11 +35,18 @@ public abstract class LoadGeneratorModel {
 	public static final int VM_UTILIZATION_ON_EDGE = 9;
 	public static final int VM_UTILIZATION_ON_CLOUD = 10;
 	public static final int VM_UTILIZATION_ON_MOBILE = 11;
+	public static final int DELAY_SENSITIVITY = 12;
+	public static final int SAMPLING_METHOD = 13;
+
 
 	public static final int LIST_DATA_UPLOAD = 0;
 	public static final int LIST_DATA_DOWNLOAD = 1;
 	public static final int LIST_TASK_LENGTH = 2;
-	
+
+	public static final int SAMPLING_WR = 0;
+	public static final int SAMPLING_WOR = 1;
+
+
 	public LoadGeneratorModel(int _numberOfMobileDevices, double _simulationTime, String _simScenario){
 		numberOfMobileDevices=_numberOfMobileDevices;
 		simulationTime=_simulationTime;

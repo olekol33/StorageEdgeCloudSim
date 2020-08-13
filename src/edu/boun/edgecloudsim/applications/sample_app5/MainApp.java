@@ -12,10 +12,9 @@ package edu.boun.edgecloudsim.applications.sample_app5;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.task_generator.RedisListHandler;
+import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
-import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.File;
@@ -126,12 +125,19 @@ public class MainApp {
 						
 						// Generate EdgeCloudsim Scenario Factory
 						ScenarioFactory sampleFactory = new SampleScenarioFactory(j,SS.getSimulationTime(), orchestratorPolicy, simScenario);
+
+						// Storage: Generate Redis KV list
+						//TODO: Avoid generating new list in each iteration
+						RedisListHandler.createList();
 						
 						// Generate EdgeCloudSim Simulation Manager
 						SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
 						
 						// Start simulation
 						manager.startSimulation();
+
+						// Remove KV list
+						RedisListHandler.closeConnection();
 					}
 					catch (Exception e)
 					{

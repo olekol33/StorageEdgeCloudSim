@@ -32,9 +32,9 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class DefaultMobileDeviceManager extends MobileDeviceManager {
 	private static final int BASE = 100000; //start from base in order not to conflict cloudsim tag!
-	private static final int REQUEST_RECEIVED_BY_CLOUD = BASE + 1;
-	private static final int REQUEST_RECIVED_BY_EDGE_DEVICE = BASE + 2;
-	private static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 3;
+	static final int REQUEST_RECEIVED_BY_CLOUD = BASE + 1;
+	static final int REQUEST_RECIVED_BY_EDGE_DEVICE = BASE + 2;
+	static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 3;
 	private int taskIdCounter=0;
 	
 	public DefaultMobileDeviceManager() throws Exception{
@@ -271,7 +271,7 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 		}
 	}
 	
-	private Task createTask(TaskProperty edgeTask){
+	Task createTask(TaskProperty edgeTask){
 		UtilizationModel utilizationModel = new UtilizationModelFull(); /*UtilizationModelStochastic*/
 		UtilizationModel utilizationModelCPU = getCpuUtilizationModel();
 

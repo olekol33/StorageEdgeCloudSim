@@ -21,6 +21,9 @@ public class TaskProperty {
     private int taskType;
     private int pesNumber;
     private int mobileDeviceId;
+
+	private String stripeID;
+	private String objectID;
     
     public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {
     	startTime=_startTime;
@@ -42,6 +45,24 @@ public class TaskProperty {
     	length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
     	
     	pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+	}
+
+	//Storage
+	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _stripeID, String _objectID, ExponentialDistribution[][] expRngList) {
+		mobileDeviceId=_mobileDeviceId;
+		startTime=_startTime;
+		taskType=_taskType;
+		stripeID = _stripeID;
+		objectID = _objectID;
+
+		inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
+		//TODO: Change size to object size
+		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
+		length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
+
+		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+
+
 	}
     
     public double getStartTime(){
@@ -71,4 +92,12 @@ public class TaskProperty {
     public int getMobileDeviceId(){
     	return mobileDeviceId;
     }
+
+	public String getStripeID() {
+		return stripeID;
+	}
+
+	public String getObjectID() {
+		return objectID;
+	}
 }
