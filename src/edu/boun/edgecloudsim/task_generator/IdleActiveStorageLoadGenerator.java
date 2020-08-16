@@ -88,6 +88,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 String[] stripeObjects = RedisListHandler.getStripeObjects(stripeID);
                 List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
                 List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
+//                System.out.println("Selected stripe: " + stripeID);
                 for (String objectID:dataObjects){
                     taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, expRngList));
                 }

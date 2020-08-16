@@ -604,6 +604,7 @@ public class SimSettings {
 			    taskLookUpTable[i][3] = active_period; //active period (sec)
 			    taskLookUpTable[i][4] = idle_period; //idle period (sec)
 			    taskLookUpTable[i][5] = data_upload; //avg data upload (KB)
+				//TODO: update value to match object size
 			    taskLookUpTable[i][6] = data_download; //avg data download (KB)
 			    taskLookUpTable[i][7] = task_length; //avg task length (MI)
 			    taskLookUpTable[i][8] = required_core; //required # of core

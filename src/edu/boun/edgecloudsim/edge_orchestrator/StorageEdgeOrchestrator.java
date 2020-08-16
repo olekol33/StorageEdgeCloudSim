@@ -4,7 +4,7 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
-import edu.boun.edgecloudsim.storage.ObjectGenerator;
+import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimUtils;
@@ -20,12 +20,19 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         super(_policy, _simScenario);
     }
     //Randomly selects one location from list of location where object exists
-    private int randomlySelectHostToOffload(String locations) {
+    private int randomlySelectHostToRead(String locations) {
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
         Random random = new Random();
-        random.setSeed(ObjectGenerator.seed);
+//        random.setSeed(ObjectGenerator.seed);
         String randomLocation = objectLocations.get(random.nextInt(objectLocations.size()));
         return Integer.parseInt(randomLocation);
+    }
+
+    private int selectNearestHostToRead(String locations, Location deviceLocation) {
+        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+        List<Integer> intObjectLocations = new ArrayList<>();
+        for(String s : objectLocations) intObjectLocations.add(Integer.valueOf(s));
+        return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);
     }
 
     @Override
@@ -36,11 +43,31 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         //in our scenasrio, serving wlan ID is equal to the host id
         //because there is only one host in one place
 //        int relatedHostId=deviceLocation.getServingWlanId();
-        //Oleg: Get location of object according to policy
-        int relatedHostId= randomlySelectHostToOffload(RedisListHandler.getObjectLocations(task.getObjectID()));
-        List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+//        List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
 
-        if(policy.equalsIgnoreCase("RANDOM_FIT")){
+        //Oleg: Get location of object according to policy
+        if(policy.equalsIgnoreCase("RANDOM_HOST")){
+            int relatedHostId= randomlySelectHostToRead(RedisListHandler.getObjectLocations(task.getObjectID()));
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            int randomIndex = SimUtils.getRandomNumber(0, vmArray.size()-1);
+            double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
+            double targetVmCapacity = (double)100 - vmArray.get(randomIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+            if(requiredCapacity > targetVmCapacity)
+                System.out.println("requiredCapacity > targetVmCapacity in RANDOM_HOST");
+            selectedVM = vmArray.get(0);
+        }
+        else if(policy.equalsIgnoreCase("NEAREST_HOST")){
+            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectID()),deviceLocation);
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            int randomIndex = SimUtils.getRandomNumber(0, vmArray.size()-1);
+            double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
+            double targetVmCapacity = (double)100 - vmArray.get(randomIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+            if(requiredCapacity > targetVmCapacity)
+                System.out.println("requiredCapacity > targetVmCapacity in NEAREST_HOST");
+            selectedVM = vmArray.get(0);
+        }
+
+/*        if(policy.equalsIgnoreCase("RANDOM_FIT")){
             int randomIndex = SimUtils.getRandomNumber(0, vmArray.size()-1);
             double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(randomIndex).getVmType());
             double targetVmCapacity = (double)100 - vmArray.get(randomIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
@@ -91,8 +118,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                     break;
                 }
                 tries++;
-            }
-        }
+            }*/
+
 
         return selectedVM;
     }

@@ -17,11 +17,12 @@ def getConfiguration(argType):
     elif (argType == "stepOfMobileDeviceLoop"): #4
         return 100 #step size of mobile device count
     elif (argType == "endOfMobileDeviceLoop"): #5
-        return 1000 #max number of mobile device
+        return 600 #max number of mobile device
     elif (argType == "xTickLabelCoefficient"): #6
         return 1 #xTickLabelCoefficient
     elif (argType == "scenarioType"):  #7
-        return ['SINGLE_TIER','TWO_TIER','TWO_TIER_WITH_EO']
+        # return ['SINGLE_TIER','TWO_TIER','TWO_TIER_WITH_EO']
+        return ['SINGLE_TIER']
     elif (argType == "legends"):    #8
         return ['1-tier','2-tier','2-tier with EO']
 #    elif (argType == 9):
@@ -32,6 +33,8 @@ def getConfiguration(argType):
         return 1 #return 1 if you want to save figure as pdf
     elif (argType == 12):
         return 0 #return 1 if you want to plot errors
+    elif (argType == "orchestratorPolicy"):  #13
+         return ['RANDOM_HOST','NEAREST_HOST']
     elif (argType == 20):
         return 1 #return 1 if graph is plotted colerful
 """    elif (argType == 21):

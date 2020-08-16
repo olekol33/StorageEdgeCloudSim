@@ -13,6 +13,7 @@ import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -95,6 +96,8 @@ public class MainApp {
 		String now = df.format(SimulationStartDate);
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
+		// Storage: Generate Redis KV list
+		RedisListHandler.createList();
 
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
 		{
@@ -109,7 +112,8 @@ public class MainApp {
 					
 					SimLogger.printLine("Scenario started at " + now);
 					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
-					SimLogger.printLine("Duration: " + SS.getSimulationTime()/3600 + " hour(s) - Poisson: " + SS.getTaskLookUpTable()[0][2] + " - #devices: " + j);
+					SimLogger.printLine("Duration: " + SS.getSimulationTime()/3600 + " hour(s) - Poisson: " +
+							SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
 					SimLogger.getInstance().simStarted(outputFolder,"SIMRESULT_" + simScenario + "_"  + orchestratorPolicy + "_" + j + "DEVICES");
 					
 					try
@@ -126,9 +130,6 @@ public class MainApp {
 						// Generate EdgeCloudsim Scenario Factory
 						ScenarioFactory sampleFactory = new SampleScenarioFactory(j,SS.getSimulationTime(), orchestratorPolicy, simScenario);
 
-						// Storage: Generate Redis KV list
-						//TODO: Avoid generating new list in each iteration
-						RedisListHandler.createList();
 						
 						// Generate EdgeCloudSim Simulation Manager
 						SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
@@ -136,8 +137,6 @@ public class MainApp {
 						// Start simulation
 						manager.startSimulation();
 
-						// Remove KV list
-						RedisListHandler.closeConnection();
 					}
 					catch (Exception e)
 					{
@@ -153,7 +152,8 @@ public class MainApp {
 				}//End of orchestrators loop
 			}//End of scenarios loop
 		}//End of mobile devices loop
-
+		// Remove KV list
+		RedisListHandler.closeConnection();
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));

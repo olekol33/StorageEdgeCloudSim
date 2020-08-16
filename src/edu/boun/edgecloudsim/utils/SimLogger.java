@@ -18,10 +18,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -113,7 +110,7 @@ public class SimLogger {
 	//Storage
 	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
 					   int taskOutputSize, String stripeID, String objectID) {
-		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize));
+		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID));
 	}
 
 	public void taskStarted(int taskId, double time) {
@@ -163,9 +160,9 @@ public class SimLogger {
 	public void simStopped() throws IOException {
 		int numOfAppTypes = SimSettings.getInstance().getTaskLookUpTable().length;
 
-		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null;
-		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null;
-		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null;
+		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null, objectsFile = null;
+		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null, objectsFW = null;
+		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null, objectsBW = null;
 
 		// Save generic results to file for each app type. last index is average
 		// of all app types
@@ -221,8 +218,17 @@ public class SimLogger {
 		int[] failedTaskDuetoWanBw = new int[numOfAppTypes + 1];
 		int[] failedTaskDuetoMobility = new int[numOfAppTypes + 1];
 
+		//Oleg: For object log
+//		System.out.println("array size: " + taskMap.size());
+		String [] objectID = new String[taskMap.size()];
+		int [] hostID = new int[taskMap.size()];
+		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
+		Arrays.fill(hostID,-1);
+
+
 		// open all files and prepare them for write
 		if (fileLogEnabled) {
+			//TODO: Check this
 			if (SimSettings.getInstance().getDeepFileLoggingEnabled()) {
 				successFile = new File(outputFolder, filePrefix + "_SUCCESS.log");
 				successFW = new FileWriter(successFile, true);
@@ -244,6 +250,12 @@ public class SimLogger {
 			gridLocationFile = new File(outputFolder, filePrefix + "_GRID_LOCATION.log");
 			gridLocationFW = new FileWriter(gridLocationFile, true);
 			gridLocationBW = new BufferedWriter(gridLocationFW);
+			
+			//Objects log
+			objectsFile = new File(outputFolder, filePrefix + "_OBJECTS.log");
+			objectsFW = new FileWriter(objectsFile, true);
+			objectsBW = new BufferedWriter(objectsFW);
+			appendToFile(objectsBW, "ObjectID;HostID;Status");
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				String fileName = "ALL_APPS_GENERIC.log";
@@ -279,6 +291,9 @@ public class SimLogger {
 			appendToFile(gridLocationBW, "ItemType;ItemID;xPos;yPos");
 		}
 
+		//Oleg
+//		int o=0;
+
 		// extract the result of each task and write it to the file if required
 		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
 			Integer key = entry.getKey();
@@ -296,6 +311,12 @@ public class SimLogger {
 					completedTaskOnMobile[value.getTaskType()]++;
 				else
 					completedTaskOnEdge[value.getTaskType()]++;
+
+				//Oleg
+				objectID[key-1] = value.getObjectID();
+				hostID[key-1] = value.getHostId();
+				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMLETED;
+//				o++;
 			}
 			else if(value.getStatus() == SimLogger.TASK_STATUS.CREATED ||
 					value.getStatus() == SimLogger.TASK_STATUS.UPLOADING ||
@@ -309,6 +330,8 @@ public class SimLogger {
 					uncompletedTaskOnMobile[value.getTaskType()]++;
 				else
 					uncompletedTaskOnEdge[value.getTaskType()]++;
+				//Oleg
+				objectStatusID[key-1] = value.getStatus();
 			}
 			else {
 				failedTask[value.getTaskType()]++;
@@ -319,6 +342,8 @@ public class SimLogger {
 					failedTaskOnMobile[value.getTaskType()]++;
 				else
 					failedTaskOnEdge[value.getTaskType()]++;
+				//Oleg
+				objectStatusID[key-1] = value.getStatus();
 			}
 
 			if (value.getStatus() == SimLogger.TASK_STATUS.COMLETED) {
@@ -490,6 +515,14 @@ public class SimLogger {
 				gridLocationBW.newLine();
 			}
 
+			//Oleg:Create list of objects reads
+			for (int i = 0; i < taskMap.size(); i++) {
+				if (objectID[i] == null)
+					continue;
+				objectsBW.write((objectID[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + objectStatusID[i]));
+				objectsBW.newLine();
+			}
+
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 
@@ -616,6 +649,7 @@ public class SimLogger {
 			vmLoadBW.close();
 			locationBW.close();
 			gridLocationBW.close();
+			objectsBW.close();
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				if (i < numOfAppTypes) {
 					// if related app is not used in this simulation, just
@@ -931,6 +965,14 @@ class LogItem {
 				manDownloadDelay +
 				wanDownloadDelay;
 	}
+
+	public String getStripeID() {
+		return stripeID;
+	}
+
+	public String getObjectID() {
+		return objectID;
+	}
 	
 	public double getServiceTime() {
 		return taskEndTime - taskStartTime;
@@ -950,6 +992,10 @@ class LogItem {
 
 	public int getTaskType() {
 		return taskType;
+	}
+
+	public int getHostId() {
+		return hostId;
 	}
 
 	public String toString(int taskId) {
@@ -977,4 +1023,6 @@ class LogItem {
 			result += "0"; // default failure reason
 		return result;
 	}
+
+
 }

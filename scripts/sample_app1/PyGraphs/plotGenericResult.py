@@ -41,12 +41,12 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     xTickLabelCoefficient = getConfiguration("xTickLabelCoefficient")
     scenarioType = getConfiguration("scenarioType");
     legends = getConfiguration("legends");
+    orchestratorPolicy = getConfiguration("orchestratorPolicy");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
 
     all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
-    min_results = np.zeros((len(scenarioType), numOfMobileDevices))
-    max_results = np.zeros((len(scenarioType), numOfMobileDevices))
+
 
     # initializing the titles and rows list
     for s in range(numOfSimulations):
@@ -56,7 +56,7 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                     fields = []
                     rows = []
                     mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop*j
-                    filePath = ''.join([folderPath, '\ite', str(s+1), '\SIMRESULT_', str(scenarioType[i]), '_NEXT_FIT_',
+                    filePath = ''.join([folderPath, '\ite', str(s+1), '\SIMRESULT_', str(scenarioType[i]), '_NEAREST_HOST_',
                                   str(mobileDeviceNumber), 'DEVICES_', appType, '_GENERIC.log'])
                     with open(filePath,'r') as csvfile:
                         csvreader = csv.reader(csvfile, delimiter=';')
@@ -91,22 +91,41 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
         results = np.mean(all_results)
 
     results = np.squeeze(results)
+    if len(scenarioType) > 1:
+        min_results = np.zeros((len(scenarioType), numOfMobileDevices))
+        max_results = np.zeros((len(scenarioType), numOfMobileDevices))
+        for i in range(len(scenarioType)):
+            for j in range(numOfMobileDevices):
+                x = all_results[:, i, j] #Create Data
+                SEM = np.std(x) / np.sqrt(len(x)) #Standard Error
+                # Student's t inverse cumulative distribution function
+                df = len(x)-1  #degrees of freedom
+                ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
+                CI = np.mean(x) + ts * SEM; #Confidence Intervals (if len(x)>1)
+                if CI[0] < 0:
+                    CI[0] = 0
+                if CI[1] < 0:
+                    CI[1] = 0
 
-    for i in range(len(scenarioType)):
+                min_results[i, j] = results[i][j] - CI[0]
+                max_results[i, j] = CI[1] - results[i][j]
+    else:
         for j in range(numOfMobileDevices):
-            x = all_results[:, i, j] #Create Data
-            SEM = np.std(x) / np.sqrt(len(x)) #Standard Error
+            min_results = np.zeros((numOfMobileDevices))
+            max_results = np.zeros((numOfMobileDevices))
+            x = all_results[:, :, j]  # Create Data
+            SEM = np.std(x) / np.sqrt(len(x))  # Standard Error
             # Student's t inverse cumulative distribution function
-            df = len(x)-1  #degrees of freedom
+            df = len(x) - 1  # degrees of freedom
             ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
-            CI = np.mean(x) + ts * SEM; #Confidence Intervals (if len(x)>1)
+            CI = np.mean(x) + ts * SEM;  # Confidence Intervals (if len(x)>1)
             if CI[0] < 0:
                 CI[0] = 0
             if CI[1] < 0:
                 CI[1] = 0
 
-            min_results[i, j] = results[i][j] - CI[0]
-            max_results[i, j] = CI[1] - results[i][j]
+            min_results[j] = results[j] - CI[0]
+            max_results[j] = CI[1] - results[j]
 
     types = np.zeros([1,numOfMobileDevices])
     marker = ['*', 'x', 'o', '.', ',']
@@ -119,7 +138,9 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     for j,scen in enumerate(scenarioType):
         yIndex = []
         for i in range(numOfMobileDevices):
-            yIndex.append(results[j][i])
+            # TODO: temp removed
+            # yIndex.append(results[j][i])
+            yIndex.append(results[i])
         ax.scatter(xIndex, yIndex, marker = marker[j])
         ax.plot(xIndex, yIndex, marker = marker[j], label=scen)
     ax.legend()

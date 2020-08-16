@@ -32,6 +32,7 @@ public class StorageMobileDeviceManager extends DefaultMobileDeviceManager {
 
         //storage
         task.setObjectID(edgeTask.getObjectID());
+        task.setStripeID(edgeTask.getStripeID());
 
         //add related task to log list
         //TODO: Check what log list does

@@ -78,11 +78,19 @@ public class RedisListHandler {
         String size =  jedis.hget("object:"+objectID,"size");
         return size;
     }
+
+    public static String getObjectID(String objectName){
+        Jedis jedis = new Jedis("localhost", 6379);
+        String id =  jedis.hget(objectName,"id");
+        return id;
+    }
+
+
     //Returns data object IDs in index 0 and parity in index 1
     public static String[] getStripeObjects(String metadataID){
         Jedis jedis = new Jedis("localhost", 6379);
-        String dataObjects = jedis.hget(metadataID,"data");
-        String parityObjects = jedis.hget(metadataID,"parity");
+        String dataObjects = jedis.hget("object:"+metadataID,"data");
+        String parityObjects = jedis.hget("object:"+metadataID,"parity");
         return new String[] {dataObjects,parityObjects};
 
     }
@@ -91,11 +99,12 @@ public class RedisListHandler {
         List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
         List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
         Random random = new Random();
-        random.setSeed(seed);
+//        random.setSeed(seed);
         for (int i=0; i<numOfStripesToRead; i++) {
             //Get index such that 0<=index<= size of list
-            int metadataIndex = random.nextInt(listOfMetadataObjects.size()+1);
-            listForDevice.add(listOfMetadataObjects.get(metadataIndex));
+            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
+            String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
+            listForDevice.add(objectID);
         }
         return listForDevice;
     }

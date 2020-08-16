@@ -66,7 +66,7 @@ public class StaticRangeMobility extends MobilityModel {
         return e.getValue();
     }
 
-    private Location getDCLocation(int DatacenterId) {
+    public static Location getDCLocation(int DatacenterId) {
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         Node datacenterNode = datacenterList.item(DatacenterId);
@@ -80,15 +80,33 @@ public class StaticRangeMobility extends MobilityModel {
 
         return new Location(placeTypeIndex, wlan_id, x_pos, y_pos);
     }
+
+    //If device in range of host - returns host location. If not, returns nearest access point.
+    public static Location getAccessPoint(Location deviceLocation, Location hostLocation){
+        int hostRadius = SimSettings.getInstance().getHostRadius();
+        int deviceXPos = deviceLocation.getXPos();
+        int deviceYPos = deviceLocation.getXPos();
+        int hostXPos = hostLocation.getXPos();
+        int hostYPos = hostLocation.getYPos();
+        if (hostXPos-hostRadius <= deviceXPos && deviceXPos <= hostXPos+hostRadius) {
+            if (hostYPos - hostRadius <= deviceYPos && deviceYPos <= hostYPos + hostRadius)
+                return hostLocation;
+        }
+        //get all hosts in range
+        List<Integer> hostsInRange = checkLegalPlacement(deviceLocation);
+        //return nearest
+        return getDCLocation(getNearestHost(hostsInRange,hostLocation));
+    }
     // Receives DC list and mobile device location. Check if device located within radius of the DCs
     // If yes, add it to a list
-    private List<Integer> checkLegalPlacement(Location deviceLocation) {
+    private static List<Integer> checkLegalPlacement(Location deviceLocation) {
         int x_pos = deviceLocation.getXPos();
         int y_pos = deviceLocation.getYPos();
         int hostRadius = SimSettings.getInstance().getHostRadius();
         List<Integer> hosts = new ArrayList<Integer>();
         for (int i = 0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
             Location DCLocation = getDCLocation(i);
+            //TODO: use getAccessPoint
             if (DCLocation.getXPos()-hostRadius <= x_pos && x_pos <= DCLocation.getXPos()+hostRadius){
                 if (DCLocation.getYPos()-hostRadius <= y_pos && y_pos <= DCLocation.getYPos()+hostRadius)
                     hosts.add(i);
@@ -97,9 +115,17 @@ public class StaticRangeMobility extends MobilityModel {
         }
         return hosts;
     }
-    // Receives list of hosts in whih device is in range, returns nearest host.
-    private int getNearestHost(List<Integer> hosts, Location deviceLocation){
-        Double minDistance = Double.MAX_VALUE;
+    //Returns number of slots on grid between two locations
+    public static int getGridDistance(Location srcLocation, Location destLocation){
+        int xDist = Math.abs(srcLocation.getXPos()-destLocation.getXPos());
+        int yDist = Math.abs(srcLocation.getYPos()-destLocation.getYPos());
+        return xDist+yDist;
+    }
+
+
+    // Receives list of hosts in which device is in range, returns nearest host.
+    public static int getNearestHost(List<Integer> hosts, Location deviceLocation){
+        int minDistance = Integer.MAX_VALUE;
         int minDCLocationID = -1;
         int deviceXPos = deviceLocation.getXPos();
         int deviceYPos = deviceLocation.getYPos();
@@ -108,10 +134,11 @@ public class StaticRangeMobility extends MobilityModel {
 
         for (int i=0 ; i < hosts.size() ; i++){
             int host = hosts.get(i);
-            hostXPos = getDCLocation(host).getXPos();
-            hostYPos = getDCLocation(host).getYPos();
+//            hostXPos = getDCLocation(host).getXPos();
+//            hostYPos = getDCLocation(host).getYPos();
             //calculate euclidean distance and keep if it's lowest
-            Double distance = Point2D.distance(deviceXPos, deviceYPos, hostXPos, hostYPos);
+//            Double distance = Point2D.distance(deviceXPos, deviceYPos, hostXPos, hostYPos);
+            int distance = getGridDistance(deviceLocation,getDCLocation(host));
             if (distance < minDistance) {
                 minDistance = distance;
                 minDCLocationID = host;
@@ -120,6 +147,7 @@ public class StaticRangeMobility extends MobilityModel {
         return minDCLocationID;
     }
 
+    //Randomly places device on grid within range of at least one host
     private Location placeDevice(){
         int xRange = SimSettings.getInstance().getXRange();
         int yRange = SimSettings.getInstance().getYRange();
