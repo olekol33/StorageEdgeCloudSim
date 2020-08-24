@@ -122,6 +122,34 @@ public class StaticRangeMobility extends MobilityModel {
         return xDist+yDist;
     }
 
+    //Returns eucledean distance assuming slot size is 100m
+    public static double getEucledeanDistance(Location srcLocation, Location destLocation){
+        //TODO: parametrize
+        //size of box in grid
+        double boxSizeMeters = 100; //meters
+        //TODO: define better max grid radius
+        double boxSizeGrid = 6; //max box size in grid
+        int xDist = Math.abs(srcLocation.getXPos()-destLocation.getXPos());
+        int yDist = Math.abs(srcLocation.getYPos()-destLocation.getYPos());
+        double xyDistance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2));
+        double gridDistanceUnit = boxSizeMeters / boxSizeGrid;
+        return xyDistance*gridDistanceUnit;
+    }
+
+    //according to "Experimental analysis of multipoint-to-point UAV communications with IEEE 802.11 n and 802.11 ac." Hayat et al
+    //Calculate by how many % the throughput has decreased as function of distance
+    //Worst is 5%
+    public static double getWifiThroughput(Location srcLocation, Location destLocation){
+        double x0 = 0;
+        double x1 = 100;
+        //devided y by 2 compared to paper
+        double y0 = 100;
+        double y1 = 5;
+        double m = (y0-y1) / (x0-x1);
+        double distance = getEucledeanDistance(srcLocation,destLocation);
+        //return %
+        return (m * (distance - x0) + y0)/100;
+    }
 
     // Receives list of hosts in which device is in range, returns nearest host.
     public static int getNearestHost(List<Integer> hosts, Location deviceLocation){

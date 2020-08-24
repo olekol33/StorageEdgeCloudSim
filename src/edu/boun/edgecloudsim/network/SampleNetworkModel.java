@@ -31,23 +31,24 @@ public class SampleNetworkModel extends NetworkModel {
 	public static double MAN_BW = 1300*1024; //Kbps
 
 	@SuppressWarnings("unused")
-	private int manClients;
+	protected int manClients;
 	protected int[] wanClients;
 	protected int[] wlanClients;
 
-	private double lastMM1QueeuUpdateTime;
-	private double ManPoissonMeanForDownload; //seconds
-	private double ManPoissonMeanForUpload; //seconds
+	protected double lastMM1QueeuUpdateTime;
+	protected double ManPoissonMeanForDownload; //seconds
+	protected double ManPoissonMeanForUpload; //seconds
 
-	private double avgManTaskInputSize; //bytes
-	private double avgManTaskOutputSize; //bytes
+	protected double avgManTaskInputSize; //bytes
+	protected double avgManTaskOutputSize; //bytes
 
 	//record last n task statistics during MM1_QUEUE_MODEL_UPDATE_INTEVAL seconds to simulate mmpp/m/1 queue model
-	private double totalManTaskInputSize;
-	private double totalManTaskOutputSize;
-	private double numOfManTaskForDownload;
-	private double numOfManTaskForUpload;
-	
+	protected double totalManTaskInputSize;
+	protected double totalManTaskOutputSize;
+	protected double numOfManTaskForDownload;
+	protected double numOfManTaskForUpload;
+
+	//Oleg: Numbers based on measurements of a real network
 	public static final double[] experimentalWlanDelay = {
 		/*1 Client*/ 88040.279 /*(Kbps)*/,
 		/*2 Clients*/ 45150.982 /*(Kbps)*/,
@@ -306,7 +307,6 @@ public class SampleNetworkModel extends NetworkModel {
 			wanClients[accessPointLocation.getServingWlanId()]++;
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]++;
-//			System.out.println("+1 in " + accessPointLocation.getServingWlanId() + " . Now there are " + wlanClients[accessPointLocation.getServingWlanId()] + " users");
 		}
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients++;
@@ -322,7 +322,6 @@ public class SampleNetworkModel extends NetworkModel {
 			wanClients[accessPointLocation.getServingWlanId()]--;
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]--;
-//			System.out.println("-1 in " + accessPointLocation.getServingWlanId() + " . Now there are " + wlanClients[accessPointLocation.getServingWlanId()] + " users");
 		}
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients--;
@@ -390,12 +389,10 @@ public class SampleNetworkModel extends NetworkModel {
 				ManPoissonMeanForDownload,
 				avgManTaskOutputSize,
 				numberOfMobileDevices);
-		//TODO: Check why only added and not subtracted
 		totalManTaskOutputSize += avgManTaskOutputSize;
 		numOfManTaskForDownload++;
 
 		//System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
-		
 		return result;
 	}
 	

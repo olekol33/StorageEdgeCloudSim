@@ -186,6 +186,7 @@ public class SimSettings {
 				HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
 			}
 			catch (Exception e){
+				System.out.println("Grid ranges incorrect");
 				X_RANGE = -1;
 				Y_RANGE = -1;
 				HOST_RADIUS = -1;

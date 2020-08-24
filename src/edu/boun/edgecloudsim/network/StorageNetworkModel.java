@@ -5,6 +5,7 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.utils.Location;
+import edu.boun.edgecloudsim.utils.SimLogger;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 public class StorageNetworkModel extends SampleNetworkModel {
@@ -50,12 +51,10 @@ public class StorageNetworkModel extends SampleNetworkModel {
             delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
             //Add delay on network if access point not in range
             //TODO: need to update access point to be nearest from destination
-            //TODO: compare by wlan id
-//            Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
-
-/*            Location hostLocation = StaticRangeMobility.getDCLocation(sourceDeviceId);
-            if (!hostLocation.equals(accessPointLocation))
-                delay += gridDistanceDelay(accessPointLocation,hostLocation,task.getCloudletOutputSize());*/
+            //TODO: verify it's correct and matching orchestrator
+            Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
+            //divide by factor
+            delay /= StaticRangeMobility.getWifiThroughput(deviceLocation,nearestAccessPoint);
         }
 
         return delay;
