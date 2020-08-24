@@ -17,7 +17,7 @@ def getConfiguration(argType):
     elif (argType == "stepOfMobileDeviceLoop"): #4
         return 100 #step size of mobile device count
     elif (argType == "endOfMobileDeviceLoop"): #5
-        return 600 #max number of mobile device
+        return 1000 #max number of mobile device
     elif (argType == "xTickLabelCoefficient"): #6
         return 1 #xTickLabelCoefficient
     elif (argType == "scenarioType"):  #7
@@ -34,7 +34,8 @@ def getConfiguration(argType):
     elif (argType == 12):
         return 0 #return 1 if you want to plot errors
     elif (argType == "orchestratorPolicy"):  #13
-         return ['RANDOM_HOST','NEAREST_HOST']
+         return ['RANDOM_HOST','NEAREST_HOST','NEAREST_WITH_PARITY']
+         # return 'RANDOM_HOST'
     elif (argType == 20):
         return 1 #return 1 if graph is plotted colerful
 """    elif (argType == 21):

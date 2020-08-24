@@ -8,11 +8,11 @@
 		<active_period>45</active_period>
 		<idle_period>15</idle_period>
 		<data_upload>1500</data_upload>
-		<data_download>25</data_download>
-		<task_length>2000</task_length>
-		<required_core>1</required_core>
-		<vm_utilization_on_edge>20</vm_utilization_on_edge>
-		<vm_utilization_on_cloud>2</vm_utilization_on_cloud>
+		<data_download>2000</data_download>
+		<task_length>1</task_length>
+		<required_core>0</required_core>
+		<vm_utilization_on_edge>0</vm_utilization_on_edge>
+		<vm_utilization_on_cloud>0</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>0</vm_utilization_on_mobile>
 		<!--0 - with replacement, 1 - without replacement-->
 		<sampling_method>0</sampling_method>
@@ -25,11 +25,11 @@
 		<active_period>10</active_period>
 		<idle_period>20</idle_period>
 		<data_upload>1250</data_upload>
-		<data_download>20</data_download>
-		<task_length>400</task_length>
-		<required_core>1</required_core>
-		<vm_utilization_on_edge>5</vm_utilization_on_edge>
-		<vm_utilization_on_cloud>0.5</vm_utilization_on_cloud>
+		<data_download>2000</data_download>
+		<task_length>1</task_length>
+		<required_core>0</required_core>
+		<vm_utilization_on_edge>0</vm_utilization_on_edge>
+		<vm_utilization_on_cloud>0</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>0</vm_utilization_on_mobile>
 		<!--0 - with replacement, 1 - without replacement-->
 		<sampling_method>0</sampling_method>
@@ -42,11 +42,11 @@
 		<active_period>60</active_period>
 		<idle_period>60</idle_period>
 		<data_upload>2500</data_upload>
-		<data_download>250</data_download>
-		<task_length>3000</task_length>
-		<required_core>1</required_core>
-		<vm_utilization_on_edge>30</vm_utilization_on_edge>
-		<vm_utilization_on_cloud>3</vm_utilization_on_cloud>
+		<data_download>2000</data_download>
+		<task_length>1</task_length>
+		<required_core>0</required_core>
+		<vm_utilization_on_edge>0</vm_utilization_on_edge>
+		<vm_utilization_on_cloud>0</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>0</vm_utilization_on_mobile>
 		<!--0 - with replacement, 1 - without replacement-->
 		<sampling_method>0</sampling_method>
@@ -60,10 +60,10 @@
 		<idle_period>45</idle_period>
 		<data_upload>25</data_upload>
 		<data_download>2000</data_download>
-		<task_length>750</task_length>
-		<required_core>1</required_core>
-		<vm_utilization_on_edge>10</vm_utilization_on_edge>
-		<vm_utilization_on_cloud>1</vm_utilization_on_cloud>
+		<task_length>1</task_length>
+		<required_core>0</required_core>
+		<vm_utilization_on_edge>0</vm_utilization_on_edge>
+		<vm_utilization_on_cloud>0</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>0</vm_utilization_on_mobile>
 		<!--0 - with replacement, 1 - without replacement-->
 		<sampling_method>0</sampling_method>

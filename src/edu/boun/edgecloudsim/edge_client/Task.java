@@ -26,8 +26,10 @@ public class Task extends Cloudlet {
 
 	//storage
 	private String stripeID;
-	private String objectID;
+	private String objectToRead;
+	private String objectRead;
 	private int hostID;
+	private int paritiesToRead;
 
 	public Task(int _mobileDeviceId, int cloudletId, long cloudletLength, int pesNumber,
 			long cloudletFileSize, long cloudletOutputSize,
@@ -99,12 +101,25 @@ public class Task extends Cloudlet {
 		this.hostID = hostID;
 	}
 
-	public String getObjectID() {
-		return objectID;
+	public String getObjectToRead() {
+		return objectToRead;
 	}
 
-	public void setObjectID(String objectID) {
-		this.objectID = objectID;
+	public void setObjectToRead(String objectToRead) {
+		this.objectToRead = objectToRead;
+	}
+
+	public int getParitiesToRead() {
+		return paritiesToRead;
+	}
+	public String getObjectRead() {
+		return objectRead;
+	}
+	public void setParitiesToRead(int paritiesToRead) {
+		this.paritiesToRead = paritiesToRead;
+	}
+	public void setObjectRead(String objectRead) {
+		this.objectRead = objectRead;
 	}
 
 }

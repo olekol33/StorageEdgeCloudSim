@@ -32,6 +32,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
             expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
             expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
+            //TODO: set 0?
             expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
         }
 
@@ -88,13 +89,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 String[] stripeObjects = RedisListHandler.getStripeObjects(stripeID);
                 List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
                 List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
-//                System.out.println("Selected stripe: " + stripeID);
                 for (String objectID:dataObjects){
                     taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, expRngList));
                 }
-                for (String objectID:parityObjects){
-                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, expRngList));
-                }
+                //Don't read parities for now
+//                for (String objectID:parityObjects){
+//                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, expRngList));
+//                }
 
 
             }

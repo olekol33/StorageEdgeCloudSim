@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from collections import Counter
 
-folderPath = "C:\\Users\\Oleg\\git\\EdgeCloudSim\\sim_results"
+# folderPath = "C:\\Users\\Oleg\\git\\EdgeCloudSim\\sim_results"
+folderPath = getConfiguration("folderPath")
 numOfSimulations = getConfiguration("numOfSimulations")
 startOfMobileDeviceLoop = getConfiguration("startOfMobileDeviceLoop")
 stepOfMobileDeviceLoop = getConfiguration("stepOfMobileDeviceLoop")
@@ -19,7 +20,7 @@ for s in range(numOfSimulations):
             fields = []
             rows = []
             mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
-            filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[2]), '_NEXT_FIT_',
+            filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[0]), '_RANDOM_HOST_',
                                 str(mobileDeviceNumber), 'DEVICES_', 'GRID_LOCATION.log'])
             df = pd.read_csv(filePath, delimiter=';')
 

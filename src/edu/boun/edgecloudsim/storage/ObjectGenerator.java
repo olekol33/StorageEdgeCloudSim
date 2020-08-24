@@ -4,6 +4,7 @@
 package edu.boun.edgecloudsim.storage;
 
 
+import edu.boun.edgecloudsim.core.SimManager;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ObjectGenerator {
+    //TODO: parametrize
     private int numOfDataObjects = 100;
     private int numOfStripes = 500;
     private int numOfDataInStripe = 2;
@@ -23,7 +25,7 @@ public class ObjectGenerator {
     private String objectSize = "16"; //bytes
     private double zipfExponent = 1.07;
     private List<List<Map>> listOfStripes;
-    private int numOfHosts = 8;
+    private int numOfHosts = 14;
 
     public List<List<Map>> getListOfStripes() {
         return listOfStripes;

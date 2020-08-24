@@ -11,6 +11,12 @@ def plotAvgNetworkDelay():
     plotGenericResult(NetworkData, lanDelay, 'Average WLAN Delay for Health App (sec)', 'HEALTH_APP', '')
     plotGenericResult(NetworkData, lanDelay, 'Average WLAN Delay for Infotainment App (sec)', 'INFOTAINMENT_APP', '')
     plotGenericResult(NetworkData, lanDelay, 'Average WLAN Delay for Heavy Comp. App %(sec)', 'HEAVY_COMP_APP', '')
+    
+    plotGenericResult(NetworkData, manDelay, 'Average MAN Delay (sec)', 'ALL_APPS', '')
+    plotGenericResult(NetworkData, manDelay, 'Average MAN Delay for Augmented Reality App (sec)', 'AUGMENTED_REALITY', '')
+    plotGenericResult(NetworkData, manDelay, 'Average MAN Delay for Health App (sec)', 'HEALTH_APP', '')
+    plotGenericResult(NetworkData, manDelay, 'Average MAN Delay for Infotainment App (sec)', 'INFOTAINMENT_APP', '')
+    plotGenericResult(NetworkData, manDelay, 'Average MAN Delay for Heavy Comp. App %(sec)', 'HEAVY_COMP_APP', '')
 
     plotGenericResult(NetworkData, wanDelay, 'Average WAN Delay (sec)', 'ALL_APPS', '')
     plotGenericResult(NetworkData, wanDelay, 'Average WAN Delay for Augmented Reality App (sec)', 'AUGMENTED_REALITY', '')

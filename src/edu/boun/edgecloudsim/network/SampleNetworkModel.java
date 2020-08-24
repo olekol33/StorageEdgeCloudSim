@@ -32,9 +32,9 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@SuppressWarnings("unused")
 	private int manClients;
-	private int[] wanClients;
-	private int[] wlanClients;
-	
+	protected int[] wanClients;
+	protected int[] wlanClients;
+
 	private double lastMM1QueeuUpdateTime;
 	private double ManPoissonMeanForDownload; //seconds
 	private double ManPoissonMeanForUpload; //seconds
@@ -228,6 +228,7 @@ public class SampleNetworkModel extends NetworkModel {
 		double delay = 0;
 		
 		//special case for man communication
+		//TODO:check this case
 		if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
 			return delay = getManUploadDelay();
 		}
@@ -303,8 +304,10 @@ public class SampleNetworkModel extends NetworkModel {
 	public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
 		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]++;
-		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
+		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]++;
+//			System.out.println("+1 in " + accessPointLocation.getServingWlanId() + " . Now there are " + wlanClients[accessPointLocation.getServingWlanId()] + " users");
+		}
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients++;
 		else {
@@ -317,8 +320,10 @@ public class SampleNetworkModel extends NetworkModel {
 	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
 		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]--;
-		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
+		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]--;
+//			System.out.println("-1 in " + accessPointLocation.getServingWlanId() + " . Now there are " + wlanClients[accessPointLocation.getServingWlanId()] + " users");
+		}
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
 			manClients--;
 		else {
@@ -385,10 +390,10 @@ public class SampleNetworkModel extends NetworkModel {
 				ManPoissonMeanForDownload,
 				avgManTaskOutputSize,
 				numberOfMobileDevices);
-		
+		//TODO: Check why only added and not subtracted
 		totalManTaskOutputSize += avgManTaskOutputSize;
 		numOfManTaskForDownload++;
-		
+
 		//System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
 		
 		return result;

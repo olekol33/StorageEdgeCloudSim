@@ -26,14 +26,11 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
-import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
-import org.cloudbus.cloudsim.Datacenter;
-import org.cloudbus.cloudsim.Host;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
-		CREATED, UPLOADING, PROCESSING, DOWNLOADING, COMLETED, REJECTED_DUE_TO_VM_CAPACITY, REJECTED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_MOBILITY
+		CREATED, UPLOADING, PROCESSING, DOWNLOADING, COMPLETED, REJECTED_DUE_TO_VM_CAPACITY, REJECTED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_MOBILITY
 	}
 	
 	public static enum NETWORK_ERRORS {
@@ -109,8 +106,15 @@ public class SimLogger {
 	}
 	//Storage
 	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
-					   int taskOutputSize, String stripeID, String objectID) {
-		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID));
+					   int taskOutputSize, String stripeID, String objectID, int paritiesToRead) {
+		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID,paritiesToRead));
+	}
+	public void setObjectRead(int taskId, String objectRead) {
+		taskMap.get(taskId).setObjectRead(objectRead);
+	}
+
+	public void setHostId(int taskId, int hostId) {
+		taskMap.get(taskId).setHostId(hostId);
 	}
 
 	public void taskStarted(int taskId, double time) {
@@ -302,7 +306,7 @@ public class SimLogger {
 			if (value.isInWarmUpPeriod())
 				continue;
 
-			if (value.getStatus() == SimLogger.TASK_STATUS.COMLETED) {
+			if (value.getStatus() == SimLogger.TASK_STATUS.COMPLETED) {
 				completedTask[value.getTaskType()]++;
 
 				if (value.getVmType() == SimSettings.VM_TYPES.CLOUD_VM.ordinal())
@@ -313,9 +317,9 @@ public class SimLogger {
 					completedTaskOnEdge[value.getTaskType()]++;
 
 				//Oleg
-				objectID[key-1] = value.getObjectID();
+				objectID[key-1] = value.getObjectRead();
 				hostID[key-1] = value.getHostId();
-				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMLETED;
+				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
 //				o++;
 			}
 			else if(value.getStatus() == SimLogger.TASK_STATUS.CREATED ||
@@ -346,7 +350,7 @@ public class SimLogger {
 				objectStatusID[key-1] = value.getStatus();
 			}
 
-			if (value.getStatus() == SimLogger.TASK_STATUS.COMLETED) {
+			if (value.getStatus() == SimLogger.TASK_STATUS.COMPLETED) {
 				cost[value.getTaskType()] += value.getCost();
 				serviceTime[value.getTaskType()] += value.getServiceTime();
 				networkDelay[value.getTaskType()] += value.getNetworkDelay();
@@ -365,7 +369,7 @@ public class SimLogger {
 					wanDelay[value.getTaskType()] += value.getNetworkDelay(NETWORK_DELAY_TYPES.WAN_DELAY);
 				}
 
-				
+				//TODO: check why networkDelay not sum of delays
 				if (value.getVmType() == SimSettings.VM_TYPES.CLOUD_VM.ordinal()) {
 					serviceTimeOnCloud[value.getTaskType()] += value.getServiceTime();
 					processingTimeOnCloud[value.getTaskType()] += (value.getServiceTime() - value.getNetworkDelay());
@@ -803,7 +807,9 @@ class LogItem {
 	private boolean isInWarmUpPeriod;
 	//storage
 	private String stripeID;
-	private String objectID;
+	private String objectToRead;
+	private String objectRead;
+	private int paritiesToRead;
 
 	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize) {
 		taskType = _taskType;
@@ -815,7 +821,7 @@ class LogItem {
 		taskEndTime = 0;
 	}
 	//Storage
-	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _stripeID, String _objectID) {
+	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _stripeID, String _objectID, int _paritiesToRead) {
 		taskType = _taskType;
 		taskLenght = _taskLenght;
 		taskInputType = _taskInputType;
@@ -824,7 +830,9 @@ class LogItem {
 		status = SimLogger.TASK_STATUS.CREATED;
 		taskEndTime = 0;
 		stripeID = _stripeID;
-		objectID = _objectID;
+		objectToRead = _objectID;
+		objectRead = _objectID;
+		paritiesToRead = _paritiesToRead;
 	}
 	
 	public void taskStarted(double time) {
@@ -867,9 +875,13 @@ class LogItem {
 		status = SimLogger.TASK_STATUS.DOWNLOADING;
 	}
 
+	public void setObjectRead(String _objectRead) {
+		objectRead = _objectRead;
+	}
+
 	public void taskEnded(double time) {
 		taskEndTime = time;
-		status = SimLogger.TASK_STATUS.COMLETED;
+		status = SimLogger.TASK_STATUS.COMPLETED;
 	}
 
 	public void taskRejectedDueToVMCapacity(double time, int _vmType) {
@@ -970,8 +982,12 @@ class LogItem {
 		return stripeID;
 	}
 
-	public String getObjectID() {
-		return objectID;
+	public String getObjectToRead() {
+		return objectToRead;
+	}
+
+	public String getObjectRead() {
+		return objectRead;
 	}
 	
 	public double getServiceTime() {
@@ -998,6 +1014,10 @@ class LogItem {
 		return hostId;
 	}
 
+	public void setHostId(int hostId) {
+		this.hostId = hostId;
+	}
+
 	public String toString(int taskId) {
 		String result = taskId + SimSettings.DELIMITER + datacenterId + SimSettings.DELIMITER + hostId
 				+ SimSettings.DELIMITER + vmId + SimSettings.DELIMITER + vmType + SimSettings.DELIMITER + taskType
@@ -1005,7 +1025,7 @@ class LogItem {
 				+ taskOutputSize + SimSettings.DELIMITER + taskStartTime + SimSettings.DELIMITER + taskEndTime
 				+ SimSettings.DELIMITER;
 
-		if (status == SimLogger.TASK_STATUS.COMLETED){
+		if (status == SimLogger.TASK_STATUS.COMPLETED){
 			result += getNetworkDelay() + SimSettings.DELIMITER;
 			result += getNetworkDelay(NETWORK_DELAY_TYPES.WLAN_DELAY) + SimSettings.DELIMITER;
 			result += getNetworkDelay(NETWORK_DELAY_TYPES.MAN_DELAY) + SimSettings.DELIMITER;

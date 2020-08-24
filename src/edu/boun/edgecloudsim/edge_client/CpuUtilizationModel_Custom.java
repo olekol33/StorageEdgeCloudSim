@@ -16,6 +16,7 @@
 
 package edu.boun.edgecloudsim.edge_client;
 
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.cloudbus.cloudsim.UtilizationModel;
 
 import edu.boun.edgecloudsim.core.SimSettings;
@@ -49,11 +50,11 @@ public class CpuUtilizationModel_Custom implements UtilizationModel {
 	public double predictUtilization(SimSettings.VM_TYPES _vmType){
 		int index = 0;
 		if(_vmType == SimSettings.VM_TYPES.EDGE_VM)
-			index = 9;
+			index = LoadGeneratorModel.VM_UTILIZATION_ON_EDGE;
 		else if(_vmType == SimSettings.VM_TYPES.CLOUD_VM)
-			index = 10;
+			index = LoadGeneratorModel.VM_UTILIZATION_ON_CLOUD;
 		else if(_vmType == SimSettings.VM_TYPES.MOBILE_VM)
-			index = 11;
+			index = LoadGeneratorModel.VM_UTILIZATION_ON_MOBILE;
 		else{
 			SimLogger.printLine("Unknown VM Type! Terminating simulation...");
 			System.exit(0);

@@ -23,7 +23,9 @@ public class TaskProperty {
     private int mobileDeviceId;
 
 	private String stripeID;
-	private String objectID;
+	private String objectToRead;
+	private String objectRead;
+	private int paritiesToRead;
     
     public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {
     	startTime=_startTime;
@@ -53,7 +55,10 @@ public class TaskProperty {
 		startTime=_startTime;
 		taskType=_taskType;
 		stripeID = _stripeID;
-		objectID = _objectID;
+		objectToRead = _objectID;
+		objectRead = _objectID;
+		//TODO: make dynamic
+		paritiesToRead = 1;
 
 		inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
 		//TODO: Change size to object size
@@ -97,7 +102,15 @@ public class TaskProperty {
 		return stripeID;
 	}
 
-	public String getObjectID() {
-		return objectID;
+	public String getObjectToRead() {
+		return objectToRead;
+	}
+
+	public String getObjectRead() {
+		return objectRead;
+	}
+
+	public int getParitiesToRead() {
+		return paritiesToRead;
 	}
 }

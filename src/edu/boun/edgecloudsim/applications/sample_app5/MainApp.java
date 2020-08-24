@@ -16,6 +16,7 @@ import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.File;
@@ -30,14 +31,8 @@ public class MainApp {
 	 * Creates main() to run this example
 	 */
 	public static void main(String[] args) {
-		//TESTING TODO: remove
-/*		RedisListHandler.createList();
-//		RedisListHandler.getObjectsFromRedis("object:md*");
-//		System.out.println(RedisListHandler.getObjectLocations("object:d1"));
-		System.out.println(RedisListHandler.getRandomStripeListForDevice(15,42));
-		RedisListHandler.closeConnection();
 		//disable console output of cloudsim library
-		Log.disable();*/
+		Log.disable();
 		
 		//enable console ourput and file output of this application
 		SimLogger.enablePrintLog();

@@ -17,7 +17,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
     private double gridDistanceDelay(Location srcLocation, Location destLocation, double taskSize){
         double taskSizeInKb = taskSize * (double)8; //KB to Kb
         int gridDistance = StaticRangeMobility.getGridDistance(srcLocation,destLocation);
-        double result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[0] * (double) gridDistance );
+        //TODO: temporary. Need mechanism to penalize for distant read.
+        double result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[gridDistance]);
         return result;
     }
 
@@ -35,6 +36,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
         }
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId, CloudSim.clock());
         Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
+//        Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
+
 
         //cloud server to mobile device
         //TODO: update for cloud
@@ -47,14 +50,30 @@ public class StorageNetworkModel extends SampleNetworkModel {
             delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
             //Add delay on network if access point not in range
             //TODO: need to update access point to be nearest from destination
+            //TODO: compare by wlan id
 //            Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
 
-            Location hostLocation = StaticRangeMobility.getDCLocation(sourceDeviceId);
-            if (hostLocation != accessPointLocation)
-                //TODO: add log for reading from distant location
-                delay += gridDistanceDelay(accessPointLocation,hostLocation,task.getCloudletOutputSize());
+/*            Location hostLocation = StaticRangeMobility.getDCLocation(sourceDeviceId);
+            if (!hostLocation.equals(accessPointLocation))
+                delay += gridDistanceDelay(accessPointLocation,hostLocation,task.getCloudletOutputSize());*/
         }
 
         return delay;
+    }
+
+
+    @Override
+    double getWlanDownloadDelay(Location accessPointLocation, double dataSize) {
+        int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
+        double taskSizeInKb = dataSize * (double)8; //KB to Kb
+        double result=0;
+
+        if(numOfWlanUser < experimentalWlanDelay.length)
+            result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
+        else
+            System.out.println("Insufficient delay data at experimentalWlanDelay");
+
+        //System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
+        return result;
     }
 }
