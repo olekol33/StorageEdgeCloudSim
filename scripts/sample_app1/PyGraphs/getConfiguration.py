@@ -34,8 +34,8 @@ def getConfiguration(argType):
     elif (argType == 12):
         return 0 #return 1 if you want to plot errors
     elif (argType == "orchestratorPolicy"):  #13
-         return ['RANDOM_HOST','NEAREST_HOST','NEAREST_WITH_PARITY']
-         # return 'RANDOM_HOST'
+         return ['RANDOM_HOST','NEAREST_HOST','NEAREST_WITH_PARITY', 'NEAREST_OR_PARITY']
+         # return ['NEAREST_OR_PARITY']
     elif (argType == 20):
         return 1 #return 1 if graph is plotted colerful
 """    elif (argType == 21):

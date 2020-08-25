@@ -26,6 +26,8 @@ public class ObjectGenerator {
     private double zipfExponent = 1.07;
     private List<List<Map>> listOfStripes;
     private int numOfHosts = 14;
+    //TODO: fix
+    private static int getNumOfDataInStripeStatic = 2;
 
     public List<List<Map>> getListOfStripes() {
         return listOfStripes;
@@ -202,6 +204,8 @@ public class ObjectGenerator {
         return listOfStripes;
     }
 
-
+    public static int getNumOfDataInStripe() {
+        return getNumOfDataInStripeStatic;
+    }
 
 }

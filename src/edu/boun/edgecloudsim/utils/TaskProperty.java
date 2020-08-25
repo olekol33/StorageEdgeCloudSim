@@ -21,11 +21,12 @@ public class TaskProperty {
     private int taskType;
     private int pesNumber;
     private int mobileDeviceId;
-
+	//storage
 	private String stripeID;
 	private String objectToRead;
 	private String objectRead;
 	private int paritiesToRead;
+	private int ioTaskID;
     
     public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {
     	startTime=_startTime;
@@ -50,13 +51,15 @@ public class TaskProperty {
 	}
 
 	//Storage
-	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _stripeID, String _objectID, ExponentialDistribution[][] expRngList) {
+	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _stripeID, String _objectID, int _ioTaskID,
+						ExponentialDistribution[][] expRngList) {
 		mobileDeviceId=_mobileDeviceId;
 		startTime=_startTime;
 		taskType=_taskType;
 		stripeID = _stripeID;
 		objectToRead = _objectID;
 		objectRead = _objectID;
+		ioTaskID = _ioTaskID;
 		//TODO: make dynamic
 		paritiesToRead = 1;
 
@@ -112,5 +115,9 @@ public class TaskProperty {
 
 	public int getParitiesToRead() {
 		return paritiesToRead;
+	}
+
+	public int getIoTaskID() {
+		return ioTaskID;
 	}
 }

@@ -13,6 +13,7 @@ import java.util.List;
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
+        static private int numOfIOTasks=0;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario) {
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
     }
@@ -20,6 +21,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     @Override
     public void initializeModel() {
         int seed = 42;
+        int ioTaskID=0;
         taskList = new ArrayList<TaskProperty>();
 
         //exponential number generator for file input size, file output size and task length
@@ -90,22 +92,28 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
                 List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
                 for (String objectID:dataObjects){
-                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, expRngList));
+                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, ioTaskID, expRngList));
                 }
-                //Don't read parities for now
-//                for (String objectID:parityObjects){
-//                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, expRngList));
-//                }
+                //Only for NEAREST_WITH_PARITY
+                for (String objectID:parityObjects){
+                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, objectID, ioTaskID, expRngList));
+                }
+                ioTaskID++;
 
 
             }
         }
+        numOfIOTasks = ioTaskID;
     }
 
     @Override
     public int getTaskTypeOfDevice(int deviceId) {
         // TODO Auto-generated method stub
         return taskTypeOfDevices[deviceId];
+    }
+
+    public static int getNumOfIOTasks() {
+        return numOfIOTasks;
     }
 
 }

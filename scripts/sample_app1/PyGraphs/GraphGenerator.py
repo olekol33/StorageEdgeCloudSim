@@ -4,10 +4,12 @@ from plotAvgServiceTime import *
 from plotTaskFailureReason import *
 from plotAvgNetworkDelay import *
 from plotAvgVmUtilization import *
+from plotStripesRead import *
 
-plotAvgFailedTask()
-plotAvgProcessingTime()
-plotAvgServiceTime()
+# plotAvgFailedTask()
+# plotAvgProcessingTime()
+# plotAvgServiceTime()
 #plotTaskFailureReason()
 plotAvgNetworkDelay()
-plotAvgVmUtilization()
+plotStripesRead()
+# plotAvgVmUtilization()

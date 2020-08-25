@@ -48,6 +48,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         task.setObjectRead(edgeTask.getObjectRead());
         task.setStripeID(edgeTask.getStripeID());
         task.setParitiesToRead(edgeTask.getParitiesToRead());
+        task.setIoTaskID(edgeTask.getIoTaskID());
 
         //add related task to log list
         SimLogger.getInstance().addLog(task.getCloudletId(),
@@ -57,6 +58,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 (int)task.getCloudletOutputSize(),
                 task.getStripeID(),
                 task.getObjectToRead(),
+                task.getIoTaskID(),
                 task.getParitiesToRead());
 
 
@@ -123,7 +125,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             }
             else{
                 //SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-                SimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType);
+//                SimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType);
             }
         }
         else

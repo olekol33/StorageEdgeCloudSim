@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!--Affects number of tasks: poisson_interarrival - period between task arrival, data_download - KB-->
 <applications>
 	<application name="AUGMENTED_REALITY">
 		<usage_percentage>30</usage_percentage>

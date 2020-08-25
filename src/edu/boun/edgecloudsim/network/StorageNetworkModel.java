@@ -14,14 +14,14 @@ public class StorageNetworkModel extends SampleNetworkModel {
     }
 
     //Adds delay as function of #slots in grid
-    //TODO: adjust to number of users on link
+/*    //TODO: adjust to number of users on link
     private double gridDistanceDelay(Location srcLocation, Location destLocation, double taskSize){
         double taskSizeInKb = taskSize * (double)8; //KB to Kb
         int gridDistance = StaticRangeMobility.getGridDistance(srcLocation,destLocation);
         //TODO: temporary. Need mechanism to penalize for distant read.
-        double result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[gridDistance]);
+        double result = taskSizeInKb *//*Kb*//* / (experimentalWlanDelay[gridDistance]);
         return result;
-    }
+    }*/
 
 
     @Override
@@ -54,7 +54,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
             //TODO: verify it's correct and matching orchestrator
             Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
             //divide by factor
-            delay /= StaticRangeMobility.getWifiThroughput(deviceLocation,nearestAccessPoint);
+            delay /= StaticRangeMobility.getDistanceDegradation(deviceLocation,nearestAccessPoint);
         }
 
         return delay;

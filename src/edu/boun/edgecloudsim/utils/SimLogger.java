@@ -26,11 +26,14 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
+import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
+import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
-		CREATED, UPLOADING, PROCESSING, DOWNLOADING, COMPLETED, REJECTED_DUE_TO_VM_CAPACITY, REJECTED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_MOBILITY
+		CREATED, UPLOADING, PROCESSING, DOWNLOADING, COMPLETED, REJECTED_DUE_TO_VM_CAPACITY, REJECTED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_MOBILITY,
+		REJECTED_DUE_TO_POLICY//storage
 	}
 	
 	public static enum NETWORK_ERRORS {
@@ -106,8 +109,8 @@ public class SimLogger {
 	}
 	//Storage
 	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
-					   int taskOutputSize, String stripeID, String objectID, int paritiesToRead) {
-		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID,paritiesToRead));
+					   int taskOutputSize, String stripeID, String objectID, int ioTaskID, int paritiesToRead) {
+		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID, ioTaskID, paritiesToRead));
 	}
 	public void setObjectRead(int taskId, String objectRead) {
 		taskMap.get(taskId).setObjectRead(objectRead);
@@ -157,6 +160,10 @@ public class SimLogger {
 		taskMap.get(taskId).taskFailedDueToMobility(time);
 	}
 
+	public void taskRejectedDueToPolicy(int taskId, double time) {
+		taskMap.get(taskId).taskRejectedDueToPolicy(time);
+	}
+
 	public void addVmUtilizationLog(double time, double loadOnEdge, double loadOnCloud, double loadOnMobile) {
 		vmLoadList.add(new VmLoadLogItem(time, loadOnEdge, loadOnCloud, loadOnMobile));
 	}
@@ -164,9 +171,9 @@ public class SimLogger {
 	public void simStopped() throws IOException {
 		int numOfAppTypes = SimSettings.getInstance().getTaskLookUpTable().length;
 
-		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null, objectsFile = null;
-		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null, objectsFW = null;
-		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null, objectsBW = null;
+		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null, objectsFile = null, stripesFile = null;
+		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null, objectsFW = null, stripesFW = null;
+		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null, objectsBW = null, stripesBW = null;;
 
 		// Save generic results to file for each app type. last index is average
 		// of all app types
@@ -229,6 +236,13 @@ public class SimLogger {
 		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
 		Arrays.fill(hostID,-1);
 
+//		double[] timeToReadStripe = new double[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
+//		int[] objectsReadFromStripe = new int[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
+//		Arrays.fill(objectsReadFromStripe,0);
+		Map<Integer, SortedSet<Double>> timeToReadStripe = new HashMap<Integer, SortedSet<Double>>();
+		Map<Integer, String> nameToReadStripe = new HashMap<Integer, String>();
+
+
 
 		// open all files and prepare them for write
 		if (fileLogEnabled) {
@@ -260,6 +274,12 @@ public class SimLogger {
 			objectsFW = new FileWriter(objectsFile, true);
 			objectsBW = new BufferedWriter(objectsFW);
 			appendToFile(objectsBW, "ObjectID;HostID;Status");
+
+			//Stripes log
+			stripesFile = new File(outputFolder, filePrefix + "_STRIPES.log");
+			stripesFW = new FileWriter(stripesFile, true);
+			stripesBW = new BufferedWriter(stripesFW);
+			appendToFile(stripesBW, "ioID;stripe;latency");
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				String fileName = "ALL_APPS_GENERIC.log";
@@ -320,6 +340,31 @@ public class SimLogger {
 				objectID[key-1] = value.getObjectRead();
 				hostID[key-1] = value.getHostId();
 				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
+/*				//Take tail latency
+				switch (objectsReadFromStripe[value.getIoTaskID()]){
+					case 0:
+					{
+						objectsReadFromStripe[value.getIoTaskID()]++;
+						timeToReadStripe[value.getIoTaskID()] = value.getNetworkDelay();
+					}
+					case 1:
+					{
+						objectsReadFromStripe[value.getIoTaskID()]++;
+						if (timeToReadStripe[value.getIoTaskID()] < value.getNetworkDelay())
+							timeToReadStripe[value.getIoTaskID()] = value.getNetworkDelay();
+					}
+					case 2:
+						if (timeToReadStripe[value.getIoTaskID()] > value.getNetworkDelay())
+							timeToReadStripe[value.getIoTaskID()] = value.getNetworkDelay();*/
+				//KV pairs of IO tasks and list of latencies
+				SortedSet<Double> delays = new TreeSet<Double>();
+				if (timeToReadStripe.get(value.getIoTaskID()) != null)
+					delays = timeToReadStripe.get(value.getIoTaskID());
+				delays.add(value.getNetworkDelay());
+				timeToReadStripe.put(value.getIoTaskID(),delays);
+				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
+
+
 //				o++;
 			}
 			else if(value.getStatus() == SimLogger.TASK_STATUS.CREATED ||
@@ -526,6 +571,28 @@ public class SimLogger {
 				objectsBW.write((objectID[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + objectStatusID[i]));
 				objectsBW.newLine();
 			}
+			//Oleg: Analyze stripes
+//			Iterator it = timeToReadStripe.entrySet().iterator();
+//			while (it.hasNext()){
+			for (Integer key : timeToReadStripe.keySet()){
+//				Map<Integer, SortedSet<Double>> pair = it.next();
+//				Map<Integer, SortedSet<Double>> pair = (Map.Entry)it.next();
+//				SortedSet<Double> set = pair.getValue();
+//				TreeSet<Double> set = new TreeSet<Double>();
+				SortedSet<Double> set = timeToReadStripe.get(key);
+				Iterator<Double> itValues = set.iterator();
+				int i = 0;
+				Double current = null;
+				//get NumOfDataInStripe with shortest latency
+				while(itValues.hasNext() && i < ObjectGenerator.getNumOfDataInStripe()) {
+					current = itValues.next();
+					i++;
+				}
+				stripesBW.write((key + SimSettings.DELIMITER + nameToReadStripe.get(key) + SimSettings.DELIMITER + String.valueOf(current)));
+				stripesBW.newLine();
+//				it.remove(); // avoids a ConcurrentModificationException
+
+			}
 
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
@@ -653,6 +720,7 @@ public class SimLogger {
 			vmLoadBW.close();
 			locationBW.close();
 			gridLocationBW.close();
+			stripesBW.close();
 			objectsBW.close();
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				if (i < numOfAppTypes) {
@@ -810,6 +878,7 @@ class LogItem {
 	private String objectToRead;
 	private String objectRead;
 	private int paritiesToRead;
+	private int ioTaskID;
 
 	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize) {
 		taskType = _taskType;
@@ -821,7 +890,7 @@ class LogItem {
 		taskEndTime = 0;
 	}
 	//Storage
-	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _stripeID, String _objectID, int _paritiesToRead) {
+	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _stripeID, String _objectID, int _ioTaskID, int _paritiesToRead) {
 		taskType = _taskType;
 		taskLenght = _taskLenght;
 		taskInputType = _taskInputType;
@@ -832,6 +901,7 @@ class LogItem {
 		stripeID = _stripeID;
 		objectToRead = _objectID;
 		objectRead = _objectID;
+		ioTaskID = _ioTaskID;
 		paritiesToRead = _paritiesToRead;
 	}
 	
@@ -903,6 +973,12 @@ class LogItem {
 			networkError = NETWORK_ERRORS.WAN_ERROR;
 	}
 
+
+	public void taskRejectedDueToPolicy(double time) {
+		taskEndTime = time;
+		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_POLICY;
+	}
+
 	public void taskFailedDueToBandwidth(double time, NETWORK_DELAY_TYPES delayType) {
 		taskEndTime = time;
 		status = SimLogger.TASK_STATUS.UNFINISHED_DUE_TO_BANDWIDTH;
@@ -931,6 +1007,10 @@ class LogItem {
 
 	public double getCost() {
 		return bwCost + cpuCost;
+	}
+
+	public int getIoTaskID() {
+		return ioTaskID;
 	}
 
 	public double getNetworkUploadDelay(NETWORK_DELAY_TYPES delayType) {

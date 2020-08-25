@@ -6,6 +6,8 @@ import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.Location;
+import edu.boun.edgecloudsim.utils.SimLogger;
+import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.util.ArrayList;
@@ -44,17 +46,26 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 //        List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
 
         //Oleg: Get location of object according to policy
+        //if not greedy shouldn't read parity at this stage
+        //TODO: one more policy - read same object from several locations
+        if(!policy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
+            //if first char in object name is 'p' it's parity
+            if(task.getObjectRead().charAt(0) == 'p') {
+                SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock());
+                return selectedVM;
+            }
+        }
         if(policy.equalsIgnoreCase("RANDOM_HOST")){
             int relatedHostId= randomlySelectHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()));
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
-        else if(policy.equalsIgnoreCase("NEAREST_HOST")){
+        else if(policy.equalsIgnoreCase("NEAREST_HOST") || policy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
-        else if(policy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
+        else if(policy.equalsIgnoreCase("NEAREST_OR_PARITY")){
             String dataLocations = RedisListHandler.getObjectLocations(task.getObjectToRead());
             int relatedHostId = selectNearestHostToRead(dataLocations, deviceLocation);
             if (task.getParitiesToRead()>0){

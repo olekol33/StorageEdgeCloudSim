@@ -314,6 +314,7 @@ public class SampleNetworkModel extends NetworkModel {
 			SimLogger.printLine("Error - unknown device id in downloadStarted(). Terminating simulation...");
 			System.exit(0);
 		}
+//		System.out.println("manClients: " + manClients); //To remove
 	}
 
 	@Override
@@ -329,6 +330,7 @@ public class SampleNetworkModel extends NetworkModel {
 			SimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
 			System.exit(0);
 		}
+//		System.out.println("Users in " + accessPointLocation.getServingWlanId() + ": " + wlanClients[accessPointLocation.getServingWlanId()]); //TO remove
 	}
 
 	double getWlanDownloadDelay(Location accessPointLocation, double dataSize) {
@@ -373,12 +375,20 @@ public class SampleNetworkModel extends NetworkModel {
 
         lamda = ((double)1/(double)PoissonMean); //task per seconds
 		mu = bandwidth /*Kbps*/ / avgTaskSize /*Kb*/; //task per seconds
+		//Oleg: Little's law: total time a customer spends in the system
+		//lamda*(double)deviceCount = (numOfManTaskForDownload/lastInterval)
 		double result = (double)1 / (mu-lamda*(double)deviceCount);
 		
 		if(result < 0)
+		{
+			System.out.println("Delay is negative in calculateMM1");
 			return 0;
-		
+		}
+
+//		System.out.println("delay: " + result); //To remove
 		result += propogationDelay;
+		if(result>15)
+			System.out.println("Delay too large in calculateMM1");
 		
 		return (result > 15) ? 0 : result;
 	}
@@ -391,7 +401,7 @@ public class SampleNetworkModel extends NetworkModel {
 				numberOfMobileDevices);
 		totalManTaskOutputSize += avgManTaskOutputSize;
 		numOfManTaskForDownload++;
-
+//			System.out.println("totalManTaskOutputSize: " + totalManTaskOutputSize + " numOfManTaskForDownload: "+ numOfManTaskForDownload); //TO remove
 		//System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
 		return result;
 	}
@@ -418,6 +428,7 @@ public class SampleNetworkModel extends NetworkModel {
 		if(numOfManTaskForDownload != 0){
 			ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
 			avgManTaskOutputSize = totalManTaskOutputSize / numOfManTaskForDownload;
+//			System.out.println("numOfManTaskForDownload: " + numOfManTaskForDownload + " avgManTaskOutputSize: "+ avgManTaskOutputSize); //TO remove
 		}
 		if(numOfManTaskForUpload != 0){
 			ManPoissonMeanForUpload = lastInterval / (numOfManTaskForUpload / (double)numberOfMobileDevices);

@@ -30,6 +30,7 @@ public class Task extends Cloudlet {
 	private String objectRead;
 	private int hostID;
 	private int paritiesToRead;
+	private int ioTaskID;
 
 	public Task(int _mobileDeviceId, int cloudletId, long cloudletLength, int pesNumber,
 			long cloudletFileSize, long cloudletOutputSize,
@@ -103,6 +104,14 @@ public class Task extends Cloudlet {
 
 	public String getObjectToRead() {
 		return objectToRead;
+	}
+
+	public int getIoTaskID() {
+		return ioTaskID;
+	}
+
+	public void setIoTaskID(int ioTaskID) {
+		this.ioTaskID = ioTaskID;
 	}
 
 	public void setObjectToRead(String objectToRead) {
