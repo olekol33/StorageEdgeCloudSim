@@ -31,6 +31,8 @@ public class Task extends Cloudlet {
 	private int hostID;
 	private int paritiesToRead;
 	private int ioTaskID;
+	private int isParity;
+	private int accessHostID;
 
 	public Task(int _mobileDeviceId, int cloudletId, long cloudletLength, int pesNumber,
 			long cloudletFileSize, long cloudletOutputSize,
@@ -121,6 +123,12 @@ public class Task extends Cloudlet {
 	public int getParitiesToRead() {
 		return paritiesToRead;
 	}
+	public int getIsParity() {
+		return isParity;
+	}
+	public void setIsParity(int isParity) {
+		this.isParity = isParity;
+	}
 	public String getObjectRead() {
 		return objectRead;
 	}
@@ -129,6 +137,12 @@ public class Task extends Cloudlet {
 	}
 	public void setObjectRead(String objectRead) {
 		this.objectRead = objectRead;
+	}
+	public void setAccessHostID(int accessHostID) {
+		this.accessHostID = accessHostID;
+	}
+	public int getAccessHostID() {
+		return accessHostID;
 	}
 
 }

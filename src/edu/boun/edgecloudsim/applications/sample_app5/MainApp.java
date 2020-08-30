@@ -49,6 +49,12 @@ public class MainApp {
 			outputFolder = args[3];
 			iterationNumber = Integer.parseInt(args[4]);
 		}
+		else if (args.length == 1){
+			configFile = args[0];
+			applicationsFile = "scripts/sample_app5/config/applications.xml";
+			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
+			outputFolder = "sim_results/ite" + iterationNumber;
+		}
 		else{
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
 			configFile = "scripts/sample_app5/config/default_config.properties";
@@ -83,16 +89,15 @@ public class MainApp {
 
 		if(SS.getFileLoggingEnabled()){
 			SimLogger.enableFileLog();
-			SimUtils.cleanOutputFolder(outputFolder);
+//			SimUtils.cleanOutputFolder(outputFolder);
 		}
-		
+		// Storage: Generate Redis KV list
+		RedisListHandler.createList();
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
-		// Storage: Generate Redis KV list
-		RedisListHandler.createList();
 
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
 		{
@@ -104,6 +109,9 @@ public class MainApp {
 					String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
 					Date ScenarioStartDate = Calendar.getInstance().getTime();
 					now = df.format(ScenarioStartDate);
+
+					String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy};
+					SimUtils.cleanOutputFolderPerConfiguration(outputFolder,simParams);
 					
 					SimLogger.printLine("Scenario started at " + now);
 					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);

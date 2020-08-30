@@ -59,6 +59,36 @@ public class SimUtils {
 			System.exit(0);
 		}
 	}
+	//Oleg: In order not to remove all
+	public static void cleanOutputFolderPerConfiguration(String outputFolder, String[] stringItems){
+    	//clean the folder where the result files will be saved
+		File dir = new File(outputFolder);
+		if(dir.exists() && dir.isDirectory())
+		{
+			for (File f: dir.listFiles())
+			{
+				if (f.exists() && f.isFile())
+				{
+					boolean found = true;
+					for (String item : stringItems) {
+						if (!f.getName().contains(item)) {
+							found = false;
+							continue;
+						}
+					}
+					if(found==true && !f.delete())
+					{
+						SimLogger.printLine("file cannot be cleared: " + f.getAbsolutePath());
+						System.exit(0);
+					}
+				}
+			}
+		}
+		else {
+			SimLogger.printLine("Output folder is not available: " + outputFolder);
+			System.exit(0);
+		}
+	}
 	public static String getTimeDifference(Date startDate, Date endDate){
 		String result = "";
 		long duration  = endDate.getTime() - startDate.getTime();

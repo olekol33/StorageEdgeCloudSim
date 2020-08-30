@@ -4,12 +4,16 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
+import org.cloudbus.cloudsim.core.CloudSim;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class StaticRangeMobility extends MobilityModel {
@@ -26,6 +30,8 @@ public class StaticRangeMobility extends MobilityModel {
 //        ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
 
         //create random number generator for each place
+        Random random = new Random();
+        random.setSeed(42);
 
         //initialize tree maps and position of mobile devices
         //places each mobile device at a location of a DC
@@ -46,10 +52,36 @@ public class StaticRangeMobility extends MobilityModel {
             //start locating user shortly after the simulation started (e.g. 10 seconds)
 //            treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
 //            treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, getDCLocation(randDatacenterId));
-            treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placeDevice());
+            Location placedDevice = randomPlaceDevice(random);
+            try {
+                logAccessLocation(i,placedDevice.getServingWlanId());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
 
         }
 
+    }
+
+    //Logs access locations
+    public void logAccessLocation(int deviceID, int hostID) throws FileNotFoundException {
+        String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_DEVICE_ACCESS.log";
+        File f = new File(savestr);
+
+        PrintWriter out = null;
+        if ( f.exists() && !f.isDirectory() ) {
+            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
+        }
+        else {
+            out = new PrintWriter(savestr);
+            out.append("Device;HostID");
+            out.append("\n");
+        }
+        out.append(Integer.toString(deviceID)
+                + SimSettings.DELIMITER + Integer.toString(hostID));
+        out.append("\n");
+        out.close();
     }
 
     @Override
@@ -107,6 +139,7 @@ public class StaticRangeMobility extends MobilityModel {
         for (int i = 0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
             Location DCLocation = getDCLocation(i);
             //TODO: use getAccessPoint
+            //Checks if x,y of device in range of host, for each host
             if (DCLocation.getXPos()-hostRadius <= x_pos && x_pos <= DCLocation.getXPos()+hostRadius){
                 if (DCLocation.getYPos()-hostRadius <= y_pos && y_pos <= DCLocation.getYPos()+hostRadius)
                     hosts.add(i);
@@ -176,22 +209,30 @@ public class StaticRangeMobility extends MobilityModel {
     }
 
     //Randomly places device on grid within range of at least one host
-    private Location placeDevice(){
+    private Location randomPlaceDevice(Random random){
+        //get grid size
         int xRange = SimSettings.getInstance().getXRange();
         int yRange = SimSettings.getInstance().getYRange();
         int xPos = 0;
         int yPos = 0;
         List<Integer> hosts = new ArrayList<Integer>();
         Location deviceLocation;
-
+        //Initialize list of hosts in proximity of device
         while (hosts.size() == 0){
-            xPos = SimUtils.getRandomNumber(1, xRange);
-            yPos = SimUtils.getRandomNumber(1, yRange);
+            xPos = random.nextInt(xRange)+1;
+            yPos = random.nextInt(yRange)+1;
+//            xPos = SimUtils.getRandomNumber(1, xRange);
+//            yPos = SimUtils.getRandomNumber(1, yRange);
             deviceLocation = new Location(0,0,xPos,yPos);
+            //Returns list of hosts for which device is in range
             hosts = checkLegalPlacement(deviceLocation);
         }
-        if (hosts.size()==1)
-            return getDCLocation(hosts.get(0));
+        //When one host in range it's the only element in the list
+        if (hosts.size()==1) {
+            Location host = getDCLocation(hosts.get(0));
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos);
+        }
+        //When several hosts in range, take nearest
         else {
             Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
             return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos);

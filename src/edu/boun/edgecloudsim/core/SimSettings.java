@@ -95,6 +95,9 @@ public class SimSettings {
 	private int X_RANGE;
 	private int Y_RANGE;
 	private int HOST_RADIUS;
+	private String OBJECT_DIST;
+	private String STRIPE_DIST;
+	private int MAX_PENDING_REQUESTS;
 
     
     // following values are stored for each applications defined in applications.xml
@@ -184,6 +187,10 @@ public class SimSettings {
 				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
 				Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
 				HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
+				OBJECT_DIST = prop.getProperty("object_dist");
+				STRIPE_DIST = prop.getProperty("stripe_dist");
+				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
+
 			}
 			catch (Exception e){
 				System.out.println("Grid ranges incorrect");
@@ -522,6 +529,14 @@ public class SimSettings {
 	public int getHostRadius() {
 		return HOST_RADIUS;
 	}
+
+	public String getObjectDist() {
+		return OBJECT_DIST;
+	}
+
+	public String getStripeDist() {
+		return STRIPE_DIST;
+	}
 	
 	private void isAttribtuePresent(Element element, String key) {
         String value = element.getAttribute(key);
@@ -605,7 +620,6 @@ public class SimSettings {
 			    taskLookUpTable[i][3] = active_period; //active period (sec)
 			    taskLookUpTable[i][4] = idle_period; //idle period (sec)
 			    taskLookUpTable[i][5] = data_upload; //avg data upload (KB)
-				//TODO: update value to match object size
 			    taskLookUpTable[i][6] = data_download; //avg data download (KB)
 			    taskLookUpTable[i][7] = task_length; //avg task length (MI)
 			    taskLookUpTable[i][8] = required_core; //required # of core

@@ -8,6 +8,9 @@ import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import org.cloudbus.cloudsim.core.CloudSim;
 
+import java.io.*;
+//import java.io.IOException;
+
 public class StorageNetworkModel extends SampleNetworkModel {
     public StorageNetworkModel(int _numberOfMobileDevices, String _simScenario) {
         super(_numberOfMobileDevices, _simScenario);
@@ -49,6 +52,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
         else{
             //factor of #accesses
             delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
+            //In case something went wrong
+            if (delay==0)
+                return delay;
             //Add delay on network if access point not in range
             //TODO: need to update access point to be nearest from destination
             //TODO: verify it's correct and matching orchestrator
@@ -66,13 +72,72 @@ public class StorageNetworkModel extends SampleNetworkModel {
         int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
         double taskSizeInKb = dataSize * (double)8; //KB to Kb
         double result=0;
+//        System.out.println("Currently " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
 
         if(numOfWlanUser < experimentalWlanDelay.length)
             result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
-        else
-            System.out.println("Insufficient delay data at experimentalWlanDelay");
+/*        else
+            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");*/
 
+/*        if(numOfWlanUser >80)
+            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
+        else if (numOfWlanUser >60)
+            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
+        else if (numOfWlanUser >40)
+            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
+        else if (numOfWlanUser >20)
+            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");*/
         //System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
         return result;
+    }
+
+    //Logs queue in all hosts in each interval
+    public void logHostQueue() throws FileNotFoundException {
+        String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_HOST_QUEUE.log";
+        File f = new File(savestr);
+
+        PrintWriter out = null;
+        if ( f.exists() && !f.isDirectory() ) {
+            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
+        }
+        else {
+            out = new PrintWriter(savestr);
+            out.append("Time;HostID;Requests");
+            out.append("\n");
+        }
+
+        for (int i=0;i<SimSettings.getInstance().getNumOfEdgeHosts();i++){
+            out.append(CloudSim.clock() + SimSettings.DELIMITER + Integer.toString(i)
+                    + SimSettings.DELIMITER + Integer.toString(wlanClients[i]));
+            out.append("\n");
+        }
+        out.close();
+    }
+    @Override
+    public void updateMM1QueeuModel(){
+        double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
+        lastMM1QueeuUpdateTime = CloudSim.clock();
+
+        //Log queue in edge hosts
+        try {
+            logHostQueue();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if(numOfManTaskForDownload != 0){
+            ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
+            avgManTaskOutputSize = totalManTaskOutputSize / numOfManTaskForDownload;
+//			System.out.println("numOfManTaskForDownload: " + numOfManTaskForDownload + " avgManTaskOutputSize: "+ avgManTaskOutputSize); //TO remove
+        }
+        if(numOfManTaskForUpload != 0){
+            ManPoissonMeanForUpload = lastInterval / (numOfManTaskForUpload / (double)numberOfMobileDevices);
+            avgManTaskInputSize = totalManTaskInputSize / numOfManTaskForUpload;
+        }
+
+        totalManTaskOutputSize = 0;
+        numOfManTaskForDownload = 0;
+        totalManTaskInputSize = 0;
+        numOfManTaskForUpload = 0;
     }
 }

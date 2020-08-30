@@ -61,7 +61,7 @@ def plotStripesRead():
                     rows = []
                     mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop*j
                     filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
-                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_STRIPES.log'])
+                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_readObjects.log'])
                     data = pd.read_csv(filePath, delimiter=';')
                     latencies.at[mobileDeviceNumber,orchestratorPolicy] = data["latency"].mean()
                 # plt.show()
@@ -76,5 +76,5 @@ def plotStripesRead():
                 bbox_inches='tight')
     plt.close(fig)
 
-plotStripesRead()
+# plotStripesRead()
 

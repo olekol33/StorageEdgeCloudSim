@@ -50,7 +50,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         //TODO: one more policy - read same object from several locations
         if(!policy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
             //if first char in object name is 'p' it's parity
-            if(task.getObjectRead().charAt(0) == 'p') {
+            if(task.getIsParity() == 1) {
                 SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock());
                 return selectedVM;
             }
@@ -65,9 +65,10 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
-        else if(policy.equalsIgnoreCase("NEAREST_OR_PARITY")){
+/*        else if(policy.equalsIgnoreCase("NEAREST_OR_PARITY")){
             String dataLocations = RedisListHandler.getObjectLocations(task.getObjectToRead());
             int relatedHostId = selectNearestHostToRead(dataLocations, deviceLocation);
+            //TODO: incorrect parities to read update
             if (task.getParitiesToRead()>0){
                 //Get parity objects
                 String[] stripeObjects = RedisListHandler.getStripeObjects(task.getStripeID());
@@ -90,62 +91,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             }
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
-        }
-
-/*        if(policy.equalsIgnoreCase("RANDOM_FIT")){
-            int randomIndex = SimUtils.getRandomNumber(0, vmArray.size()-1);
-            double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(randomIndex).getVmType());
-            double targetVmCapacity = (double)100 - vmArray.get(randomIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-            if(requiredCapacity <= targetVmCapacity)
-                selectedVM = vmArray.get(randomIndex);
-        }
-        else if(policy.equalsIgnoreCase("WORST_FIT")){
-            double selectedVmCapacity = 0; //start with min value
-            for(int vmIndex=0; vmIndex<vmArray.size(); vmIndex++){
-                double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(vmIndex).getVmType());
-                double targetVmCapacity = (double)100 - vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-                if(requiredCapacity <= targetVmCapacity && targetVmCapacity > selectedVmCapacity){
-                    selectedVM = vmArray.get(vmIndex);
-                    selectedVmCapacity = targetVmCapacity;
-                }
-            }
-        }
-        else if(policy.equalsIgnoreCase("BEST_FIT")){
-            double selectedVmCapacity = 101; //start with max value
-            for(int vmIndex=0; vmIndex<vmArray.size(); vmIndex++){
-                double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(vmIndex).getVmType());
-                double targetVmCapacity = (double)100 - vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-                if(requiredCapacity <= targetVmCapacity && targetVmCapacity < selectedVmCapacity){
-                    selectedVM = vmArray.get(vmIndex);
-                    selectedVmCapacity = targetVmCapacity;
-                }
-            }
-        }
-        else if(policy.equalsIgnoreCase("FIRST_FIT")){
-            for(int vmIndex=0; vmIndex<vmArray.size(); vmIndex++){
-                double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(vmIndex).getVmType());
-                double targetVmCapacity = (double)100 - vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-                if(requiredCapacity <= targetVmCapacity){
-                    selectedVM = vmArray.get(vmIndex);
-                    break;
-                }
-            }
-        }
-        else if(policy.equalsIgnoreCase("NEXT_FIT")){
-            int tries = 0;
-            while(tries < vmArray.size()){
-                lastSelectedVmIndexes[relatedHostId] = (lastSelectedVmIndexes[relatedHostId]+1) % vmArray.size();
-                //Oleg: vm_utilization_on_edge
-                double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(lastSelectedVmIndexes[relatedHostId]).getVmType());
-                double targetVmCapacity = (double)100 - vmArray.get(lastSelectedVmIndexes[relatedHostId]).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-                if(requiredCapacity <= targetVmCapacity){
-                    selectedVM = vmArray.get(lastSelectedVmIndexes[relatedHostId]);
-                    break;
-                }
-                tries++;
-            }*/
-
-
+        }*/
         return selectedVM;
     }
 }

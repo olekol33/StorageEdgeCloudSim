@@ -16,14 +16,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RedisListHandler {
-
+    private static int numOfDataObjects = 50;
+    private static int numOfStripes = 100;
+    private static int numOfDataInStripe = 2;
+    private static int numOfParityInStripe = 1;
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis
     public static void createList(){
-        int numOfDataObjects = 50;
-        int numOfStripes = 100;
-        int numOfDataInStripe = 2;
-        int numOfParityInStripe = 1;
         Jedis jedis = new Jedis("localhost", 6379);
 //        List<List<Map>> listOfStripes = ObjectGenerator.getListOfStripes();
         ObjectGenerator OG = new ObjectGenerator(numOfDataObjects,numOfStripes,numOfDataInStripe,numOfParityInStripe);
@@ -76,12 +75,14 @@ public class RedisListHandler {
     public static String getObjectSize(String objectID){
         Jedis jedis = new Jedis("localhost", 6379);
         String size =  jedis.hget("object:"+objectID,"size");
+        jedis.close();
         return size;
     }
 
     public static String getObjectID(String objectName){
         Jedis jedis = new Jedis("localhost", 6379);
         String id =  jedis.hget(objectName,"id");
+        jedis.close();
         return id;
     }
 
@@ -91,6 +92,7 @@ public class RedisListHandler {
         Jedis jedis = new Jedis("localhost", 6379);
         String dataObjects = jedis.hget("object:"+metadataID,"data");
         String parityObjects = jedis.hget("object:"+metadataID,"parity");
+        jedis.close();
         return new String[] {dataObjects,parityObjects};
 
     }
@@ -107,6 +109,22 @@ public class RedisListHandler {
             listForDevice.add(objectID);
         }
         return listForDevice;
+    }
+
+    public static int getNumOfDataObjects() {
+        return numOfDataObjects;
+    }
+
+    public static int getNumOfStripes() {
+        return numOfStripes;
+    }
+
+    public static int getNumOfDataInStripe() {
+        return numOfDataInStripe;
+    }
+
+    public static int getNumOfParityInStripe() {
+        return numOfParityInStripe;
     }
 
 

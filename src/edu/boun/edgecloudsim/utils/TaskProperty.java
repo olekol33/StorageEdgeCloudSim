@@ -10,6 +10,7 @@
 
 package edu.boun.edgecloudsim.utils;
 
+import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
@@ -27,6 +28,8 @@ public class TaskProperty {
 	private String objectRead;
 	private int paritiesToRead;
 	private int ioTaskID;
+	private int isParity;
+	private int accessHostID;
     
     public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {
     	startTime=_startTime;
@@ -46,13 +49,12 @@ public class TaskProperty {
     	inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
     	outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
     	length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
-    	
     	pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
 	}
 
 	//Storage
 	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _stripeID, String _objectID, int _ioTaskID,
-						ExponentialDistribution[][] expRngList) {
+						int _isParity, ExponentialDistribution[][] expRngList) {
 		mobileDeviceId=_mobileDeviceId;
 		startTime=_startTime;
 		taskType=_taskType;
@@ -60,8 +62,8 @@ public class TaskProperty {
 		objectToRead = _objectID;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
-		//TODO: make dynamic
-		paritiesToRead = 1;
+		paritiesToRead = RedisListHandler.getNumOfParityInStripe();
+		isParity = _isParity;
 
 		inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
 		//TODO: Change size to object size
@@ -119,5 +121,8 @@ public class TaskProperty {
 
 	public int getIoTaskID() {
 		return ioTaskID;
+	}
+	public int getIsParity() {
+		return isParity;
 	}
 }

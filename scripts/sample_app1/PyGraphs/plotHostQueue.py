@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import t
 import itertools
 import pandas as pd
-import matplotlib.pyplot as plt
+import seaborn as sns
 
 #Rows
 TotalTasks = 0
@@ -34,7 +34,8 @@ failedTaskDuetoLanBw = 4
 failedTaskDuetoManBw = 5
 failedTaskDuetoWanBw = 6
 
-def plotReadObjects():
+def plotHostQueue():
+    print("Running " + plotHostQueue.__name__)
     folderPath = getConfiguration("folderPath")
     numOfSimulations = getConfiguration("numOfSimulations")
     startOfMobileDeviceLoop = getConfiguration("startOfMobileDeviceLoop")
@@ -48,40 +49,33 @@ def plotReadObjects():
 #    pos = getConfiguration(9);
 
 
+    numOfDevices = list(range(startOfMobileDeviceLoop,endOfMobileDeviceLoop+1,stepOfMobileDeviceLoop))
+    latencies = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
+    marker = ['*', 'x', 'o', '.', ',']
+    sns.set_palette(sns.color_palette("Dark2", 20))
 
     # initializing the titles and rows list
     for s in range(numOfSimulations):
         for i in range(len(scenarioType)):
             for j in range(numOfMobileDevices):
-                host_frame = {}
-                access_frame = {}
-                fig, ax = plt.subplots(1, 1)
-                fig2, ax2 = plt.subplots(1, 1)
+                mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
                 for o, orchestratorPolicy in enumerate(orchestratorPolicies):
-                    mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
+                    fig, ax = plt.subplots(1, 1)
                     filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
-                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_OBJECTS.log'])
+                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
                     data = pd.read_csv(filePath, delimiter=';')
-                    host_series = data['HostID'].value_counts().sort_index()
-                    access_series = data['AccessID'].value_counts().sort_index()
-                    host_frame[orchestratorPolicy] = host_series
-                    access_frame[orchestratorPolicy] = access_series
-                    # plt.show()
-                placedObjects = pd.DataFrame(host_frame)
-                accessedHosts = pd.DataFrame(access_frame)
+                    for host in data["HostID"].unique():
+                        host_data = data[data["HostID"]==host]
+                        sns.lineplot(x="Time",y="Requests",data=host_data,label=host)
 
-                placedObjects.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax)
-                ax.set_xlabel("Host Number")
-                ax.set_ylabel("Read Objects")
-                fig.suptitle("Placed_Objects_" + str(mobileDeviceNumber))
-                fig.savefig(folderPath + '\\fig\\Placed_Objects_' + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
-                plt.close(fig)
+                    # ax.legend()
+                    ax.set_xlabel("Time")
+                    ax.set_ylabel("Queue Size")
+                    fig.savefig(folderPath + '\\fig\\HOST_QUEUE_' + orchestratorPolicy + "_" +
+                                str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
+                    plt.close(fig)
 
-                accessedHosts.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2)
-                ax2.set_xlabel("Host Number")
-                ax2.set_ylabel("Read Objects")
-                fig2.suptitle("Accessed_Hosts_" + str(mobileDeviceNumber))
-                fig2.savefig(folderPath + '\\fig\\Accessed_Hosts_' + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
-                plt.close(fig2)
 
-plotReadObjects()
+
+plotHostQueue()
+

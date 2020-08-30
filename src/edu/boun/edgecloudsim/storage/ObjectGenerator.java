@@ -5,6 +5,7 @@ package edu.boun.edgecloudsim.storage;
 
 
 import edu.boun.edgecloudsim.core.SimManager;
+import edu.boun.edgecloudsim.core.SimSettings;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -25,7 +26,6 @@ public class ObjectGenerator {
     private String objectSize = "16"; //bytes
     private double zipfExponent = 1.07;
     private List<List<Map>> listOfStripes;
-    private int numOfHosts = 14;
     //TODO: fix
     private static int getNumOfDataInStripeStatic = 2;
 
@@ -58,6 +58,24 @@ public class ObjectGenerator {
     //Returns location between 1-numberOfElements
     private int getZipf(int numberOfElements)  throws NotStrictlyPositiveException {
         return new ZipfDistribution(getRandomGenerator(), numberOfElements, this.zipfExponent).sample();
+    }
+
+    private int getObject(int numberOfElements)  throws NotStrictlyPositiveException {
+        String objectDist = SimSettings.getInstance().getObjectDist();
+        int objectNum = -1;
+        if (objectDist.equals("RANDOM"))
+        {
+            Random ran = new Random();
+            objectNum =  ran.nextInt(numberOfElements);
+        }
+        else if (objectDist.equals("ZIPF"))
+        {
+            objectNum = new ZipfDistribution(getRandomGenerator(), numberOfElements, this.zipfExponent).sample();
+            //need to reduce by 1
+            objectNum--;
+        }
+        return objectNum;
+
     }
     //Creates list of data objects with the naming convention: "object:ID"
     private List<Map> createDataObjects(int numOfDataObjects, String objectSize){
@@ -170,10 +188,10 @@ public class ObjectGenerator {
         for (int i = 0; i< numOfStripes; i++){
             List<Map> dataList = new ArrayList();
             Set<Integer> listOfIndices = new HashSet<Integer>();
-            // Collect data objects with Zipf distribution
+            // Collect data objects with selected distribution
             for (int j = 0; j<numOfDataInStripe; j++) {
-                int objectID = getZipf(numOfDataObjects)-1;
-                //Check if same object not used twice
+                int objectID = getObject(numOfDataObjects);
+                //Check if same object not used twice. If yes, repeat.
                 if (listOfIndices.contains(objectID)){
                     j--;
                 }
@@ -182,7 +200,7 @@ public class ObjectGenerator {
                     dataList.add(dataObjects.get(objectID));
                 }
             }
-            //Check for duplicacy
+            //Check for duplicacy in stripes
             if (existingStripes.contains(listOfIndices)){
                 i--;
                 continue;
@@ -195,7 +213,7 @@ public class ObjectGenerator {
             // Concatenate data and parity
             List<Map> stripe = Stream.concat(dataList.stream(), parityList.stream())
                     .collect(Collectors.toList());
-            stripe = placeObjects(this.numOfHosts,numOfDataInStripe+numOfParityInStripe,stripe);
+            stripe = placeObjects(SimSettings.getInstance().getNumOfEdgeDatacenters(),numOfDataInStripe+numOfParityInStripe,stripe);
             Map<String, String>  metadataObject = createMetadataObject(numOfDataInStripe+numOfParityInStripe,
                     stripe);
             stripe.add(metadataObject);
