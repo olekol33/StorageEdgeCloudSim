@@ -73,7 +73,6 @@ public class StorageNetworkModel extends SampleNetworkModel {
         double taskSizeInKb = dataSize * (double)8; //KB to Kb
         double result=0;
 //        System.out.println("Currently " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
-
         if(numOfWlanUser < experimentalWlanDelay.length)
             result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
 /*        else
@@ -139,5 +138,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
         numOfManTaskForDownload = 0;
         totalManTaskInputSize = 0;
         numOfManTaskForUpload = 0;
+    }
+
+    public int getQueueSize(int hostID){
+        return wlanClients[hostID];
     }
 }

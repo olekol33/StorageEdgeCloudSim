@@ -125,4 +125,8 @@ public class TaskProperty {
 	public int getIsParity() {
 		return isParity;
 	}
+
+	public void setAccessHostID(int accessHostID) {
+		this.accessHostID = accessHostID;
+	}
 }

@@ -213,6 +213,7 @@ public class ObjectGenerator {
             // Concatenate data and parity
             List<Map> stripe = Stream.concat(dataList.stream(), parityList.stream())
                     .collect(Collectors.toList());
+            //place objects
             stripe = placeObjects(SimSettings.getInstance().getNumOfEdgeDatacenters(),numOfDataInStripe+numOfParityInStripe,stripe);
             Map<String, String>  metadataObject = createMetadataObject(numOfDataInStripe+numOfParityInStripe,
                     stripe);

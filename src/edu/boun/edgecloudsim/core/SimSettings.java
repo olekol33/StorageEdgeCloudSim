@@ -98,6 +98,7 @@ public class SimSettings {
 	private String OBJECT_DIST;
 	private String STRIPE_DIST;
 	private int MAX_PENDING_REQUESTS;
+	private int CONGESTED_THRESHOLD;
 
     
     // following values are stored for each applications defined in applications.xml
@@ -190,6 +191,7 @@ public class SimSettings {
 				OBJECT_DIST = prop.getProperty("object_dist");
 				STRIPE_DIST = prop.getProperty("stripe_dist");
 				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
+				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 
 			}
 			catch (Exception e){
@@ -536,6 +538,10 @@ public class SimSettings {
 
 	public String getStripeDist() {
 		return STRIPE_DIST;
+	}
+
+	public int getCONGESTED_THRESHOLD() {
+		return CONGESTED_THRESHOLD;
 	}
 	
 	private void isAttribtuePresent(Element element, String key) {

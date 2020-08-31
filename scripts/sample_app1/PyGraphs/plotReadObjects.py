@@ -84,4 +84,4 @@ def plotReadObjects():
                 fig2.savefig(folderPath + '\\fig\\Accessed_Hosts_' + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
                 plt.close(fig2)
 
-plotReadObjects()
+# plotReadObjects()

@@ -64,10 +64,17 @@ def plotHostQueue():
                     filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
                                         orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
                     data = pd.read_csv(filePath, delimiter=';')
+                    exists = False
                     for host in data["HostID"].unique():
-                        host_data = data[data["HostID"]==host]
-                        sns.lineplot(x="Time",y="Requests",data=host_data,label=host)
-
+                        host_data = data[data["HostID"] == host]
+                        # plot only above threshold
+                        if host_data["Requests"].max()>20:
+                            exists = True
+                            # host_data = data[data["HostID"]==host]
+                            sns.lineplot(x="Time",y="Requests",data=host_data,label=host)
+                    if exists==False:
+                        plt.close(fig)
+                        continue
                     # ax.legend()
                     ax.set_xlabel("Time")
                     ax.set_ylabel("Queue Size")
@@ -77,5 +84,5 @@ def plotHostQueue():
 
 
 
-plotHostQueue()
+# plotHostQueue()
 

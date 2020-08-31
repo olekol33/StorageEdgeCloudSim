@@ -97,6 +97,18 @@ public class StaticRangeMobility extends MobilityModel {
 
         return e.getValue();
     }
+    //In case location is updated (mostly for host update) - only static
+    public void setLocation(int deviceId, Location deviceLocation) {
+//        Map.Entry<Double, Location> e = treeMap.floorEntry(time);
+        treeMapArray.get(deviceId).put(SimSettings.CLIENT_ACTIVITY_START_TIME, deviceLocation);
+
+/*        if(e == null){
+            SimLogger.printLine("impossible is occured! no location is found for the device '" + deviceId + "' at " + time);
+            System.exit(0);
+        }
+
+        return e.getValue();*/
+    }
 
     public static Location getDCLocation(int DatacenterId) {
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
@@ -230,12 +242,12 @@ public class StaticRangeMobility extends MobilityModel {
         //When one host in range it's the only element in the list
         if (hosts.size()==1) {
             Location host = getDCLocation(hosts.get(0));
-            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos);
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
         }
         //When several hosts in range, take nearest
         else {
             Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
-            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos);
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
 //            return host;
         }
 

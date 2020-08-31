@@ -9,16 +9,31 @@
 
 package edu.boun.edgecloudsim.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Location {
 	private int xPos;
 	private int yPos;
 	private int servingWlanId;
 	private int placeTypeIndex;
+
+	//storage
+	private List<Integer> hostsInRange = new ArrayList<Integer>();
+
 	public Location(int _placeTypeIndex, int _servingWlanId, int _xPos, int _yPos){
 		servingWlanId = _servingWlanId;
 		placeTypeIndex=_placeTypeIndex;
 		xPos = _xPos;
 		yPos = _yPos;
+	}
+
+	public Location(int _placeTypeIndex, int _servingWlanId, int _xPos, int _yPos, List<Integer> _hostsInRange ){
+		servingWlanId = _servingWlanId;
+		placeTypeIndex=_placeTypeIndex;
+		xPos = _xPos;
+		yPos = _yPos;
+		hostsInRange = _hostsInRange;
 	}
 	
 	@Override
@@ -49,5 +64,13 @@ public class Location {
 	
 	public int getYPos(){
 		return yPos;
+	}
+
+	public List<Integer> getHostsInRange() {
+		return hostsInRange;
+	}
+
+	public void setServingWlanId(int servingWlanId) {
+		this.servingWlanId = servingWlanId;
 	}
 }

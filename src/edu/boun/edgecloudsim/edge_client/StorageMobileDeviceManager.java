@@ -56,9 +56,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         task.setParitiesToRead(edgeTask.getParitiesToRead());
         task.setIoTaskID(edgeTask.getIoTaskID());
         task.setIsParity(edgeTask.getIsParity());
-        task.setAccessHostID(currentLocation.getServingWlanId());
 
-
+        //todo: update access host
         //add related task to log list
         SimLogger.getInstance().addLog(task.getCloudletId(),
                 task.getTaskType(),
@@ -97,16 +96,30 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 
 //        if(delay>0){
         if(delay>=0){
-
             Vm selectedVM = SimManager.getInstance().getEdgeOrchestrator().getVmToOffload(task, nextHopId);
+            //TODO: perhaps can remove
+            task.setAccessHostID(task.getSubmittedLocation().getServingWlanId());
+            SimLogger.getInstance().setAccessHostID(task.getCloudletId(),task.getSubmittedLocation().getServingWlanId());
+            //TODO: probably can remove
+            edgeTask.setAccessHostID(task.getSubmittedLocation().getServingWlanId());
+
+
+
+
+            //TODO: perhaps can remove
             SimLogger.getInstance().setObjectRead(task.getCloudletId(),task.getObjectRead());
-            SimLogger.getInstance().setHostId(task.getCloudletId(),task.getHostID());
 
             if(selectedVM != null){
+                //TODO: perhaps hostid is redundant if hostindex already used
+                //
+//                SimLogger.getInstance().setHostId(task.getCloudletId(),task.getHostID());
+                SimLogger.getInstance().setHostId(task.getCloudletId(),selectedVM.getHost().getId());
+
                 //set related host id
                 task.setAssociatedDatacenterId(nextHopId);
 
                 //set related host id
+                //TODO: perhaps can remove
                 task.setAssociatedHostId(selectedVM.getHost().getId());
 
                 //set related vm id
@@ -131,7 +144,9 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 SimLogger.getInstance().setUploadDelay(task.getCloudletId(), delay, delayType);
                 if (delay!=0)
                     System.out.println("Upload delay >0");
-
+//                System.out.println("2Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
+//                System.out.println("\n2For ioTask " + task.getIoTaskID() + "object " + task.getObjectRead() +
+//                        " submitted to " + task.getSubmittedLocation().getServingWlanId() + " and " + task.getAccessHostID() + "\n");
                 schedule(getId(), delay, nextEvent, task);
             }
             else{
@@ -197,6 +212,9 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 if(manDelay>=0){
 //                    networkModel.uploadStarted(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID+1);
                     SimLogger.getInstance().setUploadDelay(task.getCloudletId(), manDelay, SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY);
+//                    System.out.println("3Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
+//                    System.out.println("\n3For ioTask " + task.getIoTaskID() + "object " + task.getObjectRead() +
+//                            " submitted to " + task.getSubmittedLocation().getServingWlanId() + " and " + task.getAccessHostID() + "\n");
                     schedule(getId(), manDelay, REQUEST_RECEIVED_BY_REMOTE_EDGE_DEVICE, task);
                 }
                 else
@@ -233,6 +251,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //                        networkModel.downloadStarted(currentLocation, SimSettings.GENERIC_EDGE_DEVICE_ID);
                         networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
                         SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
+//                        System.out.println("4Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
                         schedule(getId(), delay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
                     }
                     else
@@ -257,7 +276,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
 
                 SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
-                
                 break;
             }
             default:
@@ -284,6 +302,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 {
                     networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
                     SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), WanDelay, SimSettings.NETWORK_DELAY_TYPES.WAN_DELAY);
+//                    System.out.println("5Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
                     schedule(getId(), WanDelay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
                 }
                 else
@@ -325,11 +344,13 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 if(task.getSubmittedLocation().getServingWlanId() == currentLocation.getServingWlanId())
                 {
 //                    networkModel.downloadStarted(currentLocation, nextDeviceForNetworkModel);
-//                    networkModel.downloadStarted(task.getSubmittedLocation(), nextDeviceForNetworkModel);
-                    //TODO: recheck, download from host
-                    networkModel.downloadStarted(host.getLocation(), nextDeviceForNetworkModel);
-                    SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, delayType);
 
+                    //TODO: recheck, download from host
+                    networkModel.downloadStarted(task.getSubmittedLocation(), nextDeviceForNetworkModel);
+//                    networkModel.downloadStarted(host.getLocation(), nextDeviceForNetworkModel);
+
+                    SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, delayType);
+//                    System.out.println("1Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
                     schedule(getId(), delay, nextEvent, task);
                 }
                 else

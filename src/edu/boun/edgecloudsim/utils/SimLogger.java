@@ -128,6 +128,10 @@ public class SimLogger {
 		taskMap.get(taskId).setHostId(hostId);
 	}
 
+	public void setAccessHostID(int taskId, int accessHostID) {
+		taskMap.get(taskId).setAccessHostID(accessHostID);
+	}
+
 	public void taskStarted(int taskId, double time) {
 		taskMap.get(taskId).taskStarted(time);
 	}
@@ -298,7 +302,7 @@ public class SimLogger {
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
 			readObjectsFW = new FileWriter(readObjectsFile, true);
 			readObjectsBW = new BufferedWriter(readObjectsFW);
-			appendToFile(readObjectsBW, "ioID;stripe;latency");
+			appendToFile(readObjectsBW, "ioID;stripe;latency;type");
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				String fileName = "ALL_APPS_GENERIC.log";
@@ -661,6 +665,7 @@ public class SimLogger {
 //			while (it.hasNext()){
 			for (Integer key : timeToReadStripe.keySet()){
 				double readDelay=100;
+				String dataTypeRead = "data";
 //				Map<Integer, SortedSet<Double>> pair = it.next();
 //				Map<Integer, SortedSet<Double>> pair = (Map.Entry)it.next();
 //				SortedSet<Double> set = pair.getValue();
@@ -675,14 +680,18 @@ public class SimLogger {
 				if (list.contains(NOT_FINISHED))
 				{
 					//object was read, parity not
-					if (!list.get(0).equals(NOT_FINISHED))
+					if (!list.get(0).equals(NOT_FINISHED)) {
 						readDelay = list.get(0);
+						dataTypeRead = "data";
+					}
 					//data and parity not finished
 					else if(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1).contains(NOT_FINISHED))
 						continue;
 					//parity finished
-					else
+					else {
+						dataTypeRead = "parity";
 						readDelay = Collections.max(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1));
+					}
 				}
 				//if only one object read
 				else if (list.size() ==1)
@@ -705,7 +714,8 @@ public class SimLogger {
 					}
 				}
 
-				readObjectsBW.write((key + SimSettings.DELIMITER + nameToReadStripe.get(key) + SimSettings.DELIMITER + String.valueOf(readDelay)));
+				readObjectsBW.write((key + SimSettings.DELIMITER + nameToReadStripe.get(key) + SimSettings.DELIMITER + String.valueOf(readDelay))+
+						SimSettings.DELIMITER + dataTypeRead);
 				readObjectsBW.newLine();
 //				it.remove(); // avoids a ConcurrentModificationException
 
@@ -1229,6 +1239,10 @@ class LogItem {
 
 	public int getHostId() {
 		return hostId;
+	}
+
+	public void setAccessHostID(int accessHostID) {
+		this.accessHostID = accessHostID;
 	}
 
 	public void setHostId(int hostId) {

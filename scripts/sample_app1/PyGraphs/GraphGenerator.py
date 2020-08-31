@@ -5,6 +5,8 @@ from plotTaskFailureReason import *
 from plotAvgNetworkDelay import *
 from plotAvgVmUtilization import *
 from plotStripesRead import *
+from plotHostQueue import *
+from plotReadObjects import *
 
 # plotAvgFailedTask()
 # plotAvgProcessingTime()
@@ -12,4 +14,6 @@ from plotStripesRead import *
 #plotTaskFailureReason()
 plotAvgNetworkDelay()
 plotStripesRead()
+plotHostQueue()
+plotReadObjects()
 # plotAvgVmUtilization()

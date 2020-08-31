@@ -35,33 +35,8 @@ def getConfiguration(argType):
         return 0 #return 1 if you want to plot errors
     elif (argType == "orchestratorPolicy"):  #13
          # return ['NEAREST_WITH_PARITY']
-         return ['RANDOM_HOST','NEAREST_HOST','NEAREST_WITH_PARITY']
+         return ['RANDOM_HOST','NEAREST_HOST','NEAREST_WITH_PARITY','LEAST_UTIL_IN_RANGE_WITH_PARITY']
          # return ['NEAREST_OR_PARITY']
     elif (argType == 20):
         return 1 #return 1 if graph is plotted colerful
-"""    elif (argType == 21):
-    elif (argType == 22):
-
-    elseif(argType == 21)
-        ret_val=[0.55 0 0]; %color of first line
-    elseif(argType == 22)
-        ret_val=[0 0.15 0.6]; %color of second line
-    elseif(argType == 23)
-        ret_val=[0 0.23 0]; %color of third line
-    elseif(argType == 24)
-        ret_val=[0.6 0 0.6]; %color of fourth line
-    elseif(argType == 25)
-        ret_val=[0.08 0.08 0.08]; %color of fifth line
-    elseif(argType == 26)
-        ret_val=[0 0.8 0.8]; %color of sixth line
-    elseif(argType == 27)
-        ret_val=[0.8 0.4 0]; %color of seventh line
-    elseif(argType == 28)
-        ret_val=[0.8 0.8 0]; %color of eighth line
-    elseif(argType == 40)
-        ret_val={'-k*','-ko','-ks','-kv','-kp','-kd','-kx','-kh'}; %line style (marker) of the colerless line
-    elseif(argType == 50)
-        ret_val={':k*',':ko',':ks',':kv',':kp',':kd',':kx',':kh'}; %line style (marker) of the colerfull line
-    end
-end"""
 

@@ -1,9 +1,14 @@
 package edu.boun.edgecloudsim.edge_orchestrator;
 
 import edu.boun.edgecloudsim.core.SimManager;
+import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
+import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
+import edu.boun.edgecloudsim.network.NetworkModel;
+import edu.boun.edgecloudsim.network.SampleNetworkModel;
+import edu.boun.edgecloudsim.network.StorageNetworkModel;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
@@ -38,8 +43,10 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     @Override
     public EdgeVM selectVmOnHost(Task task) {
         EdgeVM selectedVM = null;
-
-        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+        //TODO: check why this was a problem in LEAST_UTIL_IN_RANGE_WITH_PARITY
+//        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+        //In static scenario
+        Location deviceLocation = task.getSubmittedLocation();
         //in our scenasrio, serving wlan ID is equal to the host id
         //because there is only one host in one place
 //        int relatedHostId=deviceLocation.getServingWlanId();
@@ -48,7 +55,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         //Oleg: Get location of object according to policy
         //if not greedy shouldn't read parity at this stage
         //TODO: one more policy - read same object from several locations
-        if(!policy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
+        if(!policy.equalsIgnoreCase("NEAREST_WITH_PARITY") && !policy.equalsIgnoreCase("LEAST_UTIL_IN_RANGE_WITH_PARITY")){
             //if first char in object name is 'p' it's parity
             if(task.getIsParity() == 1) {
                 SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock());
@@ -61,6 +68,38 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             selectedVM = vmArray.get(0);
         }
         else if(policy.equalsIgnoreCase("NEAREST_HOST") || policy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
+            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            selectedVM = vmArray.get(0);
+        }
+        if(policy.equalsIgnoreCase("LEAST_UTIL_IN_RANGE_WITH_PARITY")){
+            NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+            int queueSize = ((StorageNetworkModel)networkModel).getQueueSize(deviceLocation.getServingWlanId());
+            int selectedHost = deviceLocation.getServingWlanId();
+            //if queue size larger than threshold and more than 1 host is range
+            if (queueSize > SimSettings.getInstance().getCONGESTED_THRESHOLD() && deviceLocation.getHostsInRange().size() > 1){
+
+                for (int host : deviceLocation.getHostsInRange()){
+                    //if same device
+                    if (host == deviceLocation.getServingWlanId())
+                        continue;
+                    //If shorter queue, read from here
+                    if (((StorageNetworkModel)networkModel).getQueueSize(host) < queueSize){
+                        queueSize = ((StorageNetworkModel)networkModel).getQueueSize(host);
+                        selectedHost = host;
+                    }
+                }
+                if (deviceLocation.getServingWlanId() != selectedHost) {
+                    System.out.println("\nFor ioTask " + task.getIoTaskID() + "object " + task.getObjectRead() +
+                            " replaced " + deviceLocation.getServingWlanId() + " to " + selectedHost + "\n");
+                    deviceLocation.setServingWlanId(selectedHost);
+                    task.setSubmittedLocation(deviceLocation);
+                    MobilityModel mobilityModel = SimManager.getInstance().getMobilityModel();
+                    ((StaticRangeMobility)mobilityModel).setLocation(task.getMobileDeviceId(),deviceLocation);
+
+
+                }
+            }
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
