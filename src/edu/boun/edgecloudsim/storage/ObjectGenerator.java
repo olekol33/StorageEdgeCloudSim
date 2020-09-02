@@ -28,6 +28,7 @@ public class ObjectGenerator {
     private List<List<Map>> listOfStripes;
     //TODO: fix
     private static int getNumOfDataInStripeStatic = 2;
+    Random ran = new Random();
 
     public List<List<Map>> getListOfStripes() {
         return listOfStripes;
@@ -39,6 +40,7 @@ public class ObjectGenerator {
         this.numOfDataInStripe = numOfDataInStripe;
         this.numOfParityInStripe = numOfParityInStripe;
         listOfStripes = createStripes(numOfStripes,numOfDataInStripe,numOfParityInStripe,numOfDataObjects);
+        ran.setSeed(seed);
     }
 
 
@@ -65,7 +67,6 @@ public class ObjectGenerator {
         int objectNum = -1;
         if (objectDist.equals("RANDOM"))
         {
-            Random ran = new Random();
             objectNum =  ran.nextInt(numberOfElements);
         }
         else if (objectDist.equals("ZIPF"))

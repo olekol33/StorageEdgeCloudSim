@@ -540,7 +540,7 @@ public class SimSettings {
 		return STRIPE_DIST;
 	}
 
-	public int getCONGESTED_THRESHOLD() {
+	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;
 	}
 	

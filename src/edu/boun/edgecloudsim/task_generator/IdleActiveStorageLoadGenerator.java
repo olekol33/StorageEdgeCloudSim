@@ -1,15 +1,18 @@
 package edu.boun.edgecloudsim.task_generator;
 
 import edu.boun.edgecloudsim.core.SimSettings;
+import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
@@ -20,7 +23,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     @Override
     public void initializeModel() {
-        int seed = 42;
         int ioTaskID=0;
         taskList = new ArrayList<TaskProperty>();
 
@@ -67,7 +69,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)
             double virtualTime = activePeriodStartTime;
             //storage
-            double samplingMethod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][SAMPLING_METHOD];
+//            double samplingMethod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][SAMPLING_METHOD];
 
             ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
             while(virtualTime < simulationTime) {
@@ -85,8 +87,18 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     virtualTime = activePeriodStartTime;
                     continue;
                 }
-                //TODO: add WOR policy
-                String stripeID = RedisListHandler.getRandomStripeListForDevice(1,seed).get(0);
+                String stripeDist = SimSettings.getInstance().getStripeDist();
+                String stripeID = null;
+                if (stripeDist.equals("RANDOM"))
+                {
+                    stripeID = RedisListHandler.getRandomStripeListForDevice(1).get(0);
+                }
+                else if (stripeDist.equals("ZIPF"))
+                {
+                    stripeID = RedisListHandler.getZipfStripeListForDevice(1).get(0);
+                }
+
+//                String stripeID = RedisListHandler.getRandomStripeListForDevice(1,seed).get(0);
                 String[] stripeObjects = RedisListHandler.getStripeObjects(stripeID);
                 List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
                 List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));

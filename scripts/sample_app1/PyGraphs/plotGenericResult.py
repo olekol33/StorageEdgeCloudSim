@@ -24,6 +24,8 @@ cost = 8
 vmLoadOnClould = 8
 failedTaskDueToVmCapacity = 9
 failedTaskDuetoMobility = 10
+failedTaskDuetoPolicy = 11
+failedTaskDuetoQueue = 12
 
 lanDelay = 0
 manDelay = 1
@@ -80,6 +82,7 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                             elif calculatePercentage == 'percentage_for_failed':
     #                            readData = [row for idx, row in enumerate(rows) if idx in (1, 0)]
                                 totalTask = float(rows[TotalTasks][failedTask])
+                                # print(orchestratorPolicy+str(mobileDeviceNumber))
                                 value = (100 * value) / totalTask
                             all_results[s, i, j] = value
                     except FileNotFoundError:

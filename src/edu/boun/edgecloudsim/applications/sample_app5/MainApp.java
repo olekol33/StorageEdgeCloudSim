@@ -79,19 +79,18 @@ public class MainApp {
 		else {
 			System.out.println("Output folder exists");
 		}
-
 		//load settings from configuration file
 		SimSettings SS = SimSettings.getInstance();
 		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile) == false){
 			SimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}
-
 		if(SS.getFileLoggingEnabled()){
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
 		// Storage: Generate Redis KV list
+		RedisListHandler.closeConnection();
 		RedisListHandler.createList();
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();

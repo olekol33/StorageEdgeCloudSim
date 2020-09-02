@@ -4,6 +4,9 @@ package edu.boun.edgecloudsim.storage;
 
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.utils.SimLogger;
+import org.apache.commons.math3.distribution.ZipfDistribution;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937c;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
@@ -16,6 +19,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RedisListHandler {
+    private static RandomGenerator rand = null;
+    private static double zipfExponent = 1.07;
     private static int numOfDataObjects = 50;
     private static int numOfStripes = 100;
     private static int numOfDataInStripe = 2;
@@ -97,14 +102,44 @@ public class RedisListHandler {
 
     }
     //Returns random list of stripes
-    public static List<String> getRandomStripeListForDevice(int numOfStripesToRead, int seed){
+    public static List<String> getRandomStripeListForDevice(int numOfStripesToRead){
         List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
         List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
-        Random random = new Random();
-//        random.setSeed(seed);
+//        Random random = new Random();
+//        random.setSeed(ObjectGenerator.seed);
         for (int i=0; i<numOfStripesToRead; i++) {
             //Get index such that 0<=index<= size of list
-            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
+            getRandomGenerator().nextInt(listOfMetadataObjects.size());
+//            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
+            int metadataIndex = getRandomGenerator().nextInt(listOfMetadataObjects.size());
+            String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
+            listForDevice.add(objectID);
+        }
+        return listForDevice;
+    }
+
+    //Initialize random generator by seed
+    private static void initRan(int seed) {
+//        rand = new Well19937c(System.currentTimeMillis() + System.identityHashCode(this));
+        rand = new Well19937c(seed);
+    }
+
+    private static RandomGenerator getRandomGenerator() {
+        if (rand == null) {
+            initRan(ObjectGenerator.seed);
+        }
+        return rand;
+    }
+
+    public static List<String> getZipfStripeListForDevice(int numOfStripesToRead){
+        List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
+        List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
+        for (int i=0; i<numOfStripesToRead; i++) {
+            //Get index such that 0<=index<= size of list
+            int metadataIndex = new ZipfDistribution(getRandomGenerator(), numOfStripes, zipfExponent).sample();
+            //need to reduce by 1
+            metadataIndex--;
+//            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
             String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
             listForDevice.add(objectID);
         }

@@ -52,14 +52,19 @@ def plotHostQueue():
     numOfDevices = list(range(startOfMobileDeviceLoop,endOfMobileDeviceLoop+1,stepOfMobileDeviceLoop))
     latencies = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     marker = ['*', 'x', 'o', '.', ',']
-    sns.set_palette(sns.color_palette("Dark2", 20))
+    # sns.set_palette(sns.color_palette("Dark2", 20))
+    NUM_COLORS = 11
+    cm = plt.get_cmap('gist_rainbow')
+
 
     # initializing the titles and rows list
     for s in range(numOfSimulations):
         for i in range(len(scenarioType)):
             for j in range(numOfMobileDevices):
                 mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
+
                 for o, orchestratorPolicy in enumerate(orchestratorPolicies):
+                    c = 0
                     fig, ax = plt.subplots(1, 1)
                     filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
                                         orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
@@ -71,7 +76,9 @@ def plotHostQueue():
                         if host_data["Requests"].max()>20:
                             exists = True
                             # host_data = data[data["HostID"]==host]
-                            sns.lineplot(x="Time",y="Requests",data=host_data,label=host)
+                            sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))
+                        c += 1
+
                     if exists==False:
                         plt.close(fig)
                         continue
@@ -84,5 +91,4 @@ def plotHostQueue():
 
 
 
-# plotHostQueue()
 

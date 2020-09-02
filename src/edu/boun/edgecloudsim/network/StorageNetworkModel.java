@@ -89,6 +89,21 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
         return result;
     }
+    @Override
+    double getWanDownloadDelay(Location accessPointLocation, double dataSize) {
+        int numOfWanUser = wanClients[accessPointLocation.getServingWlanId()];
+        double taskSizeInKb = dataSize * (double)8; //KB to Kb
+        double result=0;
+
+        if(numOfWanUser < experimentalWanDelay.length)
+            result = taskSizeInKb /*Kb*/ / (experimentalWanDelay[numOfWanUser]) /*Kbps*/;
+        else
+            System.out.println("Insufficient delay data at experimentalWanDelay for " + wanClients[accessPointLocation.getServingWlanId()]+ " tasks");
+
+        //System.out.println("--> " + numOfWanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
+
+        return result;
+    }
 
     //Logs queue in all hosts in each interval
     public void logHostQueue() throws FileNotFoundException {

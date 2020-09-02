@@ -252,9 +252,11 @@ public class SimLogger {
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] accessID = new int[taskMap.size()];
+		int [] readSource = new int[taskMap.size()];
 		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
 		Arrays.fill(hostID,-1);
 		Arrays.fill(accessID,-1);
+		Arrays.fill(readSource,-1);
 
 //		double[] timeToReadStripe = new double[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
 //		int[] objectsReadFromStripe = new int[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
@@ -296,7 +298,7 @@ public class SimLogger {
 			objectsFile = new File(outputFolder, filePrefix + "_OBJECTS.log");
 			objectsFW = new FileWriter(objectsFile, true);
 			objectsBW = new BufferedWriter(objectsFW);
-			appendToFile(objectsBW, "ObjectID;HostID;AccessID;Status");
+			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrcStatus");
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
@@ -381,6 +383,7 @@ public class SimLogger {
 				hostID[key-1] = value.getHostId();
 				accessID[key-1] = value.getAccessHostID();
 				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
+				readSource[key-1] = value.getDatacenterId();
 /*				//Take tail latency
 				switch (objectsReadFromStripe[value.getIoTaskID()]){
 					case 0:
@@ -657,7 +660,8 @@ public class SimLogger {
 			for (int i = 0; i < taskMap.size(); i++) {
 				if (objectID[i] == null)
 					continue;
-				objectsBW.write((objectID[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] + SimSettings.DELIMITER + objectStatusID[i]));
+				objectsBW.write((objectID[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
+						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + objectStatusID[i]));
 				objectsBW.newLine();
 			}
 			//Oleg: Analyze readObjects
@@ -1158,6 +1162,10 @@ class LogItem {
 
 	public int getAccessHostID() {
 		return accessHostID;
+	}
+
+	public int getDatacenterId() {
+		return datacenterId;
 	}
 
 	public double getNetworkUploadDelay(NETWORK_DELAY_TYPES delayType) {

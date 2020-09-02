@@ -36,7 +36,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         SimSettings.NETWORK_DELAY_TYPES delayType;
         double delay=0;
 
-        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+//        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
 
         //create a task
         Task task = createTask(edgeTask);
@@ -261,7 +261,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 }
                 else
                 {
-                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
+                    SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
+//                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
                 }
 
                 break;

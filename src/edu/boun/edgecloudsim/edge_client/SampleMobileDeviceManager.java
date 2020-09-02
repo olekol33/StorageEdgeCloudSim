@@ -302,8 +302,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 
 		int nextHopId = SimManager.getInstance().getEdgeOrchestrator().getDeviceToOffload(task);
 		if(nextHopId == SimSettings.CLOUD_DATACENTER_ID){
-//			delay = networkModel.getUploadDelay(task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
-			delay = 0;
+			delay = networkModel.getUploadDelay(task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
 			vmType = SimSettings.VM_TYPES.CLOUD_VM.ordinal();
 			nextEvent = REQUEST_RECEIVED_BY_CLOUD;
 			delayType = NETWORK_DELAY_TYPES.WAN_DELAY;

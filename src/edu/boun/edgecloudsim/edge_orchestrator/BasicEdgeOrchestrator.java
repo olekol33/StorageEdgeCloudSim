@@ -49,8 +49,6 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 	}
 
 	@Override
-	//Oleg: Set type of device to offload. When single tier - it's edge host.
-	//TODO: Need both edge and cloud
 	public int getDeviceToOffload(Task task) {
 		int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		if(!simScenario.equals("SINGLE_TIER")){
