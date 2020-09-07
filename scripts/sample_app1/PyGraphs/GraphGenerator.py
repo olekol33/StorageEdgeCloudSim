@@ -11,9 +11,11 @@ from plotReadObjects import *
 # plotAvgFailedTask()
 # plotAvgProcessingTime()
 # plotAvgServiceTime()
+
 plotTaskFailureReason()
 plotAvgNetworkDelay()
 plotStripesRead()
 plotHostQueue()
 plotReadObjects()
+
 # plotAvgVmUtilization()

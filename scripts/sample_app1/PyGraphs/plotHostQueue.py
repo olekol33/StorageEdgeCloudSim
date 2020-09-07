@@ -73,7 +73,7 @@ def plotHostQueue():
                     for host in data["HostID"].unique():
                         host_data = data[data["HostID"] == host]
                         # plot only above threshold
-                        if host_data["Requests"].max()>20:
+                        if host_data["Requests"].max()>10:
                             exists = True
                             # host_data = data[data["HostID"]==host]
                             sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))

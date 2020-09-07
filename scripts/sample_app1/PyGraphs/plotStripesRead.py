@@ -98,5 +98,4 @@ def plotStripesRead():
 
     plt.close(fig2)
 
-plotStripesRead()
 

@@ -42,6 +42,7 @@ public class SimManager extends SimEntity {
 	
 	private String simScenario;
 	private String orchestratorPolicy;
+	private String objectPlacementPolicy;
 	private int numOfMobileDevice;
 	private NetworkModel networkModel;
 	private MobilityModel mobilityModel;
@@ -98,6 +99,53 @@ public class SimManager extends SimEntity {
 		
 		instance = this;
 	}
+	//Storage
+	public SimManager(ScenarioFactory _scenarioFactory, int _numOfMobileDevice, String _simScenario,
+					  String _orchestratorPolicy, String _objectPlacementPolicy) throws Exception {
+		super("SimManager");
+		simScenario = _simScenario;
+		scenarioFactory = _scenarioFactory;
+		numOfMobileDevice = _numOfMobileDevice;
+		orchestratorPolicy = _orchestratorPolicy;
+		objectPlacementPolicy = _objectPlacementPolicy;
+
+		SimLogger.print("Creating tasks...");
+		loadGeneratorModel = scenarioFactory.getLoadGeneratorModel();
+		loadGeneratorModel.initializeModel();
+		SimLogger.printLine("Done, ");
+
+		SimLogger.print("Creating device locations...");
+		mobilityModel = scenarioFactory.getMobilityModel();
+		mobilityModel.initialize();
+		SimLogger.printLine("Done.");
+
+		//Generate network model
+		networkModel = scenarioFactory.getNetworkModel();
+		networkModel.initialize();
+
+		//Generate edge orchestrator
+		edgeOrchestrator = scenarioFactory.getEdgeOrchestrator();
+		edgeOrchestrator.initialize();
+
+		//Create Physical Servers
+		edgeServerManager = scenarioFactory.getEdgeServerManager();
+		edgeServerManager.initialize();
+
+		//Create Physical Servers on cloud
+		cloudServerManager = scenarioFactory.getCloudServerManager();
+		cloudServerManager.initialize();
+
+		//Create Physical Servers on mobile devices
+		mobileServerManager = scenarioFactory.getMobileServerManager();
+		mobileServerManager.initialize();
+
+		//Create Client Manager
+		mobileDeviceManager = scenarioFactory.getMobileDeviceManager();
+		mobileDeviceManager.initialize();
+
+		instance = this;
+	}
+
 	
 	public static SimManager getInstance(){
 		return instance;
@@ -131,6 +179,10 @@ public class SimManager extends SimEntity {
 
 	public String getOrchestratorPolicy(){
 		return orchestratorPolicy;
+	}
+
+	public String getObjectPlacementPolicy() {
+		return objectPlacementPolicy;
 	}
 	
 	public ScenarioFactory getScenarioFactory(){
@@ -205,6 +257,12 @@ public class SimManager extends SimEntity {
 		schedule(getId(), SimSettings.getInstance().getSimulationTime(), STOP_SIMULATION);
 		
 		SimLogger.printLine("Done.");
+	}
+	//Oleg: create single task in mid sim run
+	public void createNewTask(){
+		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
+		TaskProperty lastTask = taskList.get(taskList.size() - 1);
+		schedule(getId(), lastTask.getStartTime(), CREATE_TASK, lastTask);
 	}
 
 	@Override

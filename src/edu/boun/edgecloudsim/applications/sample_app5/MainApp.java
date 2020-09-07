@@ -89,9 +89,6 @@ public class MainApp {
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
-		// Storage: Generate Redis KV list
-		RedisListHandler.closeConnection();
-		RedisListHandler.createList();
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);
@@ -104,53 +101,60 @@ public class MainApp {
 			{
 				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
 				{
-					String simScenario = SS.getSimulationScenarios()[k];
-					String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
-					Date ScenarioStartDate = Calendar.getInstance().getTime();
-					now = df.format(ScenarioStartDate);
+					for(int p=0; p<SS.getObjectPlacement().length; p++) {
+						String objectPlacementPolicy  = SS.getObjectPlacement()[p];
+						String simScenario = SS.getSimulationScenarios()[k];
+						String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
+						Date ScenarioStartDate = Calendar.getInstance().getTime();
+						now = df.format(ScenarioStartDate);
 
-					String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy};
-					SimUtils.cleanOutputFolderPerConfiguration(outputFolder,simParams);
-					
-					SimLogger.printLine("Scenario started at " + now);
-					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
-					SimLogger.printLine("Duration: " + SS.getSimulationTime()/3600 + " hour(s) - Poisson: " +
-							SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
-					SimLogger.getInstance().simStarted(outputFolder,"SIMRESULT_" + simScenario + "_"  + orchestratorPolicy + "_" + j + "DEVICES");
-					
-					try
-					{
-						// First step: Initialize the CloudSim package. It should be called
-						// before creating any entities.
-						int num_user = 2;   // number of grid users
-						Calendar calendar = Calendar.getInstance();
-						boolean trace_flag = false;  // mean trace events
-				
-						// Initialize the CloudSim library
-						CloudSim.init(num_user, calendar, trace_flag, 0.01);
-						
-						// Generate EdgeCloudsim Scenario Factory
-						ScenarioFactory sampleFactory = new SampleScenarioFactory(j,SS.getSimulationTime(), orchestratorPolicy, simScenario);
+						// Storage: Generate Redis KV list
+						RedisListHandler.closeConnection();
+						RedisListHandler.createList(objectPlacementPolicy);
 
-						
-						// Generate EdgeCloudSim Simulation Manager
-						SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
-						
-						// Start simulation
-						manager.startSimulation();
+						String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
+						SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
-					}
-					catch (Exception e)
-					{
-						SimLogger.printLine("The simulation has been terminated due to an unexpected error");
-						e.printStackTrace();
-						System.exit(0);
-					}
-					
-					Date ScenarioEndDate = Calendar.getInstance().getTime();
-					now = df.format(ScenarioEndDate);
-					SimLogger.printLine("Scenario finished at " + now +  ". It took " + SimUtils.getTimeDifference(ScenarioStartDate,ScenarioEndDate));
-					SimLogger.printLine("----------------------------------------------------------------------");
+
+						SimLogger.printLine("Scenario started at " + now);
+						SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy +  " - Placement: " + objectPlacementPolicy +
+								" - #iteration: " + iterationNumber);
+						SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
+								SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
+						SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
+								"_" + objectPlacementPolicy + "_" + j + "DEVICES");
+
+						try {
+							// First step: Initialize the CloudSim package. It should be called
+							// before creating any entities.
+							int num_user = 2;   // number of grid users
+							Calendar calendar = Calendar.getInstance();
+							boolean trace_flag = false;  // mean trace events
+
+							// Initialize the CloudSim library
+							CloudSim.init(num_user, calendar, trace_flag, 0.01);
+
+							// Generate EdgeCloudsim Scenario Factory
+							ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario);
+
+
+							// Generate EdgeCloudSim Simulation Manager
+							SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
+
+							// Start simulation
+							manager.startSimulation();
+
+						} catch (Exception e) {
+							SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+							e.printStackTrace();
+							System.exit(0);
+						}
+
+						Date ScenarioEndDate = Calendar.getInstance().getTime();
+						now = df.format(ScenarioEndDate);
+						SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
+						SimLogger.printLine("----------------------------------------------------------------------");
+					}//End of placement policies loop
 				}//End of orchestrators loop
 			}//End of scenarios loop
 		}//End of mobile devices loop

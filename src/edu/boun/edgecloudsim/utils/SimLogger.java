@@ -252,11 +252,10 @@ public class SimLogger {
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] accessID = new int[taskMap.size()];
-		int [] readSource = new int[taskMap.size()];
+		String [] readSource = new String[taskMap.size()];
 		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
 		Arrays.fill(hostID,-1);
 		Arrays.fill(accessID,-1);
-		Arrays.fill(readSource,-1);
 
 //		double[] timeToReadStripe = new double[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
 //		int[] objectsReadFromStripe = new int[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
@@ -282,9 +281,9 @@ public class SimLogger {
 				failBW = new BufferedWriter(failFW);
 			}
 
-			vmLoadFile = new File(outputFolder, filePrefix + "_VM_LOAD.log");
+/*			vmLoadFile = new File(outputFolder, filePrefix + "_VM_LOAD.log");
 			vmLoadFW = new FileWriter(vmLoadFile, true);
-			vmLoadBW = new BufferedWriter(vmLoadFW);
+			vmLoadBW = new BufferedWriter(vmLoadFW);*/
 
 			locationFile = new File(outputFolder, filePrefix + "_LOCATION.log");
 			locationFW = new FileWriter(locationFile, true);
@@ -298,15 +297,18 @@ public class SimLogger {
 			objectsFile = new File(outputFolder, filePrefix + "_OBJECTS.log");
 			objectsFW = new FileWriter(objectsFile, true);
 			objectsBW = new BufferedWriter(objectsFW);
-			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrcStatus");
+			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Status");
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
 			readObjectsFW = new FileWriter(readObjectsFile, true);
 			readObjectsBW = new BufferedWriter(readObjectsFW);
-			appendToFile(readObjectsBW, "ioID;stripe;latency;type");
+			appendToFile(readObjectsBW, "ioID;latency;type");
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
+				//print only summary for now
+				if (i<numOfAppTypes)
+					continue;
 				String fileName = "ALL_APPS_GENERIC.log";
 
 				if (i < numOfAppTypes) {
@@ -329,14 +331,14 @@ public class SimLogger {
 				appendToFile(successBW, "#auto generated file!");
 				appendToFile(failBW, "#auto generated file!");
 			}
-			if(MATLAB) {
+/*			if(MATLAB) {
 				appendToFile(vmLoadBW, "#auto generated file!");
 				appendToFile(locationBW, "#auto generated file!");
 			}
 			else {
 				appendToFile(vmLoadBW, "#time;loadOnEdge;loadOnCloud;loadOnMobile");
 				appendToFile(locationBW, "#Time;Attractiveness 0;Attractiveness 1;Attractiveness 2");
-			}
+			}*/
 			appendToFile(gridLocationBW, "ItemType;ItemID;xPos;yPos");
 		}
 
@@ -363,7 +365,7 @@ public class SimLogger {
 					//or append
 					delays.add(1, REJECTED);
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
+//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 				continue;
 			}
 
@@ -383,7 +385,11 @@ public class SimLogger {
 				hostID[key-1] = value.getHostId();
 				accessID[key-1] = value.getAccessHostID();
 				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
-				readSource[key-1] = value.getDatacenterId();
+				if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
+					readSource[key-1] = "Cloud";
+				else if (value.getDatacenterId()==SimSettings.GENERIC_EDGE_DEVICE_ID)
+					readSource[key-1] = "Edge";
+
 /*				//Take tail latency
 				switch (objectsReadFromStripe[value.getIoTaskID()]){
 					case 0:
@@ -415,7 +421,7 @@ public class SimLogger {
 					//or append
 					delays.add(1,value.getNetworkDelay());
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
+//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 
 
 //				o++;
@@ -438,7 +444,7 @@ public class SimLogger {
 					//or append
 					delays.add(1, NOT_FINISHED);
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
+//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 
 
 				uncompletedTask[value.getTaskType()]++;
@@ -465,7 +471,7 @@ public class SimLogger {
 					//or append
 					delays.add(1, NOT_FINISHED);
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
+//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 
 				failedTask[value.getTaskType()]++;
 
@@ -608,8 +614,8 @@ public class SimLogger {
 			totalVmLoadOnEdge += entry.getEdgeLoad();
 			totalVmLoadOnCloud += entry.getCloudLoad();
 			totalVmLoadOnMobile += entry.getMobileLoad();
-			if (fileLogEnabled)
-				appendToFile(vmLoadBW, entry.toString());
+/*			if (fileLogEnabled)
+				appendToFile(vmLoadBW, entry.toString());*/
 		}
 
 		if (fileLogEnabled) {
@@ -667,6 +673,7 @@ public class SimLogger {
 			//Oleg: Analyze readObjects
 //			Iterator it = timeToReadStripe.entrySet().iterator();
 //			while (it.hasNext()){
+			int notFinished=0;
 			for (Integer key : timeToReadStripe.keySet()){
 				double readDelay=100;
 				String dataTypeRead = "data";
@@ -680,17 +687,27 @@ public class SimLogger {
 				if (list.contains(REJECTED))
 					continue;
 				//TODO: support case of not finished
+				//TODO: check case one element and NOT_FINISHED
 				//if one of the tasks hasn't finished
 				if (list.contains(NOT_FINISHED))
 				{
+					//TODO: check this
+					if((list.get(0).equals(NOT_FINISHED)) && list.size()==1){
+//						System.out.println("Entire list not finished");
+						notFinished++;
+						continue;
+					}
+
 					//object was read, parity not
 					if (!list.get(0).equals(NOT_FINISHED)) {
 						readDelay = list.get(0);
 						dataTypeRead = "data";
 					}
 					//data and parity not finished
-					else if(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1).contains(NOT_FINISHED))
+					else if(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1).contains(NOT_FINISHED)) {
+						notFinished++;
 						continue;
+					}
 					//parity finished
 					else {
 						dataTypeRead = "parity";
@@ -709,24 +726,32 @@ public class SimLogger {
 					try {
 						//if data and parity were read, take the best one
 						//TODO: fix parameters
+						//parity delay
 						readDelay = Collections.max(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1));
-						if (readDelay > list.get(0))
+						if (readDelay > list.get(0)) {
 							readDelay = list.get(0);
+							dataTypeRead = "data";
+						}
+						else
+							dataTypeRead = "parity";
 					}
 					catch (Exception e){
 						System.out.println("Failed to extract stripe latency");
 					}
 				}
 
-				readObjectsBW.write((key + SimSettings.DELIMITER + nameToReadStripe.get(key) + SimSettings.DELIMITER + String.valueOf(readDelay))+
+				readObjectsBW.write((key + SimSettings.DELIMITER + String.valueOf(readDelay))+
 						SimSettings.DELIMITER + dataTypeRead);
 				readObjectsBW.newLine();
 //				it.remove(); // avoids a ConcurrentModificationException
 
 			}
-
+			System.out.println("Not finished: " + notFinished);
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
+				//print only summary for now
+				if (i<numOfAppTypes)
+					continue;
 
 				if (i < numOfAppTypes) {
 					// if related app is not used in this simulation, just
@@ -850,12 +875,15 @@ public class SimLogger {
 				successBW.close();
 				failBW.close();
 			}
-			vmLoadBW.close();
+//			vmLoadBW.close();
 			locationBW.close();
 			gridLocationBW.close();
 			readObjectsBW.close();
 			objectsBW.close();
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
+				//print only summary for now
+				if (i<numOfAppTypes)
+					continue;
 				if (i < numOfAppTypes) {
 					// if related app is not used in this simulation, just
 					// discard it

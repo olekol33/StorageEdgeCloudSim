@@ -33,12 +33,13 @@ public class Task extends Cloudlet {
 	private int ioTaskID;
 	private int isParity;
 	private int accessHostID;
+	private long length, inputFileSize, outputFileSize;
 
 	public Task(int _mobileDeviceId, int cloudletId, long cloudletLength, int pesNumber,
-			long cloudletFileSize, long cloudletOutputSize,
-			UtilizationModel utilizationModelCpu,
-			UtilizationModel utilizationModelRam,
-			UtilizationModel utilizationModelBw) {
+				long cloudletFileSize, long cloudletOutputSize,
+				UtilizationModel utilizationModelCpu,
+				UtilizationModel utilizationModelRam,
+				UtilizationModel utilizationModelBw) {
 		super(cloudletId, cloudletLength, pesNumber, cloudletFileSize,
 				cloudletOutputSize, utilizationModelCpu, utilizationModelRam,
 				utilizationModelBw);
@@ -143,6 +144,30 @@ public class Task extends Cloudlet {
 	}
 	public int getAccessHostID() {
 		return accessHostID;
+	}
+
+	public long getLength() {
+		return length;
+	}
+
+	public void setLength(long length) {
+		this.length = length;
+	}
+
+	public long getInputFileSize() {
+		return inputFileSize;
+	}
+
+	public void setInputFileSize(long inputFileSize) {
+		this.inputFileSize = inputFileSize;
+	}
+
+	public long getOutputFileSize() {
+		return outputFileSize;
+	}
+
+	public void setOutputFileSize(long outputFileSize) {
+		this.outputFileSize = outputFileSize;
 	}
 
 }

@@ -12,10 +12,12 @@ import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
+import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -62,7 +64,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         //Oleg: Get location of object according to policy
         //if not greedy shouldn't read parity at this stage
         //TODO: one more policy - read same object from several locations
-        if(!policy.equalsIgnoreCase("NEAREST_WITH_PARITY")
+/*        if(!policy.equalsIgnoreCase("NEAREST_WITH_PARITY")
                 && !policy.equalsIgnoreCase("LEAST_UTIL_IN_RANGE_WITH_PARITY")
                 && !policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED") ){
             //if first char in object name is 'p' it's parity
@@ -70,19 +72,35 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock());
                 return selectedVM;
             }
-        }
+        }*/
+
+
         if(policy.equalsIgnoreCase("RANDOM_HOST")){
             int relatedHostId= randomlySelectHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()));
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
-        else if(policy.equalsIgnoreCase("NEAREST_HOST") || policy.equalsIgnoreCase("NEAREST_WITH_PARITY") ||
-                policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED") ){
+        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
+            NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+            int selectedHost = deviceLocation.getServingWlanId();
+            int queueSize = ((StorageNetworkModel)networkModel).getQueueSize(selectedHost);
+            //if queue size larger than threshold
+            if (queueSize >= SimSettings.getInstance().getCongestedThreshold()){
+                LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+                ((IdleActiveStorageLoadGenerator)loadGeneratorModel).createParityTask(task);
+//                SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
+//                return selectedVM;
+            }
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
-        if(policy.equalsIgnoreCase("LEAST_UTIL_IN_RANGE_WITH_PARITY")){
+        else if(policy.equalsIgnoreCase("NEAREST_HOST") ){
+            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            selectedVM = vmArray.get(0);
+        }
+/*        else if(policy.equalsIgnoreCase("LEAST_UTIL_IN_RANGE_WITH_PARITY")){
             NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
             int queueSize = ((StorageNetworkModel)networkModel).getQueueSize(deviceLocation.getServingWlanId());
             int selectedHost = deviceLocation.getServingWlanId();
@@ -113,7 +131,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
-        }
+        }*/
 /*        else if(policy.equalsIgnoreCase("NEAREST_OR_PARITY")){
             String dataLocations = RedisListHandler.getObjectLocations(task.getObjectToRead());
             int relatedHostId = selectNearestHostToRead(dataLocations, deviceLocation);
@@ -198,5 +216,9 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             selectedVM = selectVmOnHost(task);
 
         return selectedVM;
+    }
+
+    public String getPolicy() {
+        return policy;
     }
 }

@@ -4,6 +4,7 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -28,13 +29,51 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
 
     @Override
+    public void initialize() {
+        wanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+        wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+
+        int numOfApp = SimSettings.getInstance().getTaskLookUpTable().length;
+        SimSettings SS = SimSettings.getInstance();
+        for(int taskIndex=0; taskIndex<numOfApp; taskIndex++) {
+            if(SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.USAGE_PERCENTAGE] == 0) {
+                SimLogger.printLine("Usage percantage of task " + taskIndex + " is 0! Terminating simulation...");
+                System.exit(0);
+            }
+            else{
+                double weight = SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.USAGE_PERCENTAGE]/(double)100;
+
+                //assume half of the tasks use the MAN at the beginning
+                //Oleg: why multiply by 4?
+//                ManPoissonMeanForDownload += ((SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.POISSON_INTERARRIVAL])*weight) * 4;
+
+                ManPoissonMeanForDownload += ((SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.POISSON_INTERARRIVAL])*weight);
+                ManPoissonMeanForUpload = ManPoissonMeanForDownload;
+
+                avgManTaskInputSize += SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.DATA_UPLOAD]*weight;
+                avgManTaskOutputSize += SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.DATA_DOWNLOAD]*weight;
+            }
+        }
+        //Oleg: not sure why do average after weight calculation
+/*        ManPoissonMeanForDownload = ManPoissonMeanForDownload/numOfApp;
+        ManPoissonMeanForUpload = ManPoissonMeanForUpload/numOfApp;
+        avgManTaskInputSize = avgManTaskInputSize/numOfApp;
+        avgManTaskOutputSize = avgManTaskOutputSize/numOfApp;*/
+
+        lastMM1QueeuUpdateTime = SimSettings.CLIENT_ACTIVITY_START_TIME;
+        totalManTaskOutputSize = 0;
+        numOfManTaskForDownload = 0;
+        totalManTaskInputSize = 0;
+        numOfManTaskForUpload = 0;
+    }
+
+    @Override
     //Download from edge (sourceDevice) to device (destDevice)
     public double getDownloadDelay(int sourceDeviceId, int destDeviceId, Task task) {
         double delay = 0;
 
         //special case for man communication
         // When edge downloads from itself
-        //TODO: check, avoid entering in
         if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
             return delay = getManDownloadDelay();
         }

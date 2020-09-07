@@ -53,12 +53,11 @@ public class TaskProperty {
 	}
 
 	//Storage
-	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _stripeID, String _objectID, int _ioTaskID,
+	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
 						int _isParity, ExponentialDistribution[][] expRngList) {
 		mobileDeviceId=_mobileDeviceId;
 		startTime=_startTime;
 		taskType=_taskType;
-		stripeID = _stripeID;
 		objectToRead = _objectID;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
@@ -69,6 +68,25 @@ public class TaskProperty {
 		//TODO: Change size to object size
 		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
 		length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
+
+		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+	}
+
+	//Storage
+	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
+						int _isParity, long _inputFileSize, long _outputFileSize, long _length) {
+		mobileDeviceId=_mobileDeviceId;
+		startTime=_startTime;
+		taskType=_taskType;
+		objectToRead = _objectID;
+		objectRead = _objectID;
+		ioTaskID = _ioTaskID;
+		paritiesToRead = RedisListHandler.getNumOfParityInStripe();
+		isParity = _isParity;
+
+		inputFileSize = _inputFileSize;
+		outputFileSize =_outputFileSize;
+		length = _length;
 
 		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
 

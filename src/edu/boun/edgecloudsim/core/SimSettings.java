@@ -86,7 +86,9 @@ public class SimSettings {
     
     private String[] SIMULATION_SCENARIOS;
     private String[] ORCHESTRATOR_POLICIES;
-    
+
+	private String[] OBJECT_PLACEMENT;
+
     // mean waiting time (minute) is stored for each place types
     private double[] mobilityLookUpTable;
 
@@ -177,7 +179,8 @@ public class SimSettings {
 			ORCHESTRATOR_POLICIES = prop.getProperty("orchestrator_policies").split(",");
 			
 			SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
-			
+			OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
+
 			//avg waiting time in a place (min)
 			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
 			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
@@ -482,6 +485,10 @@ public class SimSettings {
 	public String[] getOrchestratorPolicies()
 	{
 		return ORCHESTRATOR_POLICIES;
+	}
+
+	public String[] getObjectPlacement() {
+		return OBJECT_PLACEMENT;
 	}
 	
 	/**

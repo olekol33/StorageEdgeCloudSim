@@ -2,9 +2,11 @@
 //TODO: Add constants (PARITY,DATA,MD) to parity (object:md*)
 package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import org.apache.commons.math3.distribution.ZipfDistribution;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import redis.clients.jedis.Jedis;
@@ -27,17 +29,22 @@ public class RedisListHandler {
     private static int numOfParityInStripe = 1;
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis
-    public static void createList(){
+    public static void createList(String objectPlacementPolicy){
         Jedis jedis = new Jedis("localhost", 6379);
 //        List<List<Map>> listOfStripes = ObjectGenerator.getListOfStripes();
-        ObjectGenerator OG = new ObjectGenerator(numOfDataObjects,numOfStripes,numOfDataInStripe,numOfParityInStripe);
+        ObjectGenerator OG = new ObjectGenerator(numOfDataObjects,numOfStripes,numOfDataInStripe,numOfParityInStripe, objectPlacementPolicy);
         List<List<Map>> listOfStripes = OG.getListOfStripes();
-        int i = 0;
-        for (List<Map> stripe : listOfStripes){
+//        int i = 0;
+/*        for (List<Map> stripe : listOfStripes){
             for (Map<String,String> KV : stripe){
                 jedis.hmset("object:"+KV.get("id"),KV);
             }
-        }
+        }*/
+        List<Map> listOfObjects = new ArrayList<Map>(OG.getDataObjects());
+        listOfObjects.addAll(OG.getParityObjects());
+        listOfObjects.addAll(OG.getMetadataObjects());
+        for (Map<String,String> KV : listOfObjects)
+            jedis.hmset("object:"+KV.get("id"),KV);
         jedis.close();
         SimLogger.print("Created Redis KV with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
@@ -101,7 +108,7 @@ public class RedisListHandler {
         return new String[] {dataObjects,parityObjects};
 
     }
-    //Returns random list of stripes
+/*    //Returns random list of stripes
     public static List<String> getRandomStripeListForDevice(int numOfStripesToRead){
         List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
         List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
@@ -116,7 +123,39 @@ public class RedisListHandler {
             listForDevice.add(objectID);
         }
         return listForDevice;
+    }*/
+
+    public static String getObject(){
+        String dist=SimSettings.getInstance().getStripeDist();
+        List<String> listOfDataObjects = getObjectsFromRedis("object:d*");
+        int objectNum = -1;
+        if (dist.equals("RANDOM"))
+        {
+            objectNum =  getRandomGenerator().nextInt(numOfDataObjects);
+        }
+        else if (dist.equals("ZIPF"))
+        {
+            objectNum = new ZipfDistribution(getRandomGenerator(), numOfDataObjects, zipfExponent).sample();
+            //need to reduce by 1
+            objectNum--;
+        }
+        return getObjectID(listOfDataObjects.get(objectNum));
     }
+
+/*    public static List<String> getZipfStripeListForDevice(int numOfStripesToRead){
+        List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
+        List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
+        for (int i=0; i<numOfStripesToRead; i++) {
+            //Get index such that 0<=index<= size of list
+            int metadataIndex = new ZipfDistribution(getRandomGenerator(), numOfStripes, zipfExponent).sample();
+            //need to reduce by 1
+            metadataIndex--;
+//            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
+            String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
+            listForDevice.add(objectID);
+        }
+        return listForDevice;
+    }*/
 
     //Initialize random generator by seed
     private static void initRan(int seed) {
@@ -131,20 +170,7 @@ public class RedisListHandler {
         return rand;
     }
 
-    public static List<String> getZipfStripeListForDevice(int numOfStripesToRead){
-        List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
-        List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
-        for (int i=0; i<numOfStripesToRead; i++) {
-            //Get index such that 0<=index<= size of list
-            int metadataIndex = new ZipfDistribution(getRandomGenerator(), numOfStripes, zipfExponent).sample();
-            //need to reduce by 1
-            metadataIndex--;
-//            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
-            String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
-            listForDevice.add(objectID);
-        }
-        return listForDevice;
-    }
+
 
     public static int getNumOfDataObjects() {
         return numOfDataObjects;

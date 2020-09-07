@@ -52,7 +52,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 	
 	@Override
 	public LoadGeneratorModel getLoadGeneratorModel() {
-		return new IdleActiveStorageLoadGenerator(numOfMobileDevice, simulationTime, simScenario);
+		return new IdleActiveStorageLoadGenerator(numOfMobileDevice, simulationTime, simScenario, orchestratorPolicy);
 	}
 
 	@Override
