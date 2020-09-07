@@ -45,6 +45,7 @@ def plotHostQueue():
     scenarioType = getConfiguration("scenarioType");
     legends = getConfiguration("legends");
     orchestratorPolicies = getConfiguration("orchestratorPolicy");
+    objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
 
@@ -64,30 +65,31 @@ def plotHostQueue():
                 mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
 
                 for o, orchestratorPolicy in enumerate(orchestratorPolicies):
-                    c = 0
-                    fig, ax = plt.subplots(1, 1)
-                    filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
-                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
-                    data = pd.read_csv(filePath, delimiter=';')
-                    exists = False
-                    for host in data["HostID"].unique():
-                        host_data = data[data["HostID"] == host]
-                        # plot only above threshold
-                        if host_data["Requests"].max()>10:
-                            exists = True
-                            # host_data = data[data["HostID"]==host]
-                            sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))
-                        c += 1
+                    for p, objectPlacement in enumerate(objectPlacements):
+                        c = 0
+                        fig, ax = plt.subplots(1, 1)
+                        filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
+                                            orchestratorPolicy, '_', objectPlacement, '_',str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
+                        data = pd.read_csv(filePath, delimiter=';')
+                        exists = False
+                        for host in data["HostID"].unique():
+                            host_data = data[data["HostID"] == host]
+                            # plot only above threshold
+                            if host_data["Requests"].max()>30:
+                                exists = True
+                                # host_data = data[data["HostID"]==host]
+                                sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))
+                            c += 1
 
-                    if exists==False:
+                        if exists==False:
+                            plt.close(fig)
+                            continue
+                        # ax.legend()
+                        ax.set_xlabel("Time")
+                        ax.set_ylabel("Queue Size")
+                        fig.savefig(folderPath + '\\fig\\HOST_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
+                                    str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
                         plt.close(fig)
-                        continue
-                    # ax.legend()
-                    ax.set_xlabel("Time")
-                    ax.set_ylabel("Queue Size")
-                    fig.savefig(folderPath + '\\fig\\HOST_QUEUE_' + orchestratorPolicy + "_" +
-                                str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
-                    plt.close(fig)
 
 
 

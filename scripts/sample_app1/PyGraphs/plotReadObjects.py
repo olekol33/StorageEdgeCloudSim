@@ -44,6 +44,7 @@ def plotReadObjects():
     scenarioType = getConfiguration("scenarioType");
     legends = getConfiguration("legends");
     orchestratorPolicies = getConfiguration("orchestratorPolicy");
+    objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
 
@@ -55,33 +56,46 @@ def plotReadObjects():
             for j in range(numOfMobileDevices):
                 host_frame = {}
                 access_frame = {}
-                fig, ax = plt.subplots(1, 1)
-                fig2, ax2 = plt.subplots(1, 1)
-                for o, orchestratorPolicy in enumerate(orchestratorPolicies):
-                    mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
-                    filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
-                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_OBJECTS.log'])
-                    data = pd.read_csv(filePath, delimiter=';')
-                    host_series = data['HostID'].value_counts().sort_index()
-                    access_series = data['AccessID'].value_counts().sort_index()
-                    host_frame[orchestratorPolicy] = host_series
-                    access_frame[orchestratorPolicy] = access_series
-                    # plt.show()
-                placedObjects = pd.DataFrame(host_frame)
-                accessedHosts = pd.DataFrame(access_frame)
+                fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
+                fig2, ax2 = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
+                for p, objectPlacement in enumerate(objectPlacements):
+                    for o, orchestratorPolicy in enumerate(orchestratorPolicies):
+                        mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
+                        filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
+                                            orchestratorPolicy, '_', objectPlacement, '_', str(mobileDeviceNumber), 'DEVICES_OBJECTS.log'])
+                        data = pd.read_csv(filePath, delimiter=';')
+                        host_series = data['HostID'].value_counts().sort_index()
+                        access_series = data['AccessID'].value_counts().sort_index()
+                        host_frame[orchestratorPolicy] = host_series
+                        access_frame[orchestratorPolicy] = access_series
+                        # plt.show()
+                    placedObjects = pd.DataFrame(host_frame)
+                    accessedHosts = pd.DataFrame(access_frame)
 
-                placedObjects.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax)
-                ax.set_xlabel("Host Number")
-                ax.set_ylabel("Read Objects")
+                    placedObjects.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax[p])
+                    accessedHosts.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[p])
+
+                for axis in ax:
+                    axis.legend()
+                    axis.set_xlabel("Host Number")
+                    axis.set_ylabel("Read Objects")
+                ax[0].set_title(objectPlacements[0])
+                ax[1].set_title(objectPlacements[1])
+                ax[2].set_title(objectPlacements[2])
                 fig.suptitle("Placed_Objects_" + str(mobileDeviceNumber))
-                fig.savefig(folderPath + '\\fig\\Placed_Objects_' + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
+                fig.savefig(folderPath + '\\fig\\Placed_Objects_' + "_" + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
                 plt.close(fig)
 
-                accessedHosts.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2)
-                ax2.set_xlabel("Host Number")
-                ax2.set_ylabel("Read Objects")
+
+                for axis in ax2:
+                    axis.legend()
+                    axis.set_xlabel("Host Number")
+                    axis.set_ylabel("Read Objects")
+                ax2[0].set_title(objectPlacements[0])
+                ax2[1].set_title(objectPlacements[1])
+                ax2[2].set_title(objectPlacements[2])
                 fig2.suptitle("Accessed_Hosts_" + str(mobileDeviceNumber))
-                fig2.savefig(folderPath + '\\fig\\Accessed_Hosts_' + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
+                fig2.savefig(folderPath + '\\fig\\Accessed_Hosts_' + "_" + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
                 plt.close(fig2)
 
 # plotReadObjects()

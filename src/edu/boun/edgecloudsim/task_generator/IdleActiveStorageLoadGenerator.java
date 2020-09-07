@@ -146,13 +146,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return taskTypeOfDevices[deviceId];
     }
 
-    public void createParityTask(Task task){
+    public boolean createParityTask(Task task){
         int taskType = task.getTaskType();
         int isParity=1;
         List<String> mdObjects = RedisListHandler.getObjectsFromRedis("object:md*_"+task.getObjectRead()+"_*");
         //no parities
         if (mdObjects.size()==0)
-            return;
+            return false;
 //        String stripeID = task.getStripeID();
         //TODO: currently selects first stripe
         String stripeID = RedisListHandler.getObjectID(mdObjects.get(0));
@@ -174,6 +174,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     objectID, task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
             SimManager.getInstance().createNewTask();
         }
+        return true;
 
 //        schedule(getId(), loadGeneratorModel.getTaskList().get(i).getStartTime(), CREATE_TASK, loadGeneratorModel.getTaskList().get(i));
     }

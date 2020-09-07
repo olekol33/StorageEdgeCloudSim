@@ -45,57 +45,67 @@ def plotStripesRead():
     scenarioType = getConfiguration("scenarioType");
     legends = getConfiguration("legends");
     orchestratorPolicies = getConfiguration("orchestratorPolicy");
+    objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
 
-    fig, ax = plt.subplots(1, 1)
+    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(10,20))
     numOfDevices = list(range(startOfMobileDeviceLoop,endOfMobileDeviceLoop+1,stepOfMobileDeviceLoop))
     latencies = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     type_read_data = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     type_read_parity = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     marker = ['*', 'x', 'o', '.', ',']
-    for o, orchestratorPolicy in enumerate(orchestratorPolicies):
-        all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
-        # initializing the titles and rows list
-        for s in range(numOfSimulations):
-            for i in range(len(scenarioType)):
-                for j in range(numOfMobileDevices):
-                    fields = []
-                    rows = []
-                    mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop*j
-                    filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
-                                        orchestratorPolicy, '_', str(mobileDeviceNumber), 'DEVICES_READOBJECTS.log'])
-                    data = pd.read_csv(filePath, delimiter=';')
-                    latencies.at[mobileDeviceNumber,orchestratorPolicy] = data["latency"].mean()
-                    type_read_data.at[mobileDeviceNumber,orchestratorPolicy] = data["type"].value_counts()["data"]
-                    if "parity" in data["type"].unique():
-                        type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = data["type"].value_counts()["parity"]
-                    else:
-                        type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = 0
-                # plt.show()
-                # placedObjects = pd.DataFrame(frame)
-        ax.scatter(numOfDevices, latencies[orchestratorPolicy], marker=marker[o])
-        ax.plot(numOfDevices, latencies[orchestratorPolicy], marker=marker[o], label=orchestratorPolicy)
+    for p, objectPlacement in enumerate(objectPlacements):
+        for o, orchestratorPolicy in enumerate(orchestratorPolicies):
+            all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
+            # initializing the titles and rows list
+            for s in range(numOfSimulations):
+                for i in range(len(scenarioType)):
+                    for j in range(numOfMobileDevices):
+                        fields = []
+                        rows = []
+                        mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop*j
+                        filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
+                                            orchestratorPolicy, '_', objectPlacement, '_', str(mobileDeviceNumber), 'DEVICES_READOBJECTS.log'])
+                        data = pd.read_csv(filePath, delimiter=';')
+                        latencies.at[mobileDeviceNumber,orchestratorPolicy] = data["latency"].mean()
+                        type_read_data.at[mobileDeviceNumber,orchestratorPolicy] = data["type"].value_counts()["data"]
+                        if "parity" in data["type"].unique():
+                            type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = data["type"].value_counts()["parity"]
+                        else:
+                            type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = 0
+                    # plt.show()
+                    # placedObjects = pd.DataFrame(frame)
+            ax[p].scatter(numOfDevices, latencies[orchestratorPolicy], marker=marker[o])
+            ax[p].plot(numOfDevices, latencies[orchestratorPolicy], marker=marker[o], label=orchestratorPolicy)
 
-    ax.legend()
-    ax.set_xlabel("Devices")
-    ax.set_ylabel("Average Data Read Latency[s]")
+        fig2, ax2 = plt.subplots(2, 1, figsize=(15, 10))
+        type_read_data.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[0])
+        type_read_parity.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[1])
+        for axis in ax2:
+            axis.set_xlabel("Devices")
+            axis.set_ylabel("Reads")
+        ax2[0].set_title("Data Reads")
+        ax2[1].set_title("Parity Reads")
+        fig2.tight_layout(h_pad=2)
+        fig2.savefig(folderPath + '\\fig\\Read_By_Type' + "_" + objectPlacement + '.png',
+                     bbox_inches='tight')
+
+        plt.close(fig2)
+
+
+    for axis in ax:
+        axis.legend()
+        axis.set_xlabel("Devices")
+        axis.set_ylabel("Average Data Read Latency[s]")
+    ax[0].set_title(objectPlacements[0])
+    ax[1].set_title(objectPlacements[1])
+    ax[2].set_title(objectPlacements[2])
+    fig.tight_layout(h_pad=2)
     fig.savefig(folderPath + '\\fig\\Average_Data_Read_Latency' + '.png',
                 bbox_inches='tight')
     plt.close(fig)
 
-    fig2, ax2 = plt.subplots(2, 1, figsize=(15,10))
-    type_read_data.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[0])
-    type_read_parity.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[1])
-    for axis in ax2:
-        axis.set_xlabel("Devices")
-        axis.set_ylabel("Reads")
-    ax2[0].set_title("Data Reads")
-    ax2[1].set_title("Parity Reads")
-    fig2.tight_layout(h_pad=2)
-    fig2.savefig(folderPath + '\\fig\\Read_By_Type' + '.png',
-                bbox_inches='tight')
 
-    plt.close(fig2)
 
 

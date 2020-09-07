@@ -139,7 +139,7 @@ public class MainApp {
 
 
 							// Generate EdgeCloudSim Simulation Manager
-							SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy);
+							SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy,objectPlacementPolicy);
 
 							// Start simulation
 							manager.startSimulation();

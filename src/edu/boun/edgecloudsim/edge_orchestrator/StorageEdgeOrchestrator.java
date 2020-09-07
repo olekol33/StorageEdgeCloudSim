@@ -81,15 +81,37 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             selectedVM = vmArray.get(0);
         }
         else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
-            NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
-            int selectedHost = deviceLocation.getServingWlanId();
-            int queueSize = ((StorageNetworkModel)networkModel).getQueueSize(selectedHost);
-            //if queue size larger than threshold
-            if (queueSize >= SimSettings.getInstance().getCongestedThreshold()){
-                LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
-                ((IdleActiveStorageLoadGenerator)loadGeneratorModel).createParityTask(task);
-//                SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
-//                return selectedVM;
+            //no parities in this case
+            if(!SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
+                NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+                int selectedHost = deviceLocation.getServingWlanId();
+                int queueSize = ((StorageNetworkModel) networkModel).getQueueSize(selectedHost);
+                //if queue size larger than threshold
+                if (queueSize >= SimSettings.getInstance().getCongestedThreshold()) {
+                    LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+                    ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
+                }
+            }
+            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            selectedVM = vmArray.get(0);
+        }
+        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")){
+            //no parities in this case
+            if(!SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
+                NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+                int selectedHost = deviceLocation.getServingWlanId();
+                int queueSize = ((StorageNetworkModel) networkModel).getQueueSize(selectedHost);
+                //if queue size larger than threshold
+                if (queueSize >= SimSettings.getInstance().getCongestedThreshold()) {
+                    LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+                    boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
+                    //don't read data, only parity
+                    if (parityGenerated==true) {
+                        SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock());
+                        return selectedVM;
+                    }
+                }
             }
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectToRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);

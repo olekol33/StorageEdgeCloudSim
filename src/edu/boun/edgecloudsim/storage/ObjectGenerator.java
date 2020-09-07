@@ -95,7 +95,10 @@ public class ObjectGenerator {
     private List<Map> extractObjectsFromList(int objectIndex){
         List<Map> listOfObjects = new ArrayList(listOfStripes.size());
         for (List<Map> stripe : listOfStripes){
-            listOfObjects.add(stripe.get(objectIndex));
+            //if parity was placed
+            //todo:only one parity for now
+            if(stripe.get(numOfDataInStripe).get("locations")!=null)
+                listOfObjects.add(stripe.get(objectIndex));
         }
         return listOfObjects;
     }
@@ -314,7 +317,7 @@ public class ObjectGenerator {
         stripeID = getObject(numOfStripes,"stripes");
         String objectID;
         while(1==1) {
-            //TODO: currenly support one parity
+            //TODO: currently support one parity
             objectID = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("id");
             String currentHostObjects = (String) objectsInHosts.get(currentHost).get("objects");
             //if object is already in node select another
