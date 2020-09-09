@@ -157,8 +157,6 @@ public class StaticRangeMobility extends MobilityModel {
         List<Integer> hosts = new ArrayList<Integer>();
         for (int i = 0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
             Location DCLocation = getDCLocation(i);
-//            Location DCLocation = dcLocations.get(i);
-            //TODO: use getAccessPoint
             //Checks if x,y of device in range of host, for each host
             if (DCLocation.getXPos()-hostRadius <= x_pos && x_pos <= DCLocation.getXPos()+hostRadius){
                 if (DCLocation.getYPos()-hostRadius <= y_pos && y_pos <= DCLocation.getYPos()+hostRadius)

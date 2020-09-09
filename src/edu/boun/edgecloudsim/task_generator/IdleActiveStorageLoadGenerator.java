@@ -43,7 +43,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         for(int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
             if(SimSettings.getInstance().getTaskLookUpTable()[i][USAGE_PERCENTAGE] ==0)
                 continue;
-
             expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
             expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
             expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
@@ -101,38 +100,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     virtualTime = activePeriodStartTime;
                     continue;
                 }
-/*                String stripeDist = SimSettings.getInstance().getStripeDist();
-                String stripeID = null;
-                if (stripeDist.equals("RANDOM"))
-                {
-                    stripeID = RedisListHandler.getRandomStripeListForDevice(1).get(0);
-                }
-                else if (stripeDist.equals("ZIPF"))
-                {
-                    stripeID = RedisListHandler.getZipfStripeListForDevice(1).get(0);
-                }*/
+
                 String objectID = RedisListHandler.getObject();
 
-/*                String[] stripeObjects = RedisListHandler.getStripeObjects(stripeID);
-                List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
-                List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
-                int isParity = 0;
-
-                //If this policy, generate parity object
-                if (orchestratorPolicy.equalsIgnoreCase("LEAST_UTIL_IN_RANGE_WITH_PARITY") ||
-                        orchestratorPolicy.equalsIgnoreCase("NEAREST_WITH_PARITY")){
-                    for (String objectID : dataObjects) {
-                        taskList.add(new TaskProperty(i, randomTaskType, virtualTime, stripeID, objectID, ioTaskID, isParity, expRngList));
-                        //read one object, rest is parity
-                        isParity = 1;
-                    }
-                    for (String objectID : parityObjects) {
-                        taskList.add(new TaskProperty(i, randomTaskType, virtualTime, stripeID, objectID, ioTaskID, isParity, expRngList));
-                        }
-                }
-                else{
-                    taskList.add(new TaskProperty(i,randomTaskType, virtualTime, stripeID, dataObjects.get(0), ioTaskID, isParity,expRngList));
-                }*/
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;
             }
@@ -159,7 +129,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         String[] stripeObjects = RedisListHandler.getStripeObjects(stripeID);
         List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
         List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
+        int i=0;
         for (String objectID:dataObjects){
+            i++;
             //if data object, skip
             if (objectID.equals(task.getObjectRead()))
                 continue;
@@ -170,13 +142,15 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             SimManager.getInstance().createNewTask();
         }
         for (String objectID:parityObjects){
+            i++;
             taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
                     objectID, task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
             SimManager.getInstance().createNewTask();
         }
+        //TODO: parametrize
+        if (i!=(3))
+            System.out.println("i!=(3)");
         return true;
-
-//        schedule(getId(), loadGeneratorModel.getTaskList().get(i).getStartTime(), CREATE_TASK, loadGeneratorModel.getTaskList().get(i));
     }
 
     public static int getNumOfIOTasks() {

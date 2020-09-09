@@ -72,14 +72,16 @@ def plotHostQueue():
                                             orchestratorPolicy, '_', objectPlacement, '_',str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
                         data = pd.read_csv(filePath, delimiter=';')
                         exists = False
-                        for host in data["HostID"].unique():
-                            host_data = data[data["HostID"] == host]
-                            # plot only above threshold
-                            if host_data["Requests"].max()>30:
-                                exists = True
-                                # host_data = data[data["HostID"]==host]
+                        if data["HostID"].max()>5:
+                            exists = True
+                            for host in data["HostID"].unique():
+                                host_data = data[data["HostID"] == host]
+                                # plot only above threshold
+                                # if host_data["Requests"].max()>30:
+                                    # exists = True
+                                    # host_data = data[data["HostID"]==host]
                                 sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))
-                            c += 1
+                                c += 1
 
                         if exists==False:
                             plt.close(fig)

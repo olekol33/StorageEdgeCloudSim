@@ -98,6 +98,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
             //TODO: need to update access point to be nearest from destination
             //TODO: verify it's correct and matching orchestrator
             Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
+            if (nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId())
+                System.out.println("nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId()");
             //divide by factor
             delay /= StaticRangeMobility.getDistanceDegradation(deviceLocation,nearestAccessPoint);
         }

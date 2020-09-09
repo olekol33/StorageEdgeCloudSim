@@ -249,6 +249,8 @@ public class SimLogger {
 
 		//Oleg: For object log
 //		System.out.println("array size: " + taskMap.size());
+		int numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe()+
+				SimSettings.getInstance().getNumOfParityInStripe();
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] accessID = new int[taskMap.size()];
@@ -264,13 +266,9 @@ public class SimLogger {
 		Map<Integer, String> nameToReadStripe = new HashMap<Integer, String>();
 		final double NOT_FINISHED = -1;
 		final double REJECTED = -2;
-		//TODO: read original data or parity objects
-
-
 
 		// open all files and prepare them for write
 		if (fileLogEnabled) {
-			//TODO: Check this
 			if (SimSettings.getInstance().getDeepFileLoggingEnabled()) {
 				successFile = new File(outputFolder, filePrefix + "_SUCCESS.log");
 				successFW = new FileWriter(successFile, true);
@@ -350,10 +348,10 @@ public class SimLogger {
 			Integer key = entry.getKey();
 			LogItem value = entry.getValue();
 
-			//TODO: replace with a function
+
 			if (value.isInWarmUpPeriod())
 			{
-				ArrayList<Double> delays = new ArrayList<Double>(ObjectGenerator.getNumOfDataInStripe()+1);
+				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
 				else //placeholder
@@ -365,7 +363,6 @@ public class SimLogger {
 					//or append
 					delays.add(1, REJECTED);
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 				continue;
 			}
 
@@ -390,25 +387,8 @@ public class SimLogger {
 				else if (value.getDatacenterId()==SimSettings.GENERIC_EDGE_DEVICE_ID)
 					readSource[key-1] = "Edge";
 
-/*				//Take tail latency
-				switch (objectsReadFromStripe[value.getIoTaskID()]){
-					case 0:
-					{
-						objectsReadFromStripe[value.getIoTaskID()]++;
-						timeToReadStripe[value.getIoTaskID()] = value.getNetworkDelay();
-					}
-					case 1:
-					{
-						objectsReadFromStripe[value.getIoTaskID()]++;
-						if (timeToReadStripe[value.getIoTaskID()] < value.getNetworkDelay())
-							timeToReadStripe[value.getIoTaskID()] = value.getNetworkDelay();
-					}
-					case 2:
-						if (timeToReadStripe[value.getIoTaskID()] > value.getNetworkDelay())
-							timeToReadStripe[value.getIoTaskID()] = value.getNetworkDelay();*/
 				//KV pairs of IO tasks and list of latencies
-				//TODO: fix parameter
-				ArrayList<Double> delays = new ArrayList<Double>(ObjectGenerator.getNumOfDataInStripe()+1);
+				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
 				else //placeholder
@@ -421,18 +401,13 @@ public class SimLogger {
 					//or append
 					delays.add(1,value.getNetworkDelay());
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
-
-
-//				o++;
 			}
 			else if(value.getStatus() == SimLogger.TASK_STATUS.CREATED ||
 					value.getStatus() == SimLogger.TASK_STATUS.UPLOADING ||
 					value.getStatus() == SimLogger.TASK_STATUS.PROCESSING ||
 					value.getStatus() == SimLogger.TASK_STATUS.DOWNLOADING)
 			{
-				//temp
-				ArrayList<Double> delays = new ArrayList<Double>(ObjectGenerator.getNumOfDataInStripe()+1);
+				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
 				else //placeholder
@@ -459,7 +434,7 @@ public class SimLogger {
 			}
 			else {
 				//rejected
-				ArrayList<Double> delays = new ArrayList<Double>(ObjectGenerator.getNumOfDataInStripe()+1);
+				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
 				else //placeholder
@@ -471,7 +446,6 @@ public class SimLogger {
 					//or append
 					delays.add(1, NOT_FINISHED);
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 
 				failedTask[value.getTaskType()]++;
 
@@ -704,30 +678,29 @@ public class SimLogger {
 						dataTypeRead = "data";
 					}
 					//data and parity not finished
-					else if(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1).contains(NOT_FINISHED)) {
+					else if(list.subList(1, numOfObjectsInStripe).contains(NOT_FINISHED)) {
 						notFinished++;
 						continue;
 					}
 					//parity finished
 					else {
 						dataTypeRead = "parity";
-						readDelay = Collections.max(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1));
+						readDelay = Collections.max(list.subList(1, numOfObjectsInStripe));
 					}
 				}
 				//if only one object read
 				else if (list.size() ==1)
 					readDelay = list.get(0);
 				//shouldn't happen
-				else if (list.size() < (ObjectGenerator.getNumOfDataInStripe() + 1)){
+				else if (list.size() < (numOfObjectsInStripe)){
 					readDelay = list.get(0);
-					System.out.println("Less than " + ObjectGenerator.getNumOfDataInStripe() + 1 + " objects read");
+					System.out.println("Less than " + numOfObjectsInStripe + " objects read");
 				}
 				else {
 					try {
 						//if data and parity were read, take the best one
-						//TODO: fix parameters
 						//parity delay
-						readDelay = Collections.max(list.subList(1, ObjectGenerator.getNumOfDataInStripe() + 1));
+						readDelay = Collections.max(list.subList(1, numOfObjectsInStripe));
 						if (readDelay > list.get(0)) {
 							readDelay = list.get(0);
 							dataTypeRead = "data";
@@ -1036,7 +1009,6 @@ class LogItem {
 	private boolean isInWarmUpPeriod;
 	//storage
 	private String stripeID;
-	private String objectToRead;
 	private String objectRead;
 	private int paritiesToRead;
 	private int ioTaskID;
@@ -1063,7 +1035,6 @@ class LogItem {
 		status = SimLogger.TASK_STATUS.CREATED;
 		taskEndTime = 0;
 		stripeID = _stripeID;
-		objectToRead = _objectID;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
 		isParity = _isParity;
@@ -1245,9 +1216,6 @@ class LogItem {
 		return stripeID;
 	}
 
-	public String getObjectToRead() {
-		return objectToRead;
-	}
 
 	public String getObjectRead() {
 		return objectRead;

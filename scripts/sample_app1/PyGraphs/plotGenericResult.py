@@ -47,9 +47,8 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
-
+    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(10,20))
     for p, objectPlacement in enumerate(objectPlacements):
-        fig, ax = plt.subplots(1, 1)
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
             all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
             # initializing the titles and rows list
@@ -146,12 +145,20 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                         # TODO: temp removed
                         # yIndex.append(results[j][i])
                         yIndex.append(results[i])
-                    ax.scatter(xIndex, yIndex, marker = marker[o])
-                    ax.plot(xIndex, yIndex, marker = marker[j], label=orchestratorPolicy+"_"+objectPlacement)
+                    ax[p].scatter(xIndex, yIndex, marker = marker[o])
+                    ax[p].plot(xIndex, yIndex, marker = marker[j], label=orchestratorPolicy)
 
-    ax.legend()
-    ax.set_xlabel("Number of Mobile Devices")
-    ax.set_ylabel(yLabel)
+    for axis in ax:
+        axis.legend()
+        axis.set_xlabel("Number of Mobile Devices")
+        axis.set_ylabel(yLabel)
+    ax[0].set_title(objectPlacements[0])
+    ax[1].set_title(objectPlacements[1])
+    ax[2].set_title(objectPlacements[2])
+
+    # ax.legend()
+    # ax.set_xlabel("Number of Mobile Devices")
+    # ax.set_ylabel(yLabel)
     fig.savefig(folderPath + '\\fig\\' + yLabel+ '.png', bbox_inches='tight')
     plt.close(fig)
 

@@ -26,7 +26,6 @@ public class Task extends Cloudlet {
 
 	//storage
 	private String stripeID;
-	private String objectToRead;
 	private String objectRead;
 	private int hostID;
 	private int paritiesToRead;
@@ -105,10 +104,6 @@ public class Task extends Cloudlet {
 		this.hostID = hostID;
 	}
 
-	public String getObjectToRead() {
-		return objectToRead;
-	}
-
 	public int getIoTaskID() {
 		return ioTaskID;
 	}
@@ -117,9 +112,6 @@ public class Task extends Cloudlet {
 		this.ioTaskID = ioTaskID;
 	}
 
-	public void setObjectToRead(String objectToRead) {
-		this.objectToRead = objectToRead;
-	}
 
 	public int getParitiesToRead() {
 		return paritiesToRead;

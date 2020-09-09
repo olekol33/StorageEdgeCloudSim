@@ -22,17 +22,17 @@ import java.util.stream.Stream;
 
 public class RedisListHandler {
     private static RandomGenerator rand = null;
-    private static double zipfExponent = 1.07;
-    private static int numOfDataObjects = 50;
-    private static int numOfStripes = 100;
-    private static int numOfDataInStripe = 2;
-    private static int numOfParityInStripe = 1;
+    private static double zipfExponent = SimSettings.getInstance().getZipfExponent();
+    private static int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+    private static int numOfStripes = SimSettings.getInstance().getNumOfStripes();
+    private static int numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
+    private static int numOfParityInStripe = SimSettings.getInstance().getNumOfParityInStripe();
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis
     public static void createList(String objectPlacementPolicy){
         Jedis jedis = new Jedis("localhost", 6379);
 //        List<List<Map>> listOfStripes = ObjectGenerator.getListOfStripes();
-        ObjectGenerator OG = new ObjectGenerator(numOfDataObjects,numOfStripes,numOfDataInStripe,numOfParityInStripe, objectPlacementPolicy);
+        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
         List<List<Map>> listOfStripes = OG.getListOfStripes();
 //        int i = 0;
 /*        for (List<Map> stripe : listOfStripes){

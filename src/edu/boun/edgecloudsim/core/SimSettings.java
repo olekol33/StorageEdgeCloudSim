@@ -102,6 +102,14 @@ public class SimSettings {
 	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
 
+	//storage properties
+	private int RANDOM_SEED;
+	private double ZIPF_EXPONENT;
+	private int NUM_OF_DATA_OBJECTS;
+	private int NUM_OF_STRIPES;
+	private int NUM_OF_DATA_IN_STRIPE;
+	private int NUM_OF_PARITY_IN_STRIPE;
+
     
     // following values are stored for each applications defined in applications.xml
     // [0] usage percentage (%)
@@ -203,6 +211,13 @@ public class SimSettings {
 				Y_RANGE = -1;
 				HOST_RADIUS = -1;
 			}
+
+			RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
+			ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
+			NUM_OF_DATA_OBJECTS = Integer.parseInt(prop.getProperty("num_of_data_objects"));
+			NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
+			NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
+			NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
 
 			//mean waiting time (minute)
 			mobilityLookUpTable = new double[]{
@@ -549,6 +564,30 @@ public class SimSettings {
 
 	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;
+	}
+
+	public int getRandomSeed() {
+		return RANDOM_SEED;
+	}
+
+	public double getZipfExponent() {
+		return ZIPF_EXPONENT;
+	}
+
+	public int getNumOfDataObjects() {
+		return NUM_OF_DATA_OBJECTS;
+	}
+
+	public int getNumOfStripes() {
+		return NUM_OF_STRIPES;
+	}
+
+	public int getNumOfDataInStripe() {
+		return NUM_OF_DATA_IN_STRIPE;
+	}
+
+	public int getNumOfParityInStripe() {
+		return NUM_OF_PARITY_IN_STRIPE;
 	}
 	
 	private void isAttribtuePresent(Element element, String key) {

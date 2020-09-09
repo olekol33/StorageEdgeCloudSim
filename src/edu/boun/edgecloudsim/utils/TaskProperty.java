@@ -24,7 +24,6 @@ public class TaskProperty {
     private int mobileDeviceId;
 	//storage
 	private String stripeID;
-	private String objectToRead;
 	private String objectRead;
 	private int paritiesToRead;
 	private int ioTaskID;
@@ -58,15 +57,14 @@ public class TaskProperty {
 		mobileDeviceId=_mobileDeviceId;
 		startTime=_startTime;
 		taskType=_taskType;
-		objectToRead = _objectID;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
 		paritiesToRead = RedisListHandler.getNumOfParityInStripe();
 		isParity = _isParity;
 
 		inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
-		//TODO: Change size to object size
-		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
+//		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
+		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].getMean();
 		length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
 
 		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
@@ -78,7 +76,6 @@ public class TaskProperty {
 		mobileDeviceId=_mobileDeviceId;
 		startTime=_startTime;
 		taskType=_taskType;
-		objectToRead = _objectID;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
 		paritiesToRead = RedisListHandler.getNumOfParityInStripe();
@@ -125,9 +122,6 @@ public class TaskProperty {
 		return stripeID;
 	}
 
-	public String getObjectToRead() {
-		return objectToRead;
-	}
 
 	public String getObjectRead() {
 		return objectRead;

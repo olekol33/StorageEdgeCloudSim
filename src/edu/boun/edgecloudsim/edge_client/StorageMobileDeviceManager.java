@@ -50,14 +50,12 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 
 
         //storage
-        task.setObjectToRead(edgeTask.getObjectToRead());
         task.setObjectRead(edgeTask.getObjectRead());
         task.setStripeID(edgeTask.getStripeID());
         task.setParitiesToRead(edgeTask.getParitiesToRead());
         task.setIoTaskID(edgeTask.getIoTaskID());
         task.setIsParity(edgeTask.getIsParity());
 
-        //todo: update access host
         //add related task to log list
         SimLogger.getInstance().addLog(task.getCloudletId(),
                 task.getTaskType(),
@@ -65,7 +63,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 (int)task.getCloudletFileSize(),
                 (int)task.getCloudletOutputSize(),
                 task.getStripeID(),
-                task.getObjectToRead(),
+                task.getObjectRead(),
                 task.getIoTaskID(),
                 task.getIsParity(),
                 task.getParitiesToRead(),
@@ -81,7 +79,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             vmType = SimSettings.VM_TYPES.CLOUD_VM.ordinal();
             nextEvent = REQUEST_RECEIVED_BY_CLOUD;
             delayType = SimSettings.NETWORK_DELAY_TYPES.WAN_DELAY;
-            nextDeviceForNetworkModel = SimSettings.CLOUD_DATACENTER_ID;
+//            nextDeviceForNetworkModel = SimSettings.CLOUD_DATACENTER_ID;
         }
         else {
             //no upload delay
@@ -90,27 +88,20 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             vmType = SimSettings.VM_TYPES.EDGE_VM.ordinal();
             nextEvent = REQUEST_RECEIVED_BY_EDGE_DEVICE;
             delayType = SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY;
-            //TODO: check why not used
-            nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID;
+//            nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID;
         }
 
 //        if(delay>0){
         if(delay>=0){
             Vm selectedVM = SimManager.getInstance().getEdgeOrchestrator().getVmToOffload(task, nextHopId);
-            //TODO: perhaps can remove
             task.setAccessHostID(task.getSubmittedLocation().getServingWlanId());
             SimLogger.getInstance().setAccessHostID(task.getCloudletId(),task.getSubmittedLocation().getServingWlanId());
-            //TODO: probably can remove
             edgeTask.setAccessHostID(task.getSubmittedLocation().getServingWlanId());
 
 
-
-
-            //TODO: perhaps can remove
             SimLogger.getInstance().setObjectRead(task.getCloudletId(),task.getObjectRead());
 
             if(selectedVM != null){
-                //TODO: perhaps hostid is redundant if hostindex already used
                 //
 //                SimLogger.getInstance().setHostId(task.getCloudletId(),task.getHostID());
                 SimLogger.getInstance().setHostId(task.getCloudletId(),selectedVM.getHost().getId());
@@ -119,7 +110,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 task.setAssociatedDatacenterId(nextHopId);
 
                 //set related host id
-                //TODO: perhaps can remove
                 task.setAssociatedHostId(selectedVM.getHost().getId());
 
                 //set related vm id
@@ -350,7 +340,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 {
 //                    networkModel.downloadStarted(currentLocation, nextDeviceForNetworkModel);
 
-                    //TODO: recheck, download from host
                     networkModel.downloadStarted(task.getSubmittedLocation(), nextDeviceForNetworkModel);
 //                    networkModel.downloadStarted(host.getLocation(), nextDeviceForNetworkModel);
 

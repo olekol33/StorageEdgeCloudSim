@@ -51,7 +51,6 @@ public class IdleActiveLoadGenerator extends LoadGeneratorModel{
 			int randomTaskType = -1;
 			double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
 			double taskTypePercentage = 0;
-			//TODO: Problematic, always starts with 0 when selecting tasks
 			for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
 				taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][USAGE_PERCENTAGE];
 				// Oleg: Select task if accumulated taskTypePercentage is more than random taskTypeSelector

@@ -21,16 +21,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ObjectGenerator {
-    //TODO: parametrize
-    private int numOfDataObjects = 100;
-    private int numOfStripes = 500;
-    private int numOfDataInStripe = 2;
-    private int numOfParityInStripe = 1;
+    private int numOfDataObjects;
+    private int numOfStripes;
+    private int numOfDataInStripe;
+    private int numOfParityInStripe;
     private RandomGenerator rand = null;
-    static public int seed = 42;
-    //TODO: assuming same size for all objects
+    static public int seed;
+    //assuming same size for all objects
     private int objectSize;
-    private double zipfExponent = 1.07;
     private List<List<Map>> listOfStripes;
 //    private int[] hostStorageCapacity;
     private HashMap<Integer, HashMap<String, Object>> objectsInHosts;
@@ -39,24 +37,17 @@ public class ObjectGenerator {
     private List<Map> metadataObjects;
     String objectPlacementPolicy;
 
-    //TODO: fix
-    private static int getNumOfDataInStripeStatic = 2;
-    Random ran = new Random();
 
-    public List<List<Map>> getListOfStripes() {
-        return listOfStripes;
-    }
-
-    public ObjectGenerator(int numOfDataObjects, int numOfStripes, int numOfDataInStripe, int numOfParityInStripe,
-                           String _objectPlacementPolicy) {
-        this.numOfDataObjects = numOfDataObjects;
-        this.numOfStripes = numOfStripes;
-        this.numOfDataInStripe = numOfDataInStripe;
-        this.numOfParityInStripe = numOfParityInStripe;
+    public ObjectGenerator(String _objectPlacementPolicy) {
+        numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+        numOfStripes = SimSettings.getInstance().getNumOfStripes();
+        numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
+        numOfParityInStripe = SimSettings.getInstance().getNumOfParityInStripe();
 //        this.hostStorageCapacity = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];
-        this.objectSize = (int)SimSettings.getInstance().getTaskLookUpTable()[0][LoadGeneratorModel.DATA_DOWNLOAD]; //bytes
-        this.objectsInHosts = new HashMap<Integer, HashMap<String, Object>>(SimSettings.getInstance().getNumOfEdgeDatacenters());
-        this.objectPlacementPolicy = _objectPlacementPolicy;
+        objectSize = (int)SimSettings.getInstance().getTaskLookUpTable()[0][LoadGeneratorModel.DATA_DOWNLOAD]; //bytes
+        objectsInHosts = new HashMap<Integer, HashMap<String, Object>>(SimSettings.getInstance().getNumOfEdgeDatacenters());
+        objectPlacementPolicy = _objectPlacementPolicy;
+        seed = SimSettings.getInstance().getRandomSeed();
         ran.setSeed(seed);
         for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++) {
             HashMap<String, Object> host = new HashMap<String, Object>();
@@ -89,6 +80,17 @@ public class ObjectGenerator {
         metadataObjects = extractObjectsFromList(numOfDataInStripe+numOfParityInStripe);
 
 
+    }
+
+
+
+
+    //TODO: fix
+    private static int getNumOfDataInStripeStatic = 2;
+    Random ran = new Random();
+
+    public List<List<Map>> getListOfStripes() {
+        return listOfStripes;
     }
 
     //Extract objects at location objectIndex from listOfStripes
@@ -129,9 +131,9 @@ public class ObjectGenerator {
         return rand;
     }
     //Returns location between 1-numberOfElements
-    private int getZipf(int numberOfElements)  throws NotStrictlyPositiveException {
-        return new ZipfDistribution(getRandomGenerator(), numberOfElements, this.zipfExponent).sample();
-    }
+/*    private int getZipf(int numberOfElements)  throws NotStrictlyPositiveException {
+        return new ZipfDistribution(getRandomGenerator(), numberOfElements, SimSettings.getInstance().getZipfExponent()).sample();
+    }*/
 
     private int getObject(int numberOfElements, String type)  throws NotStrictlyPositiveException {
         String dist="";
@@ -149,7 +151,7 @@ public class ObjectGenerator {
         }
         else if (dist.equals("ZIPF"))
         {
-            objectNum = new ZipfDistribution(getRandomGenerator(), numberOfElements, this.zipfExponent).sample();
+            objectNum = new ZipfDistribution(getRandomGenerator(), numberOfElements, SimSettings.getInstance().getZipfExponent()).sample();
             //need to reduce by 1
             objectNum--;
         }
@@ -455,6 +457,9 @@ public class ObjectGenerator {
 
     public static int getNumOfDataInStripe() {
         return getNumOfDataInStripeStatic;
+    }
+    public int getNumOfObjectsInStripe(){
+        return numOfDataInStripe+numOfParityInStripe;
     }
 
     public List<Map> getDataObjects() {
