@@ -6,6 +6,7 @@ from scipy.stats import t
 import itertools
 import pandas as pd
 import seaborn as sns
+from os import path
 
 #Rows
 TotalTasks = 0
@@ -54,25 +55,37 @@ def plotHostQueue():
     latencies = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     marker = ['*', 'x', 'o', '.', ',']
     # sns.set_palette(sns.color_palette("Dark2", 20))
-    NUM_COLORS = 11
+
     cm = plt.get_cmap('gist_rainbow')
 
 
     # initializing the titles and rows list
     for s in range(numOfSimulations):
-        for i in range(len(scenarioType)):
-            for j in range(numOfMobileDevices):
-                mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
+        for j in range(numOfMobileDevices):
+            queue_size_frame = {}
+            mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
 
-                for o, orchestratorPolicy in enumerate(orchestratorPolicies):
-                    for p, objectPlacement in enumerate(objectPlacements):
+            fig2, ax2 = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
+            for p, objectPlacement in enumerate(objectPlacements):
+                for i in range(len(scenarioType)):
+                    for o, orchestratorPolicy in enumerate(orchestratorPolicies):
+                        if (scenarioType[i] == "TWO_TIER" and not "CLOUD" in orchestratorPolicy):
+                            continue
+                        elif (scenarioType[i] != "TWO_TIER" and "CLOUD" in orchestratorPolicy):
+                            continue
                         c = 0
-                        fig, ax = plt.subplots(1, 1)
+                        fig, ax = plt.subplots(1, 1, figsize=(20,10))
                         filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
                                             orchestratorPolicy, '_', objectPlacement, '_',str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
+                        if (not path.exists(filePath)):
+                            continue
                         data = pd.read_csv(filePath, delimiter=';')
+                        NUM_COLORS = max(data["HostID"])
                         exists = False
-                        if data["HostID"].max()>5:
+                        queue_size_series = data.groupby(['HostID']).mean()["Requests"]
+                        queue_size_frame[orchestratorPolicy] = queue_size_series
+                        if data["Requests"].max()>20:
+                        # if mobileDeviceNumber==1000:
                             exists = True
                             for host in data["HostID"].unique():
                                 host_data = data[data["HostID"] == host]
@@ -93,6 +106,17 @@ def plotHostQueue():
                                     str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
                         plt.close(fig)
 
+                queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
+                queue_size_df.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[p])
+                ax2[p].set_title(objectPlacements[p])
+                ax2[p].legend()
+                ax2[p].set_xlabel("Host Number")
+                ax2[p].set_ylabel("Average Queue Size")
+                fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
+                fig2.savefig(folderPath + '\\fig\\Average_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
+                            bbox_inches='tight')
+                plt.close(fig2)
 
 
 
+# plotHostQueue()

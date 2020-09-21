@@ -22,7 +22,7 @@ def getConfiguration(argType):
         return 1 #xTickLabelCoefficient
     elif (argType == "scenarioType"):  #7
         # return ['SINGLE_TIER','TWO_TIER','TWO_TIER_WITH_EO']
-        return ['SINGLE_TIER']
+        return ['SINGLE_TIER','TWO_TIER']
     elif (argType == "legends"):    #8
         return ['1-tier','2-tier','2-tier with EO']
 #    elif (argType == 9):
@@ -35,8 +35,8 @@ def getConfiguration(argType):
         return 0 #return 1 if you want to plot errors
     elif (argType == "orchestratorPolicy"):  #13
          # return ['NEAREST_WITH_PARITY']
-         # return ['RANDOM_HOST','NEAREST_HOST','NEAREST_WITH_PARITY','LEAST_UTIL_IN_RANGE_WITH_PARITY','IF_CONGESTED_READ_PARITY']
-         return ['RANDOM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY']
+         return ['UNIFORM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY','CLOUD_OR_NEAREST_IF_CONGESTED']
+         # return ['UNIFORM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY']
          # return ['NEAREST_OR_PARITY']
     elif (argType == "objectPlacement"):  #14
          return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']

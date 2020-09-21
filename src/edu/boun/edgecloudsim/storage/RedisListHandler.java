@@ -28,11 +28,17 @@ public class RedisListHandler {
     private static int numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
     private static int numOfParityInStripe = SimSettings.getInstance().getNumOfParityInStripe();
 
+    public static ObjectGenerator getOG() {
+        return OG;
+    }
+
+    private static ObjectGenerator OG;
+
     //Takes list from ObjectGenerator and creates KV pairs in Redis
     public static void createList(String objectPlacementPolicy){
         Jedis jedis = new Jedis("localhost", 6379);
 //        List<List<Map>> listOfStripes = ObjectGenerator.getListOfStripes();
-        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+        OG = new ObjectGenerator(objectPlacementPolicy);
         List<List<Map>> listOfStripes = OG.getListOfStripes();
 //        int i = 0;
 /*        for (List<Map> stripe : listOfStripes){
@@ -129,7 +135,7 @@ public class RedisListHandler {
         String dist=SimSettings.getInstance().getStripeDist();
         List<String> listOfDataObjects = getObjectsFromRedis("object:d*");
         int objectNum = -1;
-        if (dist.equals("RANDOM"))
+        if (dist.equals("UNIFORM"))
         {
             objectNum =  getRandomGenerator().nextInt(numOfDataObjects);
         }

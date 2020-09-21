@@ -4,6 +4,7 @@ import csv
 import matplotlib.pyplot as plt
 from scipy.stats import t
 import itertools
+from os import path
 
 #Rows
 TotalTasks = 0
@@ -50,10 +51,13 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(10,20))
     for p, objectPlacement in enumerate(objectPlacements):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
-            all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
-            # initializing the titles and rows list
+            all_results = np.zeros((numOfSimulations, 1, numOfMobileDevices))
             for s in range(numOfSimulations):
                 for i in range(len(scenarioType)):
+                    if (scenarioType[i] == "TWO_TIER" and not "CLOUD" in orchestratorPolicy):
+                        continue
+                    elif (scenarioType[i] != "TWO_TIER" and "CLOUD" in orchestratorPolicy):
+                        continue
                     for j in range(numOfMobileDevices):
                         try:
                             fields = []
@@ -79,13 +83,14 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                                 elif calculatePercentage == 'percentage_for_completed':
         #                            readData = [row for idx, row in enumerate(rows) if idx in (1, 0)]
                                     totalTask = float(rows[TotalTasks][completedTask])
-                                    value = (100 * value) / totalTask;
+                                    value = (100 * value) / totalTask
                                 elif calculatePercentage == 'percentage_for_failed':
         #                            readData = [row for idx, row in enumerate(rows) if idx in (1, 0)]
                                     totalTask = float(rows[TotalTasks][failedTask])
                                     # print(orchestratorPolicy+str(mobileDeviceNumber))
                                     value = (100 * value) / totalTask
-                                all_results[s, i, j] = value
+                                # all_results[s, i, j] = value
+                                all_results[s, 0, j] = value
                         except FileNotFoundError:
                             print("The following file doesn't exist:\n" + filePath)
 
@@ -95,58 +100,76 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                 results = np.mean(all_results)
 
             results = np.squeeze(results)
-            if len(scenarioType) > 1:
-                min_results = np.zeros((len(scenarioType), numOfMobileDevices))
-                max_results = np.zeros((len(scenarioType), numOfMobileDevices))
-                for i in range(len(scenarioType)):
-                    for j in range(numOfMobileDevices):
-                        x = all_results[:, i, j] #Create Data
-                        SEM = np.std(x) / np.sqrt(len(x)) #Standard Error
-                        # Student's t inverse cumulative distribution function
-                        df = len(x)-1  #degrees of freedom
-                        ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
-                        CI = np.mean(x) + ts * SEM; #Confidence Intervals (if len(x)>1)
-                        if CI[0] < 0:
-                            CI[0] = 0
-                        if CI[1] < 0:
-                            CI[1] = 0
+            # if len(scenarioType) > 1:
+            #     min_results = np.zeros((len(scenarioType), numOfMobileDevices))
+            #     max_results = np.zeros((len(scenarioType), numOfMobileDevices))
+            #     for i in range(len(scenarioType)):
+            #         for j in range(numOfMobileDevices):
+            #             x = all_results[:, i, j] #Create Data
+            #             SEM = np.std(x) / np.sqrt(len(x)) #Standard Error
+            #             # Student's t inverse cumulative distribution function
+            #             df = len(x)-1  #degrees of freedom
+            #             ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
+            #             CI = np.mean(x) + ts * SEM; #Confidence Intervals (if len(x)>1)
+            #             if CI[0] < 0:
+            #                 CI[0] = 0
+            #             if CI[1] < 0:
+            #                 CI[1] = 0
+            #
+            #             min_results[i, j] = results[i][j] - CI[0]
+            #             max_results[i, j] = CI[1] - results[i][j]
+            # else:
+            #     for j in range(numOfMobileDevices):
+            #         min_results = np.zeros((numOfMobileDevices))
+            #         max_results = np.zeros((numOfMobileDevices))
+            #         x = all_results[:, :, j]  # Create Data
+            #         SEM = np.std(x) / np.sqrt(len(x))  # Standard Error
+            #         # Student's t inverse cumulative distribution function
+            #         df = len(x) - 1  # degrees of freedom
+            #         ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
+            #         CI = np.mean(x) + ts * SEM;  # Confidence Intervals (if len(x)>1)
+            #         if CI[0] < 0:
+            #             CI[0] = 0
+            #         if CI[1] < 0:
+            #             CI[1] = 0
+            #
+            #         min_results[j] = results[j] - CI[0]
+            #         max_results[j] = CI[1] - results[j]
 
-                        min_results[i, j] = results[i][j] - CI[0]
-                        max_results[i, j] = CI[1] - results[i][j]
-            else:
-                for j in range(numOfMobileDevices):
-                    min_results = np.zeros((numOfMobileDevices))
-                    max_results = np.zeros((numOfMobileDevices))
-                    x = all_results[:, :, j]  # Create Data
-                    SEM = np.std(x) / np.sqrt(len(x))  # Standard Error
-                    # Student's t inverse cumulative distribution function
-                    df = len(x) - 1  # degrees of freedom
-                    ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
-                    CI = np.mean(x) + ts * SEM;  # Confidence Intervals (if len(x)>1)
-                    if CI[0] < 0:
-                        CI[0] = 0
-                    if CI[1] < 0:
-                        CI[1] = 0
+            for j in range(numOfMobileDevices):
+                min_results = np.zeros((numOfMobileDevices))
+                max_results = np.zeros((numOfMobileDevices))
+                x = all_results[:, :, j]  # Create Data
+                SEM = np.std(x) / np.sqrt(len(x))  # Standard Error
+                # Student's t inverse cumulative distribution function
+                df = len(x) - 1  # degrees of freedom
+                ts = np.linspace(t.ppf(0.05, df), t.ppf(0.95, df), 2)
+                CI = np.mean(x) + ts * SEM;  # Confidence Intervals (if len(x)>1)
+                if CI[0] < 0:
+                    CI[0] = 0
+                if CI[1] < 0:
+                    CI[1] = 0
 
-                    min_results[j] = results[j] - CI[0]
-                    max_results[j] = CI[1] - results[j]
+                min_results[j] = results[j] - CI[0]
+                max_results[j] = CI[1] - results[j]
 
-                types = np.zeros([1,numOfMobileDevices])
-                marker = ['*', 'x', 'o', '.', ',']
-                colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-                xIndex = []
-                for i in range(numOfMobileDevices):
-                    types[0][i]=startOfMobileDeviceLoop+(i*stepOfMobileDeviceLoop)
-                    xIndex.append(startOfMobileDeviceLoop + (i* stepOfMobileDeviceLoop))
 
-                for j,scen in enumerate(scenarioType):
-                    yIndex = []
-                    for i in range(numOfMobileDevices):
-                        # TODO: temp removed
-                        # yIndex.append(results[j][i])
-                        yIndex.append(results[i])
-                    ax[p].scatter(xIndex, yIndex, marker = marker[o])
-                    ax[p].plot(xIndex, yIndex, marker = marker[j], label=orchestratorPolicy)
+            types = np.zeros([1,numOfMobileDevices])
+            marker = ['*', 'x', 'o', '.', ',']
+            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+            xIndex = []
+            for i in range(numOfMobileDevices):
+                types[0][i]=startOfMobileDeviceLoop+(i*stepOfMobileDeviceLoop)
+                xIndex.append(startOfMobileDeviceLoop + (i* stepOfMobileDeviceLoop))
+
+            # for j,scen in enumerate(scenarioType):
+            yIndex = []
+            for i in range(numOfMobileDevices):
+                # TODO: temp removed
+                # yIndex.append(results[j][i])
+                yIndex.append(results[i])
+            ax[p].scatter(xIndex, yIndex, marker = marker[o])
+            ax[p].plot(xIndex, yIndex, label=orchestratorPolicy)
 
     for axis in ax:
         axis.legend()

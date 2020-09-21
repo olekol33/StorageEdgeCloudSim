@@ -2,6 +2,7 @@ from getConfiguration import getConfiguration
 import matplotlib.pyplot as plt
 import pandas as pd
 from collections import Counter
+from os import path
 
 # folderPath = "C:\\Users\\Oleg\\git\\EdgeCloudSim\\sim_results"
 folderPath = getConfiguration("folderPath")
@@ -19,6 +20,10 @@ numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / ste
 for s in range(numOfSimulations):
     for i in range(len(scenarioType)):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
+            if (scenarioType[i] == "TWO_TIER" and not "CLOUD" in orchestratorPolicy):
+                continue
+            elif (scenarioType[i] != "TWO_TIER" and "CLOUD" in orchestratorPolicy):
+                continue
             for p, objectPlacement in enumerate(objectPlacements):
                 for j in range(numOfMobileDevices):
                     fields = []
@@ -26,6 +31,8 @@ for s in range(numOfSimulations):
                     mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
                     filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[0]), '_', orchestratorPolicy,'_',
                                         objectPlacement,'_',str(mobileDeviceNumber), 'DEVICES_', 'GRID_LOCATION.log'])
+                    if (not path.exists(filePath)):
+                        continue
                     df = pd.read_csv(filePath, delimiter=';')
 
                     mobile_coordinates = []

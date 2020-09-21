@@ -18,6 +18,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -27,6 +28,7 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
+import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
 import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 
@@ -184,12 +186,112 @@ public class SimLogger {
 		vmLoadList.add(new VmLoadLogItem(time, loadOnEdge, loadOnCloud, loadOnMobile));
 	}
 
+	private void logObjectPopularity() throws IOException {
+		File objectFile = null, objectDistFile = null;
+		FileWriter objectFW = null, objectDistFW = null;
+		BufferedWriter objectBW = null, objectDistBW = null;
+
+
+		objectFile = new File(outputFolder, filePrefix + "_OBJECTS_IN_HOSTS.log");
+		objectFW = new FileWriter(objectFile, true);
+		objectBW = new BufferedWriter(objectFW);
+
+		objectDistFile = new File(outputFolder, filePrefix + "_OBJECT_DISTRIBUTION.log");
+		objectDistFW = new FileWriter(objectDistFile, true);
+		objectDistBW = new BufferedWriter(objectDistFW);
+
+		appendToFile(objectBW, "host;numOfObjects;dataObjects;meanData;medianData;parityObjects;meanParity;medianParity");
+		appendToFile(objectDistBW, "Object Name;Object Type;Occurrences");
+
+		ObjectGenerator OG = RedisListHandler.getOG();
+/*		HashMap<Integer, HashMap<String, Object>> dd = OG.getObjectsInHosts().entrySet();
+		for (Map<Integer, HashMap<String, Object>> host : OG.getObjectsInHosts().entrySet())
+			jedis.hmset("object:"+KV.get("id"),KV);*/
+		for (Map.Entry<Integer, HashMap<String, Object>> entry : OG.getObjectsInHosts().entrySet()) {
+			String objects = (String)entry.getValue().get("objects");
+			StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
+			Set<String> objectsSet = new HashSet<String>();
+			while (st.hasMoreTokens())
+				objectsSet.add(st.nextToken());
+			List<Integer> dataObjectPriorities = new ArrayList<Integer>();
+			List<Integer> parityObjectPriorities = new ArrayList<Integer>();
+			List<List<Map>> listOfStripes =  OG.getListOfStripes();
+//			locationsSet.add(Integer.toString(currentHost));
+			for (String object : objectsSet){
+					if (object.startsWith("d")) {
+						String objectID = object.replaceAll("[^\\d.]", "");
+						dataObjectPriorities.add(Integer.valueOf(objectID));
+					}
+					else if (object.startsWith("p")){
+						int i=0;
+						for (List<Map> stripe : listOfStripes){
+							//assumes one parity
+							//search each stripe for the parity
+							if (stripe.get(SimSettings.getInstance().getNumOfDataInStripe()).get("id").equals(object)) {
+								parityObjectPriorities.add(i);
+								break;
+							}
+							else
+								i++;
+						}
+					}
+			}
+			Collections.sort(dataObjectPriorities);
+			Collections.sort(parityObjectPriorities);
+			IntSummaryStatistics dataStats = dataObjectPriorities.stream()
+					.mapToInt((x) -> x)
+					.summaryStatistics();
+			int dataMiddle = (dataObjectPriorities.get(dataObjectPriorities.size()/2) +dataObjectPriorities.get((dataObjectPriorities.size()/2)-1) )/2;
+			if (parityObjectPriorities.size()==0) {
+				appendToFile(objectBW, Integer.toString(entry.getKey())+SimSettings.DELIMITER +Integer.toString(objectsSet.size())+
+						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
+						Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER+Integer.toString(dataMiddle) +SimSettings.DELIMITER+
+						Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + "" +
+						SimSettings.DELIMITER + "");
+			}
+			else if (parityObjectPriorities.size()==1) {
+				appendToFile(objectBW, Integer.toString(entry.getKey())+SimSettings.DELIMITER +Integer.toString(objectsSet.size())+
+						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
+						Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER+Integer.toString(dataMiddle) +SimSettings.DELIMITER+
+						Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + parityObjectPriorities.get(0) +
+						SimSettings.DELIMITER + parityObjectPriorities.get(0));
+			}
+			else {
+				IntSummaryStatistics parityStats = parityObjectPriorities.stream()
+						.mapToInt((x) -> x)
+						.summaryStatistics();
+				int parityMiddle = (parityObjectPriorities.get(parityObjectPriorities.size() / 2) + parityObjectPriorities.get((parityObjectPriorities.size() / 2) - 1)) / 2;
+				appendToFile(objectBW, Integer.toString(entry.getKey()) + SimSettings.DELIMITER + Integer.toString(objectsSet.size()) +
+						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
+						Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER + Integer.toString(dataMiddle) + SimSettings.DELIMITER +
+						Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + Double.toString(parityStats.getAverage()) +
+						SimSettings.DELIMITER + Integer.toString(parityMiddle));
+			}
+		}
+		List<Map> listOfObjects = new ArrayList<Map>(OG.getDataObjects());
+		listOfObjects.addAll(OG.getParityObjects());
+		for (Map<String,String> KV : listOfObjects) {
+
+			String locations = (String)KV.get("locations");
+			StringTokenizer st= new StringTokenizer(locations, " "); // Space as delimiter
+			Set<String> locationsSet = new HashSet<String>();
+			while (st.hasMoreTokens())
+				locationsSet.add(st.nextToken());
+
+			appendToFile(objectDistBW, KV.get("id") + SimSettings.DELIMITER + KV.get("type") + SimSettings.DELIMITER+ locationsSet.size());
+		}
+		objectBW.close();
+		objectDistBW.close();
+	}
+
 	public void simStopped() throws IOException {
 		int numOfAppTypes = SimSettings.getInstance().getTaskLookUpTable().length;
 
 		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null, objectsFile = null, readObjectsFile = null;
 		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null, objectsFW = null, readObjectsFW = null;
 		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null, objectsBW = null, readObjectsBW = null;;
+
+		logObjectPopularity();
 
 		// Save generic results to file for each app type. last index is average
 		// of all app types
@@ -249,15 +351,23 @@ public class SimLogger {
 
 		//Oleg: For object log
 //		System.out.println("array size: " + taskMap.size());
-		int numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe()+
+		int numOfObjectsInStripe;
+		if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE"))
+			numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe();
+		else
+			numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe()+
 				SimSettings.getInstance().getNumOfParityInStripe();
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] accessID = new int[taskMap.size()];
+		double [] objectReadDelay = new double[taskMap.size()];
 		String [] readSource = new String[taskMap.size()];
 		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
 		Arrays.fill(hostID,-1);
 		Arrays.fill(accessID,-1);
+
+		DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(4);
 
 //		double[] timeToReadStripe = new double[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
 //		int[] objectsReadFromStripe = new int[IdleActiveStorageLoadGenerator.getNumOfIOTasks()];
@@ -295,13 +405,14 @@ public class SimLogger {
 			objectsFile = new File(outputFolder, filePrefix + "_OBJECTS.log");
 			objectsFW = new FileWriter(objectsFile, true);
 			objectsBW = new BufferedWriter(objectsFW);
-			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Status");
+//			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay;Status");
+			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay");
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
 			readObjectsFW = new FileWriter(readObjectsFile, true);
 			readObjectsBW = new BufferedWriter(readObjectsFW);
-			appendToFile(readObjectsBW, "ioID;latency;type");
+			appendToFile(readObjectsBW, "ioID;latency;Read Cost;type;Objects Read");
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				//print only summary for now
@@ -381,6 +492,7 @@ public class SimLogger {
 				objectID[key-1] = value.getObjectRead();
 				hostID[key-1] = value.getHostId();
 				accessID[key-1] = value.getAccessHostID();
+				objectReadDelay[key-1] = value.getNetworkDelay();
 				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
 				if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
 					readSource[key-1] = "Cloud";
@@ -641,7 +753,8 @@ public class SimLogger {
 				if (objectID[i] == null)
 					continue;
 				objectsBW.write((objectID[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
-						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + objectStatusID[i]));
+						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + df.format(objectReadDelay[i])));
+//						SimSettings.DELIMITER + objectStatusID[i]));
 				objectsBW.newLine();
 			}
 			//Oleg: Analyze readObjects
@@ -650,12 +763,18 @@ public class SimLogger {
 			int notFinished=0;
 			for (Integer key : timeToReadStripe.keySet()){
 				double readDelay=100;
+				double readCost=0;
+				int objectsRead=0;
 				String dataTypeRead = "data";
 //				Map<Integer, SortedSet<Double>> pair = it.next();
 //				Map<Integer, SortedSet<Double>> pair = (Map.Entry)it.next();
 //				SortedSet<Double> set = pair.getValue();
 //				TreeSet<Double> set = new TreeSet<Double>();
 				ArrayList<Double> list = timeToReadStripe.get(key);
+				if (list.size()>numOfObjectsInStripe) {
+					System.out.println("ERROR: Illegal number of objects in stripe");
+					System.exit(0);
+				}
 
 				//warm up period
 				if (list.contains(REJECTED))
@@ -672,12 +791,14 @@ public class SimLogger {
 						continue;
 					}
 
-					//object was read, parity not
+					//if data was read
 					if (!list.get(0).equals(NOT_FINISHED)) {
 						readDelay = list.get(0);
+						readCost = readDelay;
 						dataTypeRead = "data";
+						objectsRead=1;
 					}
-					//data and parity not finished
+					//if also parity wasn't read
 					else if(list.subList(1, numOfObjectsInStripe).contains(NOT_FINISHED)) {
 						notFinished++;
 						continue;
@@ -686,35 +807,56 @@ public class SimLogger {
 					else {
 						dataTypeRead = "parity";
 						readDelay = Collections.max(list.subList(1, numOfObjectsInStripe));
+						for(Double d : list.subList(1, numOfObjectsInStripe)) {
+							readCost += d;
+							objectsRead++;
+						}
+
 					}
 				}
 				//if only one object read
-				else if (list.size() ==1)
+				else if (list.size() ==1) {
 					readDelay = list.get(0);
+					readCost=readDelay;
+					objectsRead=1;
+				}
 				//shouldn't happen
 				else if (list.size() < (numOfObjectsInStripe)){
 					readDelay = list.get(0);
+					for(Double d : list) {
+						readCost += d;
+						objectsRead++;
+					}
 					System.out.println("Less than " + numOfObjectsInStripe + " objects read");
 				}
 				else {
 					try {
+						for(Double d : list) {
+							readCost += d;
+						}
+						objectsRead=list.size();
 						//if data and parity were read, take the best one
 						//parity delay
 						readDelay = Collections.max(list.subList(1, numOfObjectsInStripe));
+
 						if (readDelay > list.get(0)) {
+//							System.out.println("ioTaskID = " + key + ", data = " + list.get(0) + ", parity = " + readDelay + ", read data");
 							readDelay = list.get(0);
 							dataTypeRead = "data";
 						}
-						else
+						else {
 							dataTypeRead = "parity";
+//							System.out.println("ioTaskID = " + key + ", data = " + list.get(0) + ", parity = " + readDelay + ", read parity");
+						}
 					}
 					catch (Exception e){
 						System.out.println("Failed to extract stripe latency");
 					}
 				}
 
-				readObjectsBW.write((key + SimSettings.DELIMITER + String.valueOf(readDelay))+
-						SimSettings.DELIMITER + dataTypeRead);
+				readObjectsBW.write((key + SimSettings.DELIMITER + df.format(readDelay))+
+						SimSettings.DELIMITER +  df.format(readCost)+  SimSettings.DELIMITER +dataTypeRead +
+						SimSettings.DELIMITER + objectsRead);
 				readObjectsBW.newLine();
 //				it.remove(); // avoids a ConcurrentModificationException
 

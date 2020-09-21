@@ -102,17 +102,19 @@ public class MainApp {
 				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
 				{
 					for(int p=0; p<SS.getObjectPlacement().length; p++) {
+
 						String objectPlacementPolicy  = SS.getObjectPlacement()[p];
 						String simScenario = SS.getSimulationScenarios()[k];
 						String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
 						Date ScenarioStartDate = Calendar.getInstance().getTime();
 						now = df.format(ScenarioStartDate);
-
+//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
 						// Storage: Generate Redis KV list
 						RedisListHandler.closeConnection();
 						RedisListHandler.createList(objectPlacementPolicy);
 
 						String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
+
 						SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
 

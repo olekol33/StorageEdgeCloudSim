@@ -23,7 +23,7 @@ class IdleActiveStorageLoadGeneratorTest {
     @BeforeEach
     void setUp(){
         loadGenerator =new IdleActiveStorageLoadGenerator(100,20,
-            "SINGLE_TIER","RANDOM_HOST");
+            "SINGLE_TIER","UNIFORM_HOST");
 
     }
 /*

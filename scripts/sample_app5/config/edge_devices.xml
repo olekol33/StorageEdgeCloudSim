@@ -16,13 +16,13 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>50000</storage>
+				<storage>20000</storage>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>50000</storage>
+						<storage>20000</storage>
 					</VM>
 				</VMs>
 			</host>
@@ -44,13 +44,13 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>50000</storage>
+				<storage>20000</storage>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>50000</storage>
+						<storage>20000</storage>
 					</VM>
 				</VMs>
 			</host>
@@ -72,13 +72,13 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>50000</storage>
+				<storage>20000</storage>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>50000</storage>
+						<storage>20000</storage>
 					</VM>
 				</VMs>
 			</host>
@@ -100,13 +100,13 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>50000</storage>
+				<storage>20000</storage>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>50000</storage>
+						<storage>20000</storage>
 					</VM>
 				</VMs>
 			</host>
@@ -128,41 +128,13 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>50000</storage>
+				<storage>20000</storage>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>50000</storage>
-					</VM>
-				</VMs>
-			</host>
-		</hosts>
-	</datacenter>
-	<datacenter arch="x86" os="Linux" vmm="Xen">
-		<costPerBw>0.1</costPerBw>
-		<costPerSec>3.0</costPerSec>
-		<costPerMem>0.05</costPerMem>
-		<costPerStorage>0.1</costPerStorage>
-		<location>
-			<x_pos>15</x_pos>
-			<y_pos>15</y_pos>
-			<wlan_id>5</wlan_id>
-			<attractiveness>2</attractiveness>
-		</location>
-		<hosts>
-			<host>
-				<core>16</core>
-				<mips>80000</mips>
-				<ram>16000</ram>
-				<storage>50000</storage>
-				<VMs>
-					<VM vmm="Xen">
-						<core>16</core>
-						<mips>80000</mips>
-						<ram>16000</ram>
-						<storage>50000</storage>
+						<storage>20000</storage>
 					</VM>
 				</VMs>
 			</host>

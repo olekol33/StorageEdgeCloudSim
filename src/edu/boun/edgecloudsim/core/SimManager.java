@@ -262,7 +262,13 @@ public class SimManager extends SimEntity {
 	public void createNewTask(){
 		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
 		TaskProperty lastTask = taskList.get(taskList.size() - 1);
-		schedule(getId(), lastTask.getStartTime(), CREATE_TASK, lastTask);
+//		System.out.println("Finally Generated parity ioTaskID = " + lastTask.getIoTaskID() + ",");
+/*		System.out.println("Finally parity at " + CloudSim.clock() + " .Submitting ioTaskID = " + lastTask.getIoTaskID() +
+				", of time: " + lastTask.getStartTime() +", isParity = " + lastTask.getIsParity());*/
+		//TODO: add delay to new object generation
+		schedule(getId(), 0, CREATE_TASK, lastTask);
+/*		if (CloudSim.running()) {
+			CloudSim.send(getId(), dest, delay, CREATE_TASK, lastTask);*/
 	}
 
 	@Override
@@ -274,11 +280,10 @@ public class SimManager extends SimEntity {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
 					//storage
 					///Send task for each object read
-					if (edgeTask.getStripeID() != null){
-						mobileDeviceManager.submitTask(edgeTask);
-					}
-					else
-						mobileDeviceManager.submitTask(edgeTask);
+/*					System.out.println("At " + CloudSim.clock() + " Submitting ioTaskID = " + edgeTask.getIoTaskID() +
+							", of time: " + edgeTask.getStartTime() +", isParity = " + edgeTask.getIsParity());*/
+					mobileDeviceManager.submitTask(edgeTask);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(0);

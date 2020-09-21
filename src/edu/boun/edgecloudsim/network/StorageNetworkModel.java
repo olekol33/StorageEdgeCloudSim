@@ -196,7 +196,11 @@ public class StorageNetworkModel extends SampleNetworkModel {
         numOfManTaskForUpload = 0;
     }
 
-    public int getQueueSize(int hostID){
+    public int getWlanQueueSize(int hostID){
         return wlanClients[hostID];
+    }
+
+    public int getWanQueueSize(int hostID) {
+        return wanClients[hostID];
     }
 }

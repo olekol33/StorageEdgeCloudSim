@@ -15,6 +15,8 @@ import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.geometry.spherical.twod.Edge;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         taskTypeOfDevices = new int[numberOfMobileDevices];
         Random random = new Random();
         random.setSeed(ObjectGenerator.seed);
+        RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
 //            double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
@@ -84,10 +87,12 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //storage
 //            double samplingMethod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][SAMPLING_METHOD];
 
-            ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
+//            ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
+            //Oleg: random with seed
+            ExponentialDistribution rng = new ExponentialDistribution(rand,
+                    poissonMean, ExponentialDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
             while(virtualTime < simulationTime) {
                 double interval = rng.sample();
-
                 if(interval <= 0){
                     SimLogger.printLine("Impossible is occured! interval is " + interval + " for device " + i + " time " + virtualTime);
                     continue;
@@ -119,6 +124,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     public boolean createParityTask(Task task){
         int taskType = task.getTaskType();
         int isParity=1;
+
+        if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
+            taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
+                    task.getObjectRead(), task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
+            SimManager.getInstance().createNewTask();
+            return true;
+        }
         List<String> mdObjects = RedisListHandler.getObjectsFromRedis("object:md*_"+task.getObjectRead()+"_*");
         //no parities
         if (mdObjects.size()==0)
@@ -147,9 +159,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     objectID, task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
             SimManager.getInstance().createNewTask();
         }
-        //TODO: parametrize
-        if (i!=(3))
-            System.out.println("i!=(3)");
+        if (i!=(SimSettings.getInstance().getNumOfDataInStripe()+SimSettings.getInstance().getNumOfParityInStripe()))
+            System.out.println("Not created tasks for all parities");
         return true;
     }
 

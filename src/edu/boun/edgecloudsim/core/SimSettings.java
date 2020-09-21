@@ -101,6 +101,7 @@ public class SimSettings {
 	private String STRIPE_DIST;
 	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
+	private int MAX_CLOUD_REQUESTS;
 
 	//storage properties
 	private int RANDOM_SEED;
@@ -203,6 +204,7 @@ public class SimSettings {
 				STRIPE_DIST = prop.getProperty("stripe_dist");
 				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
+				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 
 			}
 			catch (Exception e){
@@ -564,6 +566,10 @@ public class SimSettings {
 
 	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;
+	}
+
+	public int getMaxCloudRequests() {
+		return MAX_CLOUD_REQUESTS;
 	}
 
 	public int getRandomSeed() {
