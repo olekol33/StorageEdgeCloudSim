@@ -249,12 +249,14 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                         SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
                     }
                 }
-                else
+                else if (delay < 0)
                 {
-                    System.out.println("delay < 0");
-                    SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
-//                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
+//                    System.out.println("delay < 0");
+//                    SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
+                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
                 }
+                else
+                    System.out.println("delay=0");
 
                 break;
             }
@@ -323,7 +325,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             if(host.getLocation().getServingWlanId() != task.getSubmittedLocation().getServingWlanId())
             {
                 delay = networkModel.getDownloadDelay(SimSettings.GENERIC_EDGE_DEVICE_ID, SimSettings.GENERIC_EDGE_DEVICE_ID, task);
-                if (delay==0)
+                if (delay<0)
                     SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
                 nextEvent = RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE;
                 nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID + 1;
@@ -353,11 +355,11 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
                 }
             }
-/*            else
+            else
             {
 //                SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
-//                SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
-            }*/
+                SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
+            }
         }
     }
 }

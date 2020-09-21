@@ -378,20 +378,13 @@ public class SampleNetworkModel extends NetworkModel {
 		//Oleg: Little's law: total time a customer spends in the system
 		//lamda*(double)deviceCount = (numOfManTaskForDownload/lastInterval)
 		double result = (double)1 / (mu-lamda*(double)deviceCount);
-		
-		if(result < 0)
-		{
-			System.out.println("Delay is negative in calculateMM1. lambda = " + lamda + ", avgTaskSize = " + avgTaskSize +
-					"mu = " + mu);
-			System.exit(0);
-		}
 
 //		System.out.println("delay: " + result); //To remove
 		result += propogationDelay;
-		if(result>15)
-			System.out.println("Delay too large in calculateMM1");
+//		if(result>15)
+//			System.out.println("Delay too large in calculateMM1");
 		
-		return (result > 15) ? 0 : result;
+		return (result > 1) ? -1 : result;
 	}
 	
 	double getManDownloadDelay() {

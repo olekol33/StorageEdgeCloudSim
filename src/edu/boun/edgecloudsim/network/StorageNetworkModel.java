@@ -116,8 +116,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
 //        System.out.println("Currently " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
         if(numOfWlanUser < experimentalWlanDelay.length)
             result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
-/*        else
-            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");*/
+        else
+            result = -1;
+//            System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
 
 /*        if(numOfWlanUser >80)
             System.out.println("Insufficient delay data at experimentalWlanDelay for " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");

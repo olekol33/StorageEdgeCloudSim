@@ -190,6 +190,7 @@ public class StaticRangeMobility extends MobilityModel {
     //according to "Experimental analysis of multipoint-to-point UAV communications with IEEE 802.11 n and 802.11 ac." Hayat et al
     //Calculate by how many % the throughput has decreased as function of distance
     //Worst is 5%
+    //TODO: degradation is 1/r^2
     public static double getDistanceDegradation(Location srcLocation, Location destLocation){
         double x0 = 0;
         double x1 = 100;

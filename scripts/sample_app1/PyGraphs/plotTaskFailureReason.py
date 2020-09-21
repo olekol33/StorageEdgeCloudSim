@@ -13,7 +13,7 @@ def plotTaskFailureReason():
     # plotGenericResult(TotalTasks, failedTaskDuetoMobility, 'Failed Task due to Mobility for Infotainment App (%)', 'INFOTAINMENT_APP', 'for_failed')
     # plotGenericResult(TotalTasks, failedTaskDuetoMobility, 'Failed Task due to Mobility for Heavy Computation App (%)', 'HEAVY_COMP_APP', 'for_failed')
     #
-    # plotGenericResult(NetworkData, failedTaskDuetoLanBw, 'Failed Tasks due to WLAN failure (%)', 'ALL_APPS', 'percentage_for_failed')
+    plotGenericResult(NetworkData, failedTaskDuetoLanBw, 'Failed Tasks due to WLAN failure (%)', 'ALL_APPS', 'percentage_for_all')
     # plotGenericResult(NetworkData, failedTaskDuetoLanBw, 'Failed Tasks due to WLAN failure for Augmented Reality App (%)', 'AUGMENTED_REALITY', 'for_failed')
     # plotGenericResult(NetworkData, failedTaskDuetoLanBw, 'Failed Tasks due to WLAN failure for Health App (%)', 'HEALTH_APP', 'for_failed')
     # plotGenericResult(NetworkData, failedTaskDuetoLanBw, 'Failed Tasks due to WLAN failure for Infotainment App (%)', 'INFOTAINMENT_APP', 'for_failed')
@@ -29,3 +29,4 @@ def plotTaskFailureReason():
     # plotGenericResult(TotalTasks, failedTaskDuetoQueue, 'Rejected Tasks due to WLAN Queue (%)', 'ALL_APPS', 'percentage_for_all')
 
 
+# plotTaskFailureReason()

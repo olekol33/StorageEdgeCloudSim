@@ -17,7 +17,7 @@ def getConfiguration(argType):
     elif (argType == "stepOfMobileDeviceLoop"): #4
         return 100 #step size of mobile device count
     elif (argType == "endOfMobileDeviceLoop"): #5
-        return 1000 #max number of mobile device
+        return 900 #max number of mobile device
     elif (argType == "xTickLabelCoefficient"): #6
         return 1 #xTickLabelCoefficient
     elif (argType == "scenarioType"):  #7
