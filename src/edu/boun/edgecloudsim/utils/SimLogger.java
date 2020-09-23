@@ -174,8 +174,8 @@ public class SimLogger {
 		taskMap.get(taskId).taskFailedDueToMobility(time);
 	}
 
-	public void taskRejectedDueToPolicy(int taskId, double time) {
-		taskMap.get(taskId).taskRejectedDueToPolicy(time);
+	public void taskRejectedDueToPolicy(int taskId, double time, int vmType) {
+		taskMap.get(taskId).taskRejectedDueToPolicy(time, vmType);
 	}
 
 	public void taskRejectedDueToQueue(int taskId, double time) {
@@ -359,11 +359,15 @@ public class SimLogger {
 				SimSettings.getInstance().getNumOfParityInStripe();
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
+		int [] ioTaskID = new int[taskMap.size()];
+		int [] isParity = new int[taskMap.size()];
 		int [] accessID = new int[taskMap.size()];
 		double [] objectReadDelay = new double[taskMap.size()];
 		String [] readSource = new String[taskMap.size()];
 		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
 		Arrays.fill(hostID,-1);
+		Arrays.fill(ioTaskID,-1);
+		Arrays.fill(isParity,-1);
 		Arrays.fill(accessID,-1);
 
 		DecimalFormat df = new DecimalFormat();
@@ -406,7 +410,7 @@ public class SimLogger {
 			objectsFW = new FileWriter(objectsFile, true);
 			objectsBW = new BufferedWriter(objectsFW);
 //			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay;Status");
-			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay");
+			appendToFile(objectsBW, "ioTaskID;ObjectID;isParity;HostID;AccessID;ReadSrc;Read Delay");
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
@@ -491,7 +495,9 @@ public class SimLogger {
 				//Oleg
 				objectID[key-1] = value.getObjectRead();
 				hostID[key-1] = value.getHostId();
+				ioTaskID[key-1] = value.getIoTaskID();
 				accessID[key-1] = value.getAccessHostID();
+				isParity[key-1] = value.getIsParity();
 				objectReadDelay[key-1] = value.getNetworkDelay();
 				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
 				if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
@@ -752,7 +758,8 @@ public class SimLogger {
 			for (int i = 0; i < taskMap.size(); i++) {
 				if (objectID[i] == null)
 					continue;
-				objectsBW.write((objectID[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
+				objectsBW.write((ioTaskID[i] + SimSettings.DELIMITER + objectID[i] + SimSettings.DELIMITER + isParity[i] +
+						SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
 						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + df.format(objectReadDelay[i])));
 //						SimSettings.DELIMITER + objectStatusID[i]));
 				objectsBW.newLine();
@@ -1253,7 +1260,8 @@ class LogItem {
 	}
 
 
-	public void taskRejectedDueToPolicy(double time) {
+	public void taskRejectedDueToPolicy(double time, int _vmType) {
+		vmType = _vmType;
 		taskEndTime = time;
 		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_POLICY;
 	}

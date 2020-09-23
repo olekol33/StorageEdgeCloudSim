@@ -93,10 +93,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
             delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
             //In case something went wrong
             if (delay==0)
-                return delay;
+                System.out.println("delay=0");
+//                return delay;
             //Add delay on network if access point not in range
-            //TODO: need to update access point to be nearest from destination
-            //TODO: verify it's correct and matching orchestrator
             Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
             if (nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId())
                 System.out.println("nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId()");

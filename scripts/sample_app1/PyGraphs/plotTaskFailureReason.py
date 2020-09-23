@@ -25,8 +25,10 @@ def plotTaskFailureReason():
     # plotGenericResult(NetworkData, failedTaskDuetoWanBw, 'Failed Tasks due to WAN failure for Infotainment App (%)', 'INFOTAINMENT_APP', 'for_failed')
     # plotGenericResult(NetworkData, failedTaskDuetoWanBw, 'Failed Tasks due to WAN failure for Heavy Comp. App (%)', 'HEAVY_COMP_APP', 'for_failed')
 
-    plotGenericResult(TotalTasks, failedTaskDuetoQueue, 'Rejected Tasks due to WLAN Queue (%)', 'ALL_APPS', 'percentage_for_all')
     # plotGenericResult(TotalTasks, failedTaskDuetoQueue, 'Rejected Tasks due to WLAN Queue (%)', 'ALL_APPS', 'percentage_for_all')
+    plotGenericResult(TotalTasks, failedTaskDuetoPolicy, 'Rejected Tasks due to WLAN Queue (%)', 'ALL_APPS', 'percentage_for_all')
+    # plotGenericResult(TotalTasks, failedTaskDuetoQueue, 'Rejected Tasks due to WLAN Queue (%)', 'ALL_APPS', 'percentage_for_all')
+    plotGenericResult(NetworkData, failedTaskDuetoManBw, 'Failed Tasks due to MAN failure (%)', 'ALL_APPS', 'percentage_for_all')
 
 
 # plotTaskFailureReason()

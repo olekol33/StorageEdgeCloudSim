@@ -127,7 +127,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
             taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                    task.getObjectRead(), task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
+                    task.getObjectRead(), task.getIoTaskID(), isParity,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
             SimManager.getInstance().createNewTask();
             return true;
         }
@@ -150,13 +150,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //if not data, than data of parity
             //TODO: add delay for queue query
             taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                    objectID, task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
+                    objectID, task.getIoTaskID(), isParity,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
             SimManager.getInstance().createNewTask();
         }
         for (String objectID:parityObjects){
             i++;
             taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                    objectID, task.getIoTaskID(), isParity,task.getInputFileSize(), task.getOutputFileSize(), task.getLength()));
+                objectID, task.getIoTaskID(), isParity,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
             SimManager.getInstance().createNewTask();
         }
         if (i!=(SimSettings.getInstance().getNumOfDataInStripe()+SimSettings.getInstance().getNumOfParityInStripe()))

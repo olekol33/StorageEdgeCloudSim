@@ -155,8 +155,8 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
 
 
             types = np.zeros([1,numOfMobileDevices])
-            marker = ['*', 'x', 'o', '.', ',']
-            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+            markers = ['s', 'x', 'o', '.', ',', '^']
+            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#7f7f7f', '#4F0041']
             xIndex = []
             for i in range(numOfMobileDevices):
                 types[0][i]=startOfMobileDeviceLoop+(i*stepOfMobileDeviceLoop)
@@ -168,16 +168,14 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                 # TODO: temp removed
                 # yIndex.append(results[j][i])
                 yIndex.append(results[i])
-            ax[p].scatter(xIndex, yIndex, marker = marker[o])
+            ax[p].scatter(xIndex, yIndex, marker = markers[o])
             ax[p].plot(xIndex, yIndex, label=orchestratorPolicy)
+            ax[p].set_title(objectPlacements[p])
 
     for axis in ax:
         axis.legend()
         axis.set_xlabel("Number of Mobile Devices")
         axis.set_ylabel(yLabel)
-    ax[0].set_title(objectPlacements[0])
-    ax[1].set_title(objectPlacements[1])
-    ax[2].set_title(objectPlacements[2])
 
     # ax.legend()
     # ax.set_xlabel("Number of Mobile Devices")

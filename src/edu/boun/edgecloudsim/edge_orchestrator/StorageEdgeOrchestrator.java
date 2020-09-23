@@ -19,10 +19,7 @@ import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
@@ -37,6 +34,30 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
         String randomLocation = objectLocations.get(random.nextInt(objectLocations.size()));
         return Integer.parseInt(randomLocation);
+    }
+    //Get host with shortest queue
+    private int selectShortestQueue(String locations) {
+        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        int minQueuesize = 1000;
+        int minQueueHost=-1;
+        //shuffle
+        Collections.shuffle(objectLocations,random);
+        //get shortest
+        for(String s : objectLocations) {
+            int selectedHost = Integer.valueOf(s);
+            if (minQueuesize>((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost)) {
+                minQueuesize = ((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost);
+                minQueueHost=selectedHost;
+//                System.out.println("Host: "+selectedHost + ", queue size: " + ((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost));
+                //shortest possible
+                if(minQueuesize==0)
+                    return minQueueHost;
+            }
+        }
+        if(minQueueHost==-1)
+            System.out.println("Host not selected");
+        return minQueueHost;
     }
 
     private int selectNearestHostToRead(String locations, Location deviceLocation) {
@@ -119,7 +140,12 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }*/
-        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
+/*        else if(policy.equalsIgnoreCase("SHORTEST_QUEUE")) {
+            int relatedHostId= selectShortestQueue(RedisListHandler.getObjectLocations(task.getObjectRead()));
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            selectedVM = vmArray.get(0);
+        }*/
+/*        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
                 policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
             NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
             int selectedHost = deviceLocation.getServingWlanId();
@@ -139,14 +165,13 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
                 //don't read data, only parity
                 if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
-                    SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock());
                     return selectedVM;
                 }
             }
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
-        }
+        }*/
         else if(policy.equalsIgnoreCase("NEAREST_HOST") ||
                 policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED") ){
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
@@ -190,7 +215,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }*/
-
+//        System.out.println("Selected host: " + selectedVM.getId());
         return selectedVM;
     }
 

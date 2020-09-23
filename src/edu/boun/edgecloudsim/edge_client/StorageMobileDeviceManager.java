@@ -140,6 +140,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 schedule(getId(), delay, nextEvent, task);
             }
             else{
+                SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),vmType);
                 //SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
 //                SimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType);
             }
@@ -147,7 +148,9 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         else
         {
             //SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-            SimLogger.getInstance().rejectedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), vmType, delayType);
+//            SimLogger.getInstance().rejectedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), vmType, delayType);
+//            SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
+
         }
     }
     @Override
@@ -238,7 +241,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     Location currentLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(),CloudSim.clock()+delay);
                     if(task.getSubmittedLocation().getServingWlanId() == currentLocation.getServingWlanId())
                     {
-//                        networkModel.downloadStarted(currentLocation, SimSettings.GENERIC_EDGE_DEVICE_ID);
                         networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
                         SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
 //                        System.out.println("4Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
@@ -340,10 +342,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 //currently should always be true since no mobility
                 if(task.getSubmittedLocation().getServingWlanId() == currentLocation.getServingWlanId())
                 {
-//                    networkModel.downloadStarted(currentLocation, nextDeviceForNetworkModel);
 
                     networkModel.downloadStarted(task.getSubmittedLocation(), nextDeviceForNetworkModel);
-//                    networkModel.downloadStarted(host.getLocation(), nextDeviceForNetworkModel);
 
                     SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, delayType);
 //                    System.out.println("1Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");

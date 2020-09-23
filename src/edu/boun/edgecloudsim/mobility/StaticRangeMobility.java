@@ -138,6 +138,7 @@ public class StaticRangeMobility extends MobilityModel {
         int deviceYPos = deviceLocation.getXPos();
         int hostXPos = hostLocation.getXPos();
         int hostYPos = hostLocation.getYPos();
+        //if device in radius of host
         if (hostXPos-hostRadius <= deviceXPos && deviceXPos <= hostXPos+hostRadius) {
             if (hostYPos - hostRadius <= deviceYPos && deviceYPos <= hostYPos + hostRadius)
                 return hostLocation;
@@ -200,7 +201,35 @@ public class StaticRangeMobility extends MobilityModel {
         double m = (y0-y1) / (x0-x1);
         double distance = getEucledeanDistance(srcLocation,destLocation);
         //return %
-        return (m * (distance - x0) + y0)/100;
+        double degradation = (m * (distance - x0) + y0)/100;
+/*        try {
+            logDistanceDegradation(srcLocation, destLocation, distance, degradation);
+        }
+        catch (Exception e){
+            System.out.println("error");
+        }*/
+        return degradation;
+    }
+    public static void logDistanceDegradation(Location srcLocation, Location destLocation, double distance, double degradation) throws FileNotFoundException {
+        String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_DISTANCE_DEGRADATION.log";
+        File f = new File(savestr);
+
+        PrintWriter out = null;
+        if ( f.exists() && !f.isDirectory() ) {
+            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
+        }
+        else {
+            out = new PrintWriter(savestr);
+            out.append("srcX;srcY;dstX;dstY;distance;degradation");
+            out.append("\n");
+        }
+
+        out.append(srcLocation.getXPos()+ SimSettings.DELIMITER +srcLocation.getYPos()+ SimSettings.DELIMITER +destLocation.getXPos()+ SimSettings.DELIMITER +
+                destLocation.getYPos()+ SimSettings.DELIMITER +distance+ SimSettings.DELIMITER +degradation);
+        out.append("\n");
+
+
+        out.close();
     }
 
     // Receives list of hosts in which device is in range, returns nearest host.

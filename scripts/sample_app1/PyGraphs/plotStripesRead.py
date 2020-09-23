@@ -56,10 +56,11 @@ def plotStripesRead():
     costs = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     latency_cost_df = pd.DataFrame(columns=["Devices","Latency","Cost","Orchestrator Policy","Placement"])
     latency_index=0
+    type_read_total = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     type_read_data = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     type_read_parity = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
-    markers = ['s', 'x', 'o', '.', ',']
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd','#7f7f7f']
+    markers = ['s', 'x', 'o', '.', ',','^']
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd','#7f7f7f','#4F0041']
     for p, objectPlacement in enumerate(objectPlacements):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
             all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
@@ -79,15 +80,17 @@ def plotStripesRead():
                         data = pd.read_csv(filePath, delimiter=';')
                         latencies.at[mobileDeviceNumber,orchestratorPolicy] = data["latency"].mean()
                         costs.at[mobileDeviceNumber,orchestratorPolicy] = data["Read Cost"].mean()
-                        type_read_data.at[mobileDeviceNumber,orchestratorPolicy] = data["type"].value_counts()["data"]
+                        type_read_data.at[mobileDeviceNumber,orchestratorPolicy] = data[data["type"]=="data"].shape[0]
+                        type_read_total.at[mobileDeviceNumber, orchestratorPolicy] = data["type"].shape[0]
                         if "parity" in data["type"].unique():
-                            type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = data["type"].value_counts()["parity"]
+                            type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = data[data["type"]=="parity"].shape[0]
                         else:
                             type_read_parity.at[mobileDeviceNumber,orchestratorPolicy] = 0
                     # plt.show()
                     # placedObjects = pd.DataFrame(frame)
             ax[p].scatter(numOfDevices, latencies[orchestratorPolicy], marker=markers[o])
             ax[p].plot(numOfDevices, latencies[orchestratorPolicy], marker=markers[o], label=orchestratorPolicy)
+            ax[p].set_title(objectPlacements[p])
         for row in latencies.iterrows():
             for column in latencies.columns:
                 # latency_cost_df.loc[-1] = [row[0], latencies.loc[row[0]][column], costs.loc[row[0]][column], column,objectPlacement]
@@ -100,14 +103,17 @@ def plotStripesRead():
                 #                                       column,objectPlacement]
                 # latency_index+=1
 
-        fig2, ax2 = plt.subplots(2, 1, figsize=(15, 10))
-        type_read_data.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[0])
-        type_read_parity.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[1])
+        fig2, ax2 = plt.subplots(3, 1, figsize=(15, 10))
+        type_read_total.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[0])
+        type_read_data.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[1])
+        type_read_parity.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[2])
         for axis in ax2:
             axis.set_xlabel("Devices")
             axis.set_ylabel("Reads")
-        ax2[0].set_title("Data Reads")
-        ax2[1].set_title("Parity Reads")
+            axis.grid(True)
+        ax2[0].set_title("All Reads")
+        ax2[1].set_title("Data Reads")
+        ax2[2].set_title("Parity Reads")
         fig2.tight_layout(h_pad=2)
         fig2.savefig(folderPath + '\\fig\\Read_By_Type' + "_" + objectPlacement + '.png',
                      bbox_inches='tight')
@@ -120,9 +126,6 @@ def plotStripesRead():
         axis.set_xlabel("Devices")
         axis.set_ylabel("Average Data Read Latency[s]")
         axis.grid(True)
-    ax[0].set_title(objectPlacements[0])
-    ax[1].set_title(objectPlacements[1])
-    ax[2].set_title(objectPlacements[2])
 
     fig.tight_layout(h_pad=2)
     fig.savefig(folderPath + '\\fig\\Average_Data_Read_Latency' + '.png',
