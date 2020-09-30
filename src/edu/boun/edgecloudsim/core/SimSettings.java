@@ -97,8 +97,10 @@ public class SimSettings {
 	private int X_RANGE;
 	private int Y_RANGE;
 	private int HOST_RADIUS;
-	private String OBJECT_DIST;
-	private String STRIPE_DIST;
+	private String OBJECT_DIST_READ;
+	private String STRIPE_DIST_READ;
+	private String OBJECT_DIST_PLACE;
+	private String STRIPE_DIST_PLACE;
 	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
 	private int MAX_CLOUD_REQUESTS;
@@ -200,8 +202,10 @@ public class SimSettings {
 				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
 				Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
 				HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
-				OBJECT_DIST = prop.getProperty("object_dist");
-				STRIPE_DIST = prop.getProperty("stripe_dist");
+				OBJECT_DIST_READ = prop.getProperty("object_dist_read");
+				STRIPE_DIST_READ = prop.getProperty("stripe_dist_read");
+				OBJECT_DIST_PLACE = prop.getProperty("object_dist_place");
+				STRIPE_DIST_PLACE = prop.getProperty("stripe_dist_place");
 				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
@@ -556,12 +560,18 @@ public class SimSettings {
 		return HOST_RADIUS;
 	}
 
-	public String getObjectDist() {
-		return OBJECT_DIST;
+	public String getObjectDistRead() {
+		return OBJECT_DIST_READ;
+	}
+	public String getObjectDistPlace() {
+		return OBJECT_DIST_PLACE;
 	}
 
-	public String getStripeDist() {
-		return STRIPE_DIST;
+	public String getStripeDistRead() {
+		return STRIPE_DIST_READ;
+	}
+	public String getStripeDistPlace() {
+		return STRIPE_DIST_PLACE;
 	}
 
 	public int getCongestedThreshold() {

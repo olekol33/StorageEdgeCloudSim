@@ -139,9 +139,9 @@ public class ObjectGenerator {
     private int getObject(int numberOfElements, String type)  throws NotStrictlyPositiveException {
         String dist="";
         if (type.equalsIgnoreCase("objects"))
-            dist = SimSettings.getInstance().getObjectDist();
+            dist = SimSettings.getInstance().getObjectDistPlace();
         else if (type.equalsIgnoreCase("stripes"))
-            dist = SimSettings.getInstance().getStripeDist();
+            dist = SimSettings.getInstance().getStripeDistPlace();
         else
             System.out.println("Type not recognized");
 
@@ -337,7 +337,7 @@ public class ObjectGenerator {
 
     //place coding objects in hosts by policy
     private void fillHostsWithCodingObjects(){
-        String stripeDist = SimSettings.getInstance().getStripeDist();
+        String stripeDist = SimSettings.getInstance().getStripeDistPlace();
         int numOfHosts = SimSettings.getInstance().getNumOfEdgeDatacenters();
         int i=1;
         int currentHost=0;
@@ -412,7 +412,7 @@ public class ObjectGenerator {
 
     //place coding objects in hosts by policy
     private void fillHostsWithDataObjects(){
-        String objectDist = SimSettings.getInstance().getObjectDist();
+        String objectDist = SimSettings.getInstance().getObjectDistPlace();
         int numOfHosts = SimSettings.getInstance().getNumOfEdgeDatacenters();
         int i=1;
         int currentHost=0;

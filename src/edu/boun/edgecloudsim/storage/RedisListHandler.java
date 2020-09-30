@@ -132,7 +132,7 @@ public class RedisListHandler {
     }*/
 
     public static String getObject(){
-        String dist=SimSettings.getInstance().getStripeDist();
+        String dist=SimSettings.getInstance().getObjectDistRead();
         List<String> listOfDataObjects = getObjectsFromRedis("object:d*");
         int objectNum = -1;
         if (dist.equals("UNIFORM"))
