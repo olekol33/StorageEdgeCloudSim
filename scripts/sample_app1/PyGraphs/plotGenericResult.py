@@ -48,7 +48,7 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
-    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(10,20))
+    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(12,20))
     for p, objectPlacement in enumerate(objectPlacements):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
             all_results = np.zeros((numOfSimulations, 1, numOfMobileDevices))

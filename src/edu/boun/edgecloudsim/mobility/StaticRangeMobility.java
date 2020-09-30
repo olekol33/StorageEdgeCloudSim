@@ -146,12 +146,11 @@ public class StaticRangeMobility extends MobilityModel {
         //get all hosts in range
         List<Integer> hostsInRange = checkLegalPlacement(deviceLocation);
         //return nearest
-//        return dcLocations.get(getNearestHost(hostsInRange,hostLocation));
         return getDCLocation(getNearestHost(hostsInRange,hostLocation));
     }
     // Receives DC list and mobile device location. Check if device located within radius of the DCs
     // If yes, add it to a list
-    private static List<Integer> checkLegalPlacement(Location deviceLocation) {
+    public static List<Integer> checkLegalPlacement(Location deviceLocation) {
         int x_pos = deviceLocation.getXPos();
         int y_pos = deviceLocation.getYPos();
         int hostRadius = SimSettings.getInstance().getHostRadius();
@@ -232,6 +231,7 @@ public class StaticRangeMobility extends MobilityModel {
         out.close();
     }
 
+
     // Receives list of hosts in which device is in range, returns nearest host.
     public static int getNearestHost(List<Integer> hosts, Location deviceLocation){
         int minDistance = Integer.MAX_VALUE;
@@ -240,7 +240,9 @@ public class StaticRangeMobility extends MobilityModel {
         for (int i=0 ; i < hosts.size() ; i++){
             int host = hosts.get(i);
             int distance = getGridDistance(deviceLocation,getDCLocation(host));
-//            int distance = getGridDistance(deviceLocation,dcLocations.get(host));
+            //best possible
+            if (distance==0)
+                return host;
             if (distance < minDistance) {
                 minDistance = distance;
                 minDCLocationID = host;

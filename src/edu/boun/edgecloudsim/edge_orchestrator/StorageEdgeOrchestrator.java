@@ -6,6 +6,7 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
+import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
@@ -36,28 +37,30 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         return Integer.parseInt(randomLocation);
     }
     //Get host with shortest queue
-    private int selectShortestQueue(String locations) {
-        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+    private int getHostWithShortestQueueInRange(Location deviceLocation) {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        List<Integer> hostsInRange = deviceLocation.getHostsInRange();
+        int queueThreshold = SimSettings.getInstance().getCongestedThreshold();
         int minQueuesize = 1000;
         int minQueueHost=-1;
-        //shuffle
-        Collections.shuffle(objectLocations,random);
         //get shortest
-        for(String s : objectLocations) {
-            int selectedHost = Integer.valueOf(s);
-            if (minQueuesize>((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost)) {
-                minQueuesize = ((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost);
-                minQueueHost=selectedHost;
-//                System.out.println("Host: "+selectedHost + ", queue size: " + ((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost));
-                //shortest possible
-                if(minQueuesize==0)
-                    return minQueueHost;
+        for(int selectedHost : hostsInRange) {
+            int queueSize = ((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost);
+            if (minQueuesize > queueSize) {
+                minQueuesize = queueSize;
+                minQueueHost = selectedHost;
             }
         }
         if(minQueueHost==-1)
             System.out.println("Host not selected");
-        return minQueueHost;
+        //if selected access point is different and has shorter queue with thershold return it
+        if (minQueueHost!=deviceLocation.getServingWlanId()){
+            if (((StorageNetworkModel) networkModel).getWlanQueueSize(minQueueHost) + queueThreshold<
+                    ((StorageNetworkModel) networkModel).getWlanQueueSize(deviceLocation.getServingWlanId()))
+                return minQueueHost;
+        }
+        //else keep same access point
+        return deviceLocation.getServingWlanId();
     }
 
     private int selectNearestHostToRead(String locations, Location deviceLocation) {
@@ -89,13 +92,48 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);
     }
 
+    private int getHostWithShortestManQueue(String locations, Location deviceLocation) {
+        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+//        List<Integer> intObjectLocations = new ArrayList<>();
+        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        int minQueuesize = Integer.MAX_VALUE;
+        int minQueueHost=-1;
+        //only one location exists
+        if (objectLocations.size()==1)
+            return selectNearestHostToRead(locations,deviceLocation);
+        for(String s : objectLocations){
+            int selectedHost = Integer.valueOf(s);
+            int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(selectedHost);
+            if (minQueuesize > queueSize) {
+                minQueuesize = queueSize;
+                minQueueHost = selectedHost;
+            }
+/*            //if large queue, skip
+            if (((StorageNetworkModel) networkModel).getManQueueSize(selectedHost)>SimSettings.getInstance().getCongestedThreshold())
+                continue;
+            else
+                intObjectLocations.add(Integer.valueOf(s));*/
+        }
+/*        //all are with queue, return nearest
+        if (intObjectLocations.size()==0)
+            return selectNearestHostToRead(locations,deviceLocation);
+        else //if some not with queue
+            return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);*/
+        if (minQueueHost==-1)
+            System.out.println("ERROR: No host found");
+        return minQueueHost;
+    }
+
+
+
     @Override
     public EdgeVM selectVmOnHost(Task task) {
         EdgeVM selectedVM = null;
         //TODO: check why this was a problem in LEAST_UTIL_IN_RANGE_WITH_PARITY
 //        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
         //In static scenario
-        Location deviceLocation = task.getSubmittedLocation();
+//        Location deviceLocation = task.getSubmittedLocation();
+        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
         //in our scenasrio, serving wlan ID is equal to the host id
         //because there is only one host in one place
 //        int relatedHostId=deviceLocation.getServingWlanId();
@@ -117,6 +155,23 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
         if(policy.equalsIgnoreCase("UNIFORM_HOST")){
             int relatedHostId= randomlySelectHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()));
+            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+            selectedVM = vmArray.get(0);
+        }
+        else if(policy.equalsIgnoreCase("SHORTEST_QUEUE_IN_RANGE")){
+            //get host with shortest queue as access point
+            int selectedAccessHost = getHostWithShortestQueueInRange(deviceLocation);
+            //if object on access point read from it, otherwise it doesn't matter
+            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),StaticRangeMobility.getDCLocation(selectedAccessHost));
+            //if selected access point is different
+            if (deviceLocation.getServingWlanId() != selectedAccessHost) {
+//                System.out.println("deviceID = " + task.getMobileDeviceId() +", ioTaskID = " + task.getIoTaskID() + ", changed from: " + deviceLocation.getServingWlanId() +
+//                        " to: " + selectedAccessHost);
+                deviceLocation.setServingWlanId(selectedAccessHost);
+                task.setSubmittedLocation(StaticRangeMobility.getDCLocation(selectedAccessHost));
+                MobilityModel mobilityModel = SimManager.getInstance().getMobilityModel();
+                ((StaticRangeMobility)mobilityModel).setLocation(task.getMobileDeviceId(),deviceLocation);
+            }
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
@@ -145,33 +200,40 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }*/
-/*        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
+        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
                 policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
             NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
-            int selectedHost = deviceLocation.getServingWlanId();
-            int queueSize = ((StorageNetworkModel) networkModel).getWlanQueueSize(selectedHost);
+            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
+            int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(relatedHostId);
             //if it's the parity, don't read from congested host
             if (task.getIsParity()==1){
-                int relatedHostId= selectNearestHostToReadWOQueue(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
-                if (relatedHostId>=SimSettings.getInstance().getNumOfEdgeDatacenters())
-                    System.out.println("ERROR: Illegal host id " + relatedHostId);
-                List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+                int selectedHost= getHostWithShortestManQueue(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
+                if (selectedHost>=SimSettings.getInstance().getNumOfEdgeDatacenters())
+                    System.out.println("ERROR: Illegal host id " + selectedHost);
+                List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(selectedHost);
                 selectedVM = vmArray.get(0);
                 return selectedVM;
             }
-            //if queue size larger than threshold
-            if (queueSize >= SimSettings.getInstance().getCongestedThreshold()) {
-                LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
-                boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
-                //don't read data, only parity
-                if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
-                    return selectedVM;
+            else { //not parity
+                //if not nearest host contains object, read from it - read on grid
+                if (relatedHostId!=deviceLocation.getServingWlanId()){
+                    //if MAN queue too large
+                    //Currently use factor of 10
+                    if (queueSize >= 10*SimSettings.getInstance().getCongestedThreshold()) {
+                        LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+                        boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
+                        //don't read data, only parity
+                        if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
+                            //return null
+                            return selectedVM;
+                        }
+                    }
                 }
             }
-            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
+//            int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
-        }*/
+        }
         else if(policy.equalsIgnoreCase("NEAREST_HOST") ||
                 policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED") ){
             int relatedHostId= selectNearestHostToRead(RedisListHandler.getObjectLocations(task.getObjectRead()),deviceLocation);

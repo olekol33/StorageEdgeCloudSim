@@ -50,11 +50,13 @@ def plotStripesRead():
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
 
-    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(10,20))
+    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(12,20))
     numOfDevices = list(range(startOfMobileDeviceLoop,endOfMobileDeviceLoop+1,stepOfMobileDeviceLoop))
     latencies = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     costs = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
+    requests = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     latency_cost_df = pd.DataFrame(columns=["Devices","Latency","Cost","Orchestrator Policy","Placement"])
+    latency_requests_df = pd.DataFrame(columns=["Devices","Latency","Requests","Orchestrator Policy","Placement"])
     latency_index=0
     type_read_total = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
     type_read_data = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
@@ -80,6 +82,7 @@ def plotStripesRead():
                         data = pd.read_csv(filePath, delimiter=';')
                         latencies.at[mobileDeviceNumber,orchestratorPolicy] = data["latency"].mean()
                         costs.at[mobileDeviceNumber,orchestratorPolicy] = data["Read Cost"].mean()
+                        requests.at[mobileDeviceNumber,orchestratorPolicy] = data.shape[0]
                         type_read_data.at[mobileDeviceNumber,orchestratorPolicy] = data[data["type"]=="data"].shape[0]
                         type_read_total.at[mobileDeviceNumber, orchestratorPolicy] = data["type"].shape[0]
                         if "parity" in data["type"].unique():
@@ -98,6 +101,9 @@ def plotStripesRead():
                 # latency_cost_df = latency_cost_df.sort_index()  # sorting by index
                 latency_cost_df = latency_cost_df.append({'Devices': row[0], 'Latency': latencies.loc[row[0]][column],
                                       'Cost': costs.loc[row[0]][column], 'Orchestrator Policy': column,
+                                      'Placement':objectPlacement}, ignore_index=True)
+                latency_requests_df = latency_requests_df.append({'Devices': row[0], 'Latency': latencies.loc[row[0]][column],
+                                      'Requests': requests.loc[row[0]][column], 'Orchestrator Policy': column,
                                       'Placement':objectPlacement}, ignore_index=True)
                 # latency_cost_df.loc[latency_index] = [row[0], latencies.loc[row[0]][column], costs.loc[row[0]][column],
                 #                                       column,objectPlacement]
@@ -163,11 +169,48 @@ def plotStripesRead():
         labels = orchestratorPolicies + objectPlacements
 
         ax.legend(handles, labels, loc=0, framealpha=0.6,prop={'size': 8})
-        ax.set_title("Cost vs Latency for " + str(count) + " Devices",y=1.05, fontsize=20)
+        ax.set_title("Redundancy Cost vs Latency for " + str(count) + " Devices",y=1.05, fontsize=20)
         # fig.suptitle('test title', fontsize=20)
         fig.tight_layout()
-        fig.savefig(folderPath + '\\fig\\Cost vs Latency ' + str(count) + ' Devices.png',
+        fig.savefig(folderPath + '\\fig\\Redundancy Cost vs Latency ' + str(count) + ' Devices.png',
                     bbox_inches='tight')
         plt.close(fig)
 
-plotStripesRead()
+    for count in latency_requests_df["Devices"].unique():
+        fig, ax = plt.subplots(1, 1)
+        count_df = latency_requests_df[latency_requests_df.Devices==count]
+        min_value=1000
+        max_value=0
+        for index, row in count_df.iterrows():
+            plt.scatter(x=row["Latency"], y=row["Requests"], color=colors[orchestratorPolicies.index(row["Orchestrator Policy"])],
+                        marker=markers[objectPlacements.index(row["Placement"])],alpha=0.7)
+            # min_value=min(min_value,row["Latency"],row["Requests"])
+            # max_value=max(max_value,row["Latency"],row["Requests"])
+        ax.set_xlabel("Latency")
+        ax.set_ylabel("Completed Requests")
+        ax.grid(True)
+        # x = np.linspace(min_value, max_value, 100)
+        # plt.plot(x, x, '-r',alpha=0.3,linewidth=0.5)
+        # legend1 = ax.legend(*scatter.legend_elements(num=5),
+        #                     loc="upper left", title="Ranking")
+        # ax.add_artist(legend1)
+        # legend2 = ax.legend(*scatter.legend_elements(**kw),
+        #                     loc="lower right", title="Price")
+        # ax.legend(markers[0:len(objectPlacements)], objectPlacements)
+        f = lambda m, c: plt.plot([], [], marker=m, color=c, ls="none")[0]
+        handles = [f("s", colors[i]) for i in range(len(orchestratorPolicies))]
+        handles += [f(markers[i], "k") for i in range(len(objectPlacements))]
+
+        labels = orchestratorPolicies + objectPlacements
+
+        ax.legend(handles, labels, loc=0, framealpha=0.6,prop={'size': 8})
+        ax.set_title("Completed Requests vs Latency for " + str(count) + " Devices",y=1.05, fontsize=20)
+        # fig.suptitle('test title', fontsize=20)
+        fig.tight_layout()
+        fig.savefig(folderPath + '\\fig\\Completed Requests vs Latency ' + str(count) + ' Devices.png',
+                    bbox_inches='tight')
+        plt.close(fig)
+
+
+
+# plotStripesRead()

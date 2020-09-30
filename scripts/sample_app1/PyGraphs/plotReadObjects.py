@@ -59,9 +59,9 @@ def plotReadObjects():
             host_frame = {}
             access_frame = {}
             delay_frame = {}
-            fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
-            fig2, ax2 = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
-            fig3, ax3 = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
+            fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(12, 17))
+            fig2, ax2 = plt.subplots(len(objectPlacements), 1, figsize=(12, 17))
+            fig3, ax3 = plt.subplots(len(objectPlacements), 1, figsize=(12, 17))
             for p, objectPlacement in enumerate(objectPlacements):
                 for i in range(len(scenarioType)):
                     for o, orchestratorPolicy in enumerate(orchestratorPolicies):
@@ -128,8 +128,8 @@ def plotReadObjects():
         for i in range(len(scenarioType)):
             for o, orchestratorPolicy in enumerate(orchestratorPolicies):
                 for j in range(numOfMobileDevices):
-                    fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(10, 17))
-                    fig2, ax2 = plt.subplots(len(objectPlacements), 2, figsize=(10, 17), sharey=True)
+                    fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(15, 17))
+                    fig2, ax2 = plt.subplots(len(objectPlacements), 2, figsize=(15, 17), sharey=True)
                     objects_df = pd.DataFrame(columns=["Host", "Type", "Value", "Value Type", "Policy"])
                     for p, objectPlacement in enumerate(objectPlacements):
                         width = 0.35
@@ -152,7 +152,7 @@ def plotReadObjects():
                         ax[p].set_xlabel("Host Number")
                         ax[p].set_ylabel("Objects in Hosts")
                         # ax[p] = plt.figure().gca()
-                        ax[p].xaxis.set_major_locator(MaxNLocator(integer=True))
+                        # ax[p].xaxis.set_major_locator(MaxNLocator(integer=True))
 
 
                         for host in data["host"].unique():
@@ -182,7 +182,7 @@ def plotReadObjects():
                         df = data[data["Object Type"] == 'parity']
                         df = df.reset_index()
                         if(df.shape[0]>0):
-                            df.plot.bar(y='Occurrences', ax=ax2[p][1], use_index=True, color='blue')
+                            df.plot.bar(y='Occurrences', ax=ax2[p][1], use_index=True, color='blue',xticks=list(range(0,max(df.index.values)+2,5)))
                     for ax, col in zip(ax2[0], ["Data","Parity"]):
                         ax.set_title(col)
                         ax.legend().set_visible(False)
@@ -196,9 +196,9 @@ def plotReadObjects():
                     fig2.savefig(folderPath + '\\fig\\Object_Distribution_By_Hosts_' + '.png', bbox_inches='tight')
                     plt.close(fig2)
 
-                    fig.suptitle("Placed Objects By Type" + str(mobileDeviceNumber))
-                    fig.savefig(folderPath + '\\fig\\Object_Popularity_' + '.png', bbox_inches='tight')
-                    plt.close(fig)
+                    # fig.suptitle("Placed Objects By Type" + str(mobileDeviceNumber))
+                    # fig.savefig(folderPath + '\\fig\\Object_Popularity_' + '.png', bbox_inches='tight')
+                    # plt.close(fig)
 
                     fig.suptitle("Object Distribution By Type" + str(mobileDeviceNumber))
                     fig.savefig(folderPath + '\\fig\\Object_Distribution_By_Object_' + '.png', bbox_inches='tight')

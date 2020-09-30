@@ -1,8 +1,10 @@
 package edu.boun.edgecloudsim.network;
 
+import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
+import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.Location;
@@ -10,9 +12,24 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.*;
+import java.util.List;
 //import java.io.IOException;
 
 public class StorageNetworkModel extends SampleNetworkModel {
+
+    protected double[] hostManPoissonMeanForDownload; //seconds
+    protected double[] hostAvgManTaskOutputSize; //bytes
+    protected double[] hostTotalManTaskOutputSize;
+    protected double[] hostNumOfManTaskForDownload;
+    protected int[] manHostClients;
+
+    protected double[] previousHostManPoissonMeanForDownload; //seconds
+    protected double[] previousHostAvgManTaskOutputSize; //bytes
+    protected double[] previousHostTotalManTaskOutputSize;
+    protected double[] previousHostNumOfManTaskForDownload;
+    protected int[] previousManHostClients;
+
+
     public StorageNetworkModel(int _numberOfMobileDevices, String _simScenario) {
         super(_numberOfMobileDevices, _simScenario);
     }
@@ -30,8 +47,22 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
     @Override
     public void initialize() {
-        wanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
-        wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+        int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
+        wanClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
+        wlanClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
+        manHostClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
+
+        hostManPoissonMeanForDownload = new double[numOfEdgeDatacenters];
+        hostAvgManTaskOutputSize = new double[numOfEdgeDatacenters];
+        hostTotalManTaskOutputSize = new double[numOfEdgeDatacenters];
+        hostNumOfManTaskForDownload = new double[numOfEdgeDatacenters];
+
+        previousManHostClients = new int[numOfEdgeDatacenters];
+        previousHostManPoissonMeanForDownload = new double[numOfEdgeDatacenters];
+        previousHostAvgManTaskOutputSize = new double[numOfEdgeDatacenters];
+        previousHostTotalManTaskOutputSize = new double[numOfEdgeDatacenters];
+        previousHostNumOfManTaskForDownload = new double[numOfEdgeDatacenters];
+
 
         int numOfApp = SimSettings.getInstance().getTaskLookUpTable().length;
         SimSettings SS = SimSettings.getInstance();
@@ -52,7 +83,16 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
                 avgManTaskInputSize += SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.DATA_UPLOAD]*weight;
                 avgManTaskOutputSize += SS.getTaskLookUpTable()[taskIndex][LoadGeneratorModel.DATA_DOWNLOAD]*weight;
+
+                }
             }
+        for(int host=0; host<numOfEdgeDatacenters; host++) {
+//            hostManPoissonMeanForDownload[host] = ManPoissonMeanForDownload;
+
+            hostManPoissonMeanForDownload[host] = 5; //=MM1_QUEUE_MODEL_UPDATE_INTEVAL
+            hostAvgManTaskOutputSize[host] = avgManTaskOutputSize;
+            hostTotalManTaskOutputSize[host] = 0;
+            hostNumOfManTaskForDownload[host] = 0;
         }
         //Oleg: not sure why do average after weight calculation
 /*        ManPoissonMeanForDownload = ManPoissonMeanForDownload/numOfApp;
@@ -75,7 +115,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //special case for man communication
         // When edge downloads from itself
         if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
-            return delay = getManDownloadDelay();
+//            return delay = getManDownloadDelay();
+            return delay = getManDownloadDelay(task.getAssociatedHostId());
         }
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId, CloudSim.clock());
         Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
@@ -112,7 +153,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
         double taskSizeInKb = dataSize * (double)8; //KB to Kb
         double result=0;
-//        System.out.println("Currently " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
+//        System.out.println("previously " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
         if(numOfWlanUser < experimentalWlanDelay.length)
             result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
         else
@@ -168,14 +209,41 @@ public class StorageNetworkModel extends SampleNetworkModel {
         }
         out.close();
     }
+
+    //Logs queue in all hosts in each interval
+    public void logManQueue() throws FileNotFoundException {
+        String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_MAN_QUEUE.log";
+        File f = new File(savestr);
+
+        PrintWriter out = null;
+        if ( f.exists() && !f.isDirectory() ) {
+            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
+        }
+        else {
+            out = new PrintWriter(savestr);
+            out.append("Time;HostID;Requests");
+            out.append("\n");
+        }
+
+        for (int i=0;i<SimSettings.getInstance().getNumOfEdgeHosts();i++){
+            out.append(CloudSim.clock() + SimSettings.DELIMITER + Integer.toString(i)
+                    + SimSettings.DELIMITER + Integer.toString(manHostClients[i]));
+            out.append("\n");
+        }
+        out.close();
+    }
+
+
     @Override
     public void updateMM1QueeuModel(){
         double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
+        int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
         lastMM1QueeuUpdateTime = CloudSim.clock();
 
         //Log queue in edge hosts
         try {
             logHostQueue();
+            logManQueue();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -183,17 +251,104 @@ public class StorageNetworkModel extends SampleNetworkModel {
         if(numOfManTaskForDownload != 0){
             ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
             avgManTaskOutputSize = totalManTaskOutputSize / numOfManTaskForDownload;
+
+            for(int host=0; host<numOfEdgeDatacenters; host++) {
+
+
+                hostManPoissonMeanForDownload[host] = lastInterval;
+                if (hostNumOfManTaskForDownload[host]==0)
+                    hostAvgManTaskOutputSize[host]=avgManTaskOutputSize;
+                else
+                    hostAvgManTaskOutputSize[host] = hostTotalManTaskOutputSize[host] / hostNumOfManTaskForDownload[host];
+
+                previousHostTotalManTaskOutputSize[host] = hostTotalManTaskOutputSize[host];
+                previousHostNumOfManTaskForDownload[host] = hostNumOfManTaskForDownload[host];
+                previousManHostClients[host] = manHostClients[host];
+
+                hostTotalManTaskOutputSize[host] = 0;
+                hostNumOfManTaskForDownload[host] = 0;
+                manHostClients[host] = 0;
+
+
+            }
 //			System.out.println("numOfManTaskForDownload: " + numOfManTaskForDownload + " avgManTaskOutputSize: "+ avgManTaskOutputSize); //TO remove
         }
-        if(numOfManTaskForUpload != 0){
+/*        if(numOfManTaskForUpload != 0){
             ManPoissonMeanForUpload = lastInterval / (numOfManTaskForUpload / (double)numberOfMobileDevices);
             avgManTaskInputSize = totalManTaskInputSize / numOfManTaskForUpload;
-        }
+        }*/
 
         totalManTaskOutputSize = 0;
         numOfManTaskForDownload = 0;
         totalManTaskInputSize = 0;
         numOfManTaskForUpload = 0;
+    }
+    //Use M/M/1 queue for each node on the grid
+    double getManDownloadDelay(int hostIndex) {
+        //calculateMM1(propogationDelay=0,bandwidth param, PoissonMean paran,avgTaskSize param,deviceCount i)
+        int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
+        if (hostIndex>=numOfEdgeDatacenters)
+            System.out.println("ERROR: Illegal host id " + hostIndex);
+        List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(hostIndex);
+        if (vmArray.size()>1)
+            System.out.println("More than 1 VM");
+        int bandwidth = vmArray.get(0).getReadRate()*1024*8;//kbps
+        //These are identical and they deducted (kept for legacy)
+        manHostClients[hostIndex]++;
+        hostNumOfManTaskForDownload[hostIndex] = manHostClients[hostIndex];
+        hostTotalManTaskOutputSize[hostIndex] += hostAvgManTaskOutputSize[hostIndex];
+        //initialization
+        if (previousHostAvgManTaskOutputSize[hostIndex]==0)
+            previousHostAvgManTaskOutputSize[hostIndex] = hostAvgManTaskOutputSize[hostIndex];
+        if (previousManHostClients[hostIndex]==0)
+            previousManHostClients[hostIndex] = manHostClients[hostIndex];
+        double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
+                bandwidth,
+//                ManPoissonMeanForDownload,
+                hostManPoissonMeanForDownload[hostIndex],
+                previousHostAvgManTaskOutputSize[hostIndex],
+                previousManHostClients[hostIndex]);
+        totalManTaskOutputSize += avgManTaskOutputSize;
+        numOfManTaskForDownload++;
+
+
+
+//			System.out.println("totalManTaskOutputSize: " + totalManTaskOutputSize + " numOfManTaskForDownload: "+ numOfManTaskForDownload); //TO remove
+        //System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
+        return result;
+    }
+
+    public void downloadStarted(Location accessPointLocation, int sourceDeviceId, int hostIndex) {
+        if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+            wanClients[accessPointLocation.getServingWlanId()]++;
+        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+            wlanClients[accessPointLocation.getServingWlanId()]++;
+        }
+        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1) {
+            manClients++;
+        }
+        else {
+            SimLogger.printLine("Error - unknown device id in downloadStarted(). Terminating simulation...");
+            System.exit(0);
+        }
+//		System.out.println("manClients: " + manClients); //To remove
+    }
+
+    public void downloadFinished(Location accessPointLocation, int sourceDeviceId, int hostIndex) {
+        if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+            wanClients[accessPointLocation.getServingWlanId()]--;
+        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+            wlanClients[accessPointLocation.getServingWlanId()]--;
+        }
+        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1) {
+            manClients--;
+//            manHostClients[hostIndex]--;
+        }
+        else {
+            SimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
+            System.exit(0);
+        }
+//		System.out.println("Users in " + accessPointLocation.getServingWlanId() + ": " + wlanClients[accessPointLocation.getServingWlanId()]); //TO remove
     }
 
     public int getWlanQueueSize(int hostID){
@@ -202,5 +357,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
     public int getWanQueueSize(int hostID) {
         return wanClients[hostID];
+    }
+
+    public int getManQueueSize(int hostID) {
+        return manHostClients[hostID];
     }
 }

@@ -367,13 +367,14 @@ public class SampleNetworkModel extends NetworkModel {
 	private double getWanUploadDelay(Location accessPointLocation, double dataSize) {
 		return getWanDownloadDelay(accessPointLocation, dataSize);
 	}
-	
-	private double calculateMM1(double propogationDelay, double bandwidth /*Kbps*/, double PoissonMean, double avgTaskSize /*KB*/, int deviceCount){
+
+	protected double calculateMM1(double propogationDelay, double bandwidth /*Kbps*/, double PoissonMean, double avgTaskSize /*KB*/, int deviceCount){
 		double mu=0, lamda=0;
 		
 		avgTaskSize = avgTaskSize * 8; //convert from KB to Kb
 
         lamda = ((double)1/(double)PoissonMean); //task per seconds
+		//TODO: convert KB to Kb
 		mu = bandwidth /*Kbps*/ / avgTaskSize /*Kb*/; //task per seconds
 		//Oleg: Little's law: total time a customer spends in the system
 		//lamda*(double)deviceCount = (numOfManTaskForDownload/lastInterval)
@@ -381,12 +382,12 @@ public class SampleNetworkModel extends NetworkModel {
 
 //		System.out.println("delay: " + result); //To remove
 		result += propogationDelay;
-//		if(result>15)
-//			System.out.println("Delay too large in calculateMM1");
+		if(result>1)
+			System.out.println("Delay too large in calculateMM1");
 		
 		return (result > 1) ? -1 : result;
 	}
-	
+
 	double getManDownloadDelay() {
 		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
 				MAN_BW,
@@ -414,7 +415,7 @@ public class SampleNetworkModel extends NetworkModel {
 		
 		return result;
 	}
-	
+
 	public void updateMM1QueeuModel(){
 		double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
 		lastMM1QueeuUpdateTime = CloudSim.clock();

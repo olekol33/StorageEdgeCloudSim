@@ -59,7 +59,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             int randomTaskType = -1;
 //            double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
 //            double taskTypePercentage = 0;
-            //TODO: Problematic, always starts with 0 when selecting tasks
 
 /*            for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
                 taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][USAGE_PERCENTAGE];
@@ -73,7 +72,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 SimLogger.printLine("Impossible is occured! no random task type!");
                 continue;
             }*/
-            //TODO: currently select random task, not by share
+            //TODO: currently select random task, not by weight
             randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
             taskTypeOfDevices[i] = randomTaskType;
 
@@ -124,10 +123,24 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     public boolean createParityTask(Task task){
         int taskType = task.getTaskType();
         int isParity=1;
-
+        //If replication policy, read the same object, but mark it as parity
         if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
-            taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                    task.getObjectRead(), task.getIoTaskID(), isParity,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
+            List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+            //if no replicas
+            if (objectLocations.size()==1)
+                return false;
+            else if(objectLocations.size()==0) {
+                System.out.println("ERROR: No such object");
+                System.exit(0);
+            }
+            //TODO: rewrite better for parities to read
+            if (SimManager.getInstance().getOrchestratorPolicy().equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY"))
+                taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(), task.getObjectRead(),
+                        task.getIoTaskID(), isParity,1,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            else
+                taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(), task.getObjectRead(),
+                        task.getIoTaskID(), isParity,0,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
             SimManager.getInstance().createNewTask();
             return true;
         }
@@ -142,6 +155,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
         List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
         int i=0;
+        int paritiesToRead=0;
+        if (SimManager.getInstance().getOrchestratorPolicy().equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY"))
+            paritiesToRead=1;
         for (String objectID:dataObjects){
             i++;
             //if data object, skip
@@ -150,14 +166,16 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //if not data, than data of parity
             //TODO: add delay for queue query
             taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                    objectID, task.getIoTaskID(), isParity,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+                    objectID, task.getIoTaskID(), isParity,0,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
             SimManager.getInstance().createNewTask();
         }
         for (String objectID:parityObjects){
             i++;
             taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                objectID, task.getIoTaskID(), isParity,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+                objectID, task.getIoTaskID(), isParity,paritiesToRead,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
             SimManager.getInstance().createNewTask();
+            //count just one read for queue
+            paritiesToRead=0;
         }
         if (i!=(SimSettings.getInstance().getNumOfDataInStripe()+SimSettings.getInstance().getNumOfParityInStripe()))
             System.out.println("Not created tasks for all parities");

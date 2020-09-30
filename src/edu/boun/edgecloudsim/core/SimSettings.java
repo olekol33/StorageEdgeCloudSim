@@ -739,6 +739,7 @@ public class SimSettings {
 					isElementPresent(hostElement, "mips");
 					isElementPresent(hostElement, "ram");
 					isElementPresent(hostElement, "storage");
+					isElementPresent(hostElement, "readRate");
 
 					NodeList vmList = hostElement.getElementsByTagName("VM");
 					for (int k = 0; k < vmList.getLength(); k++) {
@@ -751,6 +752,7 @@ public class SimSettings {
 						isElementPresent(vmElement, "mips");
 						isElementPresent(vmElement, "ram");
 						isElementPresent(vmElement, "storage");
+						isElementPresent(vmElement, "readRate");
 					}
 				}
 			}

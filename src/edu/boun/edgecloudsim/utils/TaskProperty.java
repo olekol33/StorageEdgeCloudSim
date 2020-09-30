@@ -59,7 +59,7 @@ public class TaskProperty {
 		taskType=_taskType;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
-		paritiesToRead = RedisListHandler.getNumOfParityInStripe();
+		paritiesToRead = 0;
 		isParity = _isParity;
 
 		inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
@@ -72,13 +72,13 @@ public class TaskProperty {
 
 	//Storage
 	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
-						int _isParity, long _inputFileSize, long _outputFileSize, long _length) {
+						int _isParity, int _paritiesToRead, long _inputFileSize, long _outputFileSize, long _length) {
 		mobileDeviceId=_mobileDeviceId;
 		startTime=_startTime;
 		taskType=_taskType;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
-		paritiesToRead = RedisListHandler.getNumOfParityInStripe();
+		paritiesToRead = _paritiesToRead;
 		isParity = _isParity;
 
 		inputFileSize = _inputFileSize;
