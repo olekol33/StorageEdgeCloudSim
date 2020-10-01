@@ -103,6 +103,7 @@ public class SimSettings {
 	private String STRIPE_DIST_PLACE;
 	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
+	private int MAN_THRESHOLD;
 	private int MAX_CLOUD_REQUESTS;
 
 	//storage properties
@@ -112,6 +113,11 @@ public class SimSettings {
 	private int NUM_OF_STRIPES;
 	private int NUM_OF_DATA_IN_STRIPE;
 	private int NUM_OF_PARITY_IN_STRIPE;
+
+	//Host failure
+	private boolean HOST_FAILURE_SCENARIO;
+	private int HOST_FAILURE_ID;
+	private double HOST_FAILURE_TIME;
 
     
     // following values are stored for each applications defined in applications.xml
@@ -192,6 +198,10 @@ public class SimSettings {
 			SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
 			OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
 
+			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
+			HOST_FAILURE_ID = Integer.parseInt(prop.getProperty("host_failure_id"));
+			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
+
 			//avg waiting time in a place (min)
 			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
 			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
@@ -208,6 +218,7 @@ public class SimSettings {
 				STRIPE_DIST_PLACE = prop.getProperty("stripe_dist_place");
 				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
+				MAN_THRESHOLD = Integer.parseInt(prop.getProperty("man_threshold"));
 				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 
 			}
@@ -511,6 +522,18 @@ public class SimSettings {
 	public String[] getObjectPlacement() {
 		return OBJECT_PLACEMENT;
 	}
+
+	public boolean isHostFailureScenario() {
+		return HOST_FAILURE_SCENARIO;
+	}
+
+	public int getHostFailureID() {
+		return HOST_FAILURE_ID;
+	}
+
+	public double getHostFailureTime() {
+		return HOST_FAILURE_TIME;
+	}
 	
 	/**
 	 * returns mobility characteristic within an array
@@ -577,7 +600,9 @@ public class SimSettings {
 	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;
 	}
-
+	public int getManThreshold() {
+		return MAN_THRESHOLD;
+	}
 	public int getMaxCloudRequests() {
 		return MAX_CLOUD_REQUESTS;
 	}

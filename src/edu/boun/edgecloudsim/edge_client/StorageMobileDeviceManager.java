@@ -139,10 +139,9 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //                        " submitted to " + task.getSubmittedLocation().getServingWlanId() + " and " + task.getAccessHostID() + "\n");
                 schedule(getId(), delay, nextEvent, task);
             }
+//            else if (selectedVM == -1)
             else{
-                SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),vmType);
-                //SimLogger.printLine("Task #" + task.getCloudletId() + " cannot assign to any VM");
-//                SimLogger.getInstance().rejectedDueToVMCapacity(task.getCloudletId(), CloudSim.clock(), vmType);
+//                SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),vmType);
             }
         }
         else

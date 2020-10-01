@@ -30,12 +30,11 @@ import edu.boun.edgecloudsim.edge_server.EdgeHost;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
-import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
 		CREATED, UPLOADING, PROCESSING, DOWNLOADING, COMPLETED, REJECTED_DUE_TO_VM_CAPACITY, REJECTED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_BANDWIDTH, UNFINISHED_DUE_TO_MOBILITY,
-		REJECTED_DUE_TO_QUEUE, REJECTED_DUE_TO_POLICY  //storage
+		REJECTED_DUE_TO_QUEUE, REJECTED_DUE_TO_POLICY, FAILED_DUE_TO_INACCESSIBILITY  //storage
 	}
 	
 	public static enum NETWORK_ERRORS {
@@ -180,6 +179,10 @@ public class SimLogger {
 
 	public void taskRejectedDueToQueue(int taskId, double time) {
 		taskMap.get(taskId).taskRejectedDueToQueue(time);
+	}
+
+	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType) {
+		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
 	}
 
 	public void addVmUtilizationLog(double time, double loadOnEdge, double loadOnCloud, double loadOnMobile) {
@@ -348,6 +351,7 @@ public class SimLogger {
 		int[] failedTaskDuetoMobility = new int[numOfAppTypes + 1];
 		int[] failedTaskDuetoPolicy = new int[numOfAppTypes + 1];
 		int[] failedTaskDuetoQueue = new int[numOfAppTypes + 1];
+		int[] failedTaskDuetoInaccessibility = new int[numOfAppTypes + 1];
 
 		//Oleg: For object log
 //		System.out.println("array size: " + taskMap.size());
@@ -647,6 +651,9 @@ public class SimLogger {
 			else if (value.getStatus() == TASK_STATUS.REJECTED_DUE_TO_POLICY) {
 				failedTaskDuetoPolicy[value.getTaskType()]++;
 			}
+			else if (value.getStatus() == TASK_STATUS.FAILED_DUE_TO_INACCESSIBILITY) {
+				failedTaskDuetoInaccessibility[value.getTaskType()]++;
+			}
 		}
 
 		// calculate total values
@@ -697,6 +704,7 @@ public class SimLogger {
 		failedTaskDuetoMobility[numOfAppTypes] = IntStream.of(failedTaskDuetoMobility).sum();
 		failedTaskDuetoPolicy[numOfAppTypes] = IntStream.of(failedTaskDuetoPolicy).sum();
 		failedTaskDuetoQueue[numOfAppTypes] = IntStream.of(failedTaskDuetoQueue).sum();
+		failedTaskDuetoInaccessibility[numOfAppTypes] = IntStream.of(failedTaskDuetoInaccessibility).sum();
 
 		// calculate server load
 		double totalVmLoadOnEdge = 0;
@@ -912,7 +920,8 @@ public class SimLogger {
 						+ Integer.toString(failedTaskDueToVmCapacity[i]) + SimSettings.DELIMITER 
 						+ Integer.toString(failedTaskDuetoMobility[i]) + SimSettings.DELIMITER
 						+ Integer.toString(failedTaskDuetoPolicy[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskDuetoQueue[i]);
+						+ Integer.toString(failedTaskDuetoQueue[i]) + SimSettings.DELIMITER
+						+ Integer.toString(failedTaskDuetoInaccessibility[i]);
 
 				// check if the divisor is zero in order to avoid division by zero problem
 				double _serviceTimeOnEdge = (completedTaskOnEdge[i] == 0) ? 0.0
@@ -974,8 +983,8 @@ public class SimLogger {
 					appendToFile(genericBWs[i], genericResult5);
 				}
 				else {
-					appendToFile(genericBWs[i], "#completedTask;failedTask;uncompletedTask;failedTaskDuetoBw;serviceTime;" +
-							"processingTime;networkDelay;0;cost;failedTaskDueToVmCapacity;failedTaskDuetoMobility;failedTaskDuetoPolicy;failedTaskDuetoQueue");
+					appendToFile(genericBWs[i], "#completedTask;failedTask;uncompletedTask;failedTaskDuetoBw;serviceTime;processingTime;networkDelay;" +
+							"0;cost;failedTaskDueToVmCapacity;failedTaskDuetoMobility;failedTaskDuetoPolicy;failedTaskDuetoQueue;failedTaskDuetoInaccessibility");
 					appendToFile(genericBWs[i], genericResult1);
 					appendToFile(genericBWs[i], "#completedTaskOnEdge;failedTaskOnEdge;uncompletedTaskOnEdge;0;" +
 							"serviceTimeOnEdge;processingTimeOnEdge;0;vmLoadOnEdgefailedTaskDueToVmCapacityOnEdge");
@@ -1269,6 +1278,12 @@ class LogItem {
 	public void taskRejectedDueToQueue(double time) {
 		taskEndTime = time;
 		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_QUEUE;
+	}
+
+	public void taskFailedDueToInaccessibility(double time, int _vmType) {
+		vmType = _vmType;
+		taskEndTime = time;
+		status = SimLogger.TASK_STATUS.FAILED_DUE_TO_INACCESSIBILITY;
 	}
 
 	public void taskFailedDueToBandwidth(double time, NETWORK_DELAY_TYPES delayType) {

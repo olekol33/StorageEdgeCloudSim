@@ -28,9 +28,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
     static private int numOfIOTasks=0;
     String orchestratorPolicy;
+    Random random = new Random();
+    RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy) {
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
         orchestratorPolicy = _orchestratorPolicy;
+        random.setSeed(ObjectGenerator.seed);
+
     }
 
     @Override
@@ -52,9 +56,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         //Each mobile device utilizes an app type (task type)
         taskTypeOfDevices = new int[numberOfMobileDevices];
-        Random random = new Random();
-        random.setSeed(ObjectGenerator.seed);
-        RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
 //            double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
@@ -149,8 +150,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         if (mdObjects.size()==0)
             return false;
 //        String stripeID = task.getStripeID();
-        //TODO: currently selects first stripe
-        String stripeID = RedisListHandler.getObjectID(mdObjects.get(0));
+        //TODO: currently selects random stripe
+        String stripeID = RedisListHandler.getObjectID(mdObjects.get(random.nextInt(mdObjects.size())));
         String[] stripeObjects = RedisListHandler.getStripeObjects(stripeID);
         List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
         List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));

@@ -12,6 +12,7 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 //import java.io.IOException;
 
@@ -22,6 +23,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
     protected double[] hostTotalManTaskOutputSize;
     protected double[] hostNumOfManTaskForDownload;
     protected int[] manHostClients;
+    protected int[] hostOperativity;
 
     protected double[] previousHostManPoissonMeanForDownload; //seconds
     protected double[] previousHostAvgManTaskOutputSize; //bytes
@@ -51,6 +53,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         wanClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
         wlanClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
         manHostClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
+        hostOperativity = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
 
         hostManPoissonMeanForDownload = new double[numOfEdgeDatacenters];
         hostAvgManTaskOutputSize = new double[numOfEdgeDatacenters];
@@ -93,6 +96,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
             hostAvgManTaskOutputSize[host] = avgManTaskOutputSize;
             hostTotalManTaskOutputSize[host] = 0;
             hostNumOfManTaskForDownload[host] = 0;
+            hostOperativity[host] = 1;
         }
         //Oleg: not sure why do average after weight calculation
 /*        ManPoissonMeanForDownload = ManPoissonMeanForDownload/numOfApp;
@@ -247,6 +251,11 @@ public class StorageNetworkModel extends SampleNetworkModel {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        //update failed host if this is the scenario
+        if (SimSettings.getInstance().isHostFailureScenario()) {
+            if (CloudSim.clock() > SimSettings.getInstance().getHostFailureTime())
+                hostOperativity[SimSettings.getInstance().getHostFailureID()]=0;
+        }
 
         if(numOfManTaskForDownload != 0){
             ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
@@ -294,25 +303,46 @@ public class StorageNetworkModel extends SampleNetworkModel {
             System.out.println("More than 1 VM");
         int bandwidth = vmArray.get(0).getReadRate()*1024*8;//kbps
         //These are identical and they deducted (kept for legacy)
+
+
+
+        //count for interval
         manHostClients[hostIndex]++;
         hostNumOfManTaskForDownload[hostIndex] = manHostClients[hostIndex];
         hostTotalManTaskOutputSize[hostIndex] += hostAvgManTaskOutputSize[hostIndex];
+
         //initialization
         if (previousHostAvgManTaskOutputSize[hostIndex]==0)
             previousHostAvgManTaskOutputSize[hostIndex] = hostAvgManTaskOutputSize[hostIndex];
         if (previousManHostClients[hostIndex]==0)
             previousManHostClients[hostIndex] = manHostClients[hostIndex];
+
+
+        //check for overflow on the fly
+        double lamda = ((double)1/(double)hostManPoissonMeanForDownload[hostIndex]); //task per seconds
+        //TODO: convert KB to Kb
+        double mu = bandwidth /*Kbps*/ / (8*previousHostAvgManTaskOutputSize[hostIndex]) /*Kb*/; //task per seconds
+        if ((lamda*(double)manHostClients[hostIndex]>mu) || 1 >mu - (lamda*(double)manHostClients[hostIndex])) {
+            manHostClients[hostIndex]--;
+            hostTotalManTaskOutputSize[hostIndex] -= hostAvgManTaskOutputSize[hostIndex];
+            return -1;
+        }
+
         double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
                 bandwidth,
 //                ManPoissonMeanForDownload,
                 hostManPoissonMeanForDownload[hostIndex],
                 previousHostAvgManTaskOutputSize[hostIndex],
                 previousManHostClients[hostIndex]);
+
         totalManTaskOutputSize += avgManTaskOutputSize;
         numOfManTaskForDownload++;
 
 
-
+        if (result < 0){
+            manHostClients[hostIndex]--;
+            hostTotalManTaskOutputSize[hostIndex] -= hostAvgManTaskOutputSize[hostIndex];
+        }
 //			System.out.println("totalManTaskOutputSize: " + totalManTaskOutputSize + " numOfManTaskForDownload: "+ numOfManTaskForDownload); //TO remove
         //System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
         return result;
@@ -361,5 +391,13 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
     public int getManQueueSize(int hostID) {
         return manHostClients[hostID];
+    }
+    public List<String> getNonOperativeHosts() {
+        List<String> nonOperativeHosts = new ArrayList<>();
+        for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
+            if (hostOperativity[i]==0)
+                nonOperativeHosts.add(Integer.toString(i));
+        }
+        return nonOperativeHosts;
     }
 }

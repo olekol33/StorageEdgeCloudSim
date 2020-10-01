@@ -27,6 +27,7 @@ failedTaskDueToVmCapacity = 9
 failedTaskDuetoMobility = 10
 failedTaskDuetoPolicy = 11
 failedTaskDuetoQueue = 12
+failedTaskDuetoInaccessibility = 13
 
 lanDelay = 0
 manDelay = 1
