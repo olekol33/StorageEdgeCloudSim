@@ -45,6 +45,9 @@ public class SimLogger {
 	private static boolean printLogEnabled;
 	private String filePrefix;
 	private String outputFolder;
+	private String hostType;
+	private int hostID;
+	private long startTime;
 	private Map<Integer, LogItem> taskMap;
 	private LinkedList<VmLoadLogItem> vmLoadList;
 	//TRUE if generate graphs in Matlab, FALSE if python
@@ -89,6 +92,18 @@ public class SimLogger {
 		return outputFolder;
 	}
 
+	public String getHostType() {
+		return hostType;
+	}
+
+	public int getHostID() {
+		return hostID;
+	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
 	public void appendToFile(BufferedWriter bw, String line) throws IOException {
 		bw.write(line);
 		bw.newLine();
@@ -109,6 +124,17 @@ public class SimLogger {
 		outputFolder = outFolder;
 		taskMap = new HashMap<Integer, LogItem>();
 		vmLoadList = new LinkedList<VmLoadLogItem>();
+	}
+
+	public void simStarted(String outFolder, String fileName, String _hostType, int _hostID, long currentTime) {
+		filePrefix = fileName;
+		outputFolder = outFolder;
+		hostType = _hostType;
+		hostID = _hostID;
+		taskMap = new HashMap<Integer, LogItem>();
+		vmLoadList = new LinkedList<VmLoadLogItem>();
+		//TODO: set proper delay
+		startTime = currentTime + 10000;
 	}
 
 	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
@@ -207,10 +233,8 @@ public class SimLogger {
 		appendToFile(objectDistBW, "Object Name;Object Type;Occurrences");
 
 		ObjectGenerator OG = RedisListHandler.getOG();
-/*		HashMap<Integer, HashMap<String, Object>> dd = OG.getObjectsInHosts().entrySet();
-		for (Map<Integer, HashMap<String, Object>> host : OG.getObjectsInHosts().entrySet())
-			jedis.hmset("object:"+KV.get("id"),KV);*/
-		for (Map.Entry<Integer, HashMap<String, Object>> entry : OG.getObjectsInHosts().entrySet()) {
+		//Each iteration gets all objects in selected host
+		for (Map.Entry<Integer, HashMap<String, Object>> entry : OG.getHostsContents().entrySet()) {
 			String objects = (String)entry.getValue().get("objects");
 			StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
 			Set<String> objectsSet = new HashSet<String>();
@@ -219,12 +243,14 @@ public class SimLogger {
 			List<Integer> dataObjectPriorities = new ArrayList<Integer>();
 			List<Integer> parityObjectPriorities = new ArrayList<Integer>();
 			List<List<Map>> listOfStripes =  OG.getListOfStripes();
-//			locationsSet.add(Integer.toString(currentHost));
+			//For each object in host
 			for (String object : objectsSet){
+					//if data object, its ID can be derived from its name
 					if (object.startsWith("d")) {
 						String objectID = object.replaceAll("[^\\d.]", "");
 						dataObjectPriorities.add(Integer.valueOf(objectID));
 					}
+					//If parity, get key of value (stripe) that contains this parity - it's the ID
 					else if (object.startsWith("p")){
 						int i=0;
 						for (List<Map> stripe : listOfStripes){

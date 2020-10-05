@@ -4,7 +4,7 @@
 package edu.boun.edgecloudsim.storage;
 
 
-import edu.boun.edgecloudsim.core.SimManager;
+
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.apache.commons.math3.distribution.ZipfDistribution;
@@ -16,6 +16,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,16 +27,21 @@ public class ObjectGenerator {
     private int numOfDataInStripe;
     private int numOfParityInStripe;
     private RandomGenerator rand = null;
-    static public int seed;
+    private static RandomGenerator staticRand = null;
+    public static final int seed = SimSettings.getInstance().getRandomSeed();;
+//    private static RandomGenerator rand = null;
     //assuming same size for all objects
     private int objectSize;
     private List<List<Map>> listOfStripes;
-    private HashMap<Integer, HashMap<String, Object>> objectsInHosts;
+    private HashMap<Integer, HashMap<String, Object>> hostsContents;
     private List<Map> dataObjects;
     private List<Map> parityObjects;
     private List<Map> metadataObjects;
     String objectPlacementPolicy;
     private int currHost;
+    private Map<Integer,List<Map>> objectsInHosts;
+    private List<Map> listOfObjects;
+    private static final double zipfExponent = SimSettings.getInstance().getZipfExponent();
 
 
     public ObjectGenerator(String _objectPlacementPolicy) {
@@ -44,17 +50,20 @@ public class ObjectGenerator {
         numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
         numOfParityInStripe = SimSettings.getInstance().getNumOfParityInStripe();
 //        this.hostStorageCapacity = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];
-        objectSize = (int)SimSettings.getInstance().getTaskLookUpTable()[0][LoadGeneratorModel.DATA_DOWNLOAD]; //bytes
-        objectsInHosts = new HashMap<Integer, HashMap<String, Object>>(SimSettings.getInstance().getNumOfEdgeDatacenters());
+        if (!SimSettings.getInstance().isOrbitMode())
+            objectSize = (int)SimSettings.getInstance().getTaskLookUpTable()[0][LoadGeneratorModel.DATA_DOWNLOAD]; //bytes
+        else
+            objectSize=1000;
+        hostsContents = new HashMap<Integer, HashMap<String, Object>>(SimSettings.getInstance().getNumOfEdgeDatacenters());
         objectPlacementPolicy = _objectPlacementPolicy;
-        seed = SimSettings.getInstance().getRandomSeed();
         ran.setSeed(seed);
+        getRandomGenerator();
         currHost=0;
         for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++) {
             HashMap<String, Object> host = new HashMap<String, Object>();
             host.put("capacity",0);
             host.put("objects","");
-            objectsInHosts.put(i,host);
+            hostsContents.put(i,host);
         }
 
         //Get host capacities
@@ -79,13 +88,86 @@ public class ObjectGenerator {
         }
         parityObjects = extractObjectsFromList(numOfDataInStripe);
         metadataObjects = extractObjectsFromList(numOfDataInStripe+numOfParityInStripe);
+        addObjectLocationsToMetadata();
+        completeMetadataForDataObjects();
+
+        listOfObjects = new ArrayList<Map>(dataObjects);
+        listOfObjects.addAll(parityObjects);
+        listOfObjects.addAll(metadataObjects);
+
+        //TODO: if ORBIT
+        Map<Integer, ArrayList<Double>> timeToReadStripe = new HashMap<Integer, ArrayList<Double>>();
+        objectsInHosts = new HashMap<Integer, List<Map>>(SimSettings.getInstance().getNumOfEdgeDatacenters());
+        populateObjectsInHosts();
+
 
 
     }
 
 
+    private void populateObjectsInHosts () {
+        for (Map<String, String> object : listOfObjects) {
+            //if data or parity place only in specific locations
+            if (!object.get("type").equals("metadata")) {
+                String locations = object.get("locations");
+                if (locations != null) {
+                    StringTokenizer st = new StringTokenizer(locations, " "); // Space as delimiter
+                    Set<String> locationsSet = new HashSet<String>();
+                    while (st.hasMoreTokens())
+                        locationsSet.add(st.nextToken());
+                    for (String location : locationsSet) {
+                        int host = Integer.valueOf(location);
+                        List<Map> currentObjects = objectsInHosts.get(host);
+                        if (currentObjects == null) {
+                            currentObjects = new ArrayList<>();
+                        }
+                        currentObjects.add(object);
+                        objectsInHosts.put(host, currentObjects);
+                    }
+                }
+            }
+            else { //if metadata place in client
+                for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++) {
+                    List<Map> currentObjects = objectsInHosts.get(i);
+                    if (currentObjects == null) {
+                        currentObjects = new ArrayList<>();
+                    }
+                    currentObjects.add(object);
+                    objectsInHosts.put(i, currentObjects);
+                }
+            }
+        }
+    }
 
 
+    public static Set<String> tokenizeList (String list){
+        StringTokenizer st= new StringTokenizer(list, " "); // Space as delimiter
+        Set<String> set = new HashSet<String>();
+        while (st.hasMoreTokens())
+            set.add(st.nextToken());
+        return set;
+    }
+
+    private void addObjectLocationsToMetadata()
+    {
+        for (Map<String,String> KV : metadataObjects) {
+            Set<String> dataObjects = tokenizeList(KV.get("data"));
+            Set<String> parityObjects = tokenizeList(KV.get("parity"));
+            for (String object : dataObjects){
+                for (Map<String,String> entry : this.dataObjects){
+                    if(entry.get("id").equals(object))
+                        KV.put(object,entry.get("locations"));
+                }
+            }
+            for (String object : parityObjects){
+                for (Map<String,String> entry : this.parityObjects){
+                    if(entry.get("id").equals(object))
+                        KV.put(object,entry.get("locations"));
+                }
+            }
+
+        }
+    }
     //TODO: fix
     private static int getNumOfDataInStripeStatic = 2;
     Random ran = new Random();
@@ -115,7 +197,7 @@ public class ObjectGenerator {
             Element datacenterElement = (Element) datacenterNode;
             int storageCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
 //            hostStorageCapacity[i] = storageCapacity;
-            objectsInHosts.get(i).put("capacity",storageCapacity);
+            hostsContents.get(i).put("capacity",storageCapacity);
         }
     }
 
@@ -136,7 +218,25 @@ public class ObjectGenerator {
         return new ZipfDistribution(getRandomGenerator(), numberOfElements, SimSettings.getInstance().getZipfExponent()).sample();
     }*/
 
-    private int getObject(int numberOfElements, String type)  throws NotStrictlyPositiveException {
+/*    public static String getObject(){
+        String dist=SimSettings.getInstance().getObjectDistRead();
+        List<String> listOfDataObjects = RedisListHandler.getObjectsFromRedis("object:d*");
+        int objectNum = -1;
+        if (dist.equals("UNIFORM"))
+        {
+            objectNum =  rand.nextInt(SimSettings.getInstance().getNumOfDataObjects());
+        }
+        else if (dist.equals("ZIPF"))
+        {
+            objectNum = new ZipfDistribution(rand, SimSettings.getInstance().getNumOfDataObjects(), zipfExponent).sample();
+            //need to reduce by 1
+            objectNum--;
+        }
+//        return RedisListHandler.getObjectID(dataObjects.get(objectNum));
+        return "1";
+    }*/
+
+    public int getObjectID(int numberOfElements, String type)  throws NotStrictlyPositiveException {
         String dist="";
         if (type.equalsIgnoreCase("objects"))
             dist = SimSettings.getInstance().getObjectDistPlace();
@@ -148,17 +248,63 @@ public class ObjectGenerator {
         int objectNum = -1;
         if (dist.equals("UNIFORM"))
         {
-            objectNum =  ran.nextInt(numberOfElements);
+            objectNum =  rand.nextInt(numberOfElements);
         }
         else if (dist.equals("ZIPF"))
         {
-            objectNum = new ZipfDistribution(getRandomGenerator(), numberOfElements, SimSettings.getInstance().getZipfExponent()).sample();
+            objectNum = new ZipfDistribution(rand, numberOfElements, SimSettings.getInstance().getZipfExponent()).sample();
             //need to reduce by 1
             objectNum--;
         }
         return objectNum;
 
     }
+
+    public String getDataObjectID(){
+        int objectID = getObjectID(numOfDataObjects,"objects");
+        return (String)dataObjects.get(objectID).get("id");
+    }
+
+    private String getAlphaNumericString(int n)
+    {
+        // chose a Character random from this String
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                + "0123456789"
+                + "abcdefghijklmnopqrstuvxyz";
+
+        // create StringBuffer size of AlphaNumericString
+        StringBuilder sb = new StringBuilder(n);
+
+        for (int i = 0; i < n; i++) {
+            // generate a random number between
+            // 0 to AlphaNumericString variable length
+            Random ran = new Random();
+            int index = rand.nextInt(AlphaNumericString.length());
+//                    = (int)(AlphaNumericString.length()
+//                    * Math.random());
+
+            // add Character one by one in end of sb
+            sb.append(AlphaNumericString
+                    .charAt(index));
+        }
+        return sb.toString();
+    }
+
+    private String getBinaryString(int n)
+    {
+        // create StringBuffer size of AlphaNumericString
+        StringBuilder sb = new StringBuilder(n);
+
+        for (int i = 0; i < n; i++) {
+            // generate a random number between
+            // 0 to AlphaNumericString variable length
+            sb.append(Math.abs(rand.nextInt())%2);
+        }
+        return sb.toString();
+    }
+
+
+
     //Creates list of data objects with the naming convention: "object:ID"
     private List<Map> createDataObjects(int numOfDataObjects, String objectSize){
         List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);
@@ -167,6 +313,9 @@ public class ObjectGenerator {
             map.put("id", "d" + Integer.toString(i));
             map.put("size", objectSize);
             map.put("type", "data");
+            if (SimSettings.getInstance().isOrbitMode()){
+                map.put("data", getBinaryString(100));
+            }
 //            map.put("location", "");
             listOfDataObjects.add(map);
         }
@@ -177,10 +326,19 @@ public class ObjectGenerator {
         String parityName = "p";
         List<Map> listOfParityObjects = new ArrayList(numOfParityInStripe);
         int objectSize = 0;
+        BigInteger biginteger=null;
 
         for (Map<String,String> KV : listOfDataObjects){
                 // Name is collection of data IDs
                 String id = (KV.get("id")).replaceAll("[^\\d.]", "");
+            if (SimSettings.getInstance().isOrbitMode()){
+                if (biginteger==null)
+                     biginteger = new BigInteger(KV.get("data"),2);
+                else {
+                    BigInteger val = new BigInteger(KV.get("data"),2);
+                    biginteger = biginteger.xor(val);
+                }
+            }
                 parityName += id + "-";
                 int dataObjectSize = Integer.parseInt(KV.get("size"));
                 // Size is as of largest data object
@@ -193,6 +351,9 @@ public class ObjectGenerator {
             map.put("id", parityName + Integer.toString(i));
             map.put("size", Integer.toString(objectSize));
             map.put("type", "parity");
+            if (SimSettings.getInstance().isOrbitMode()){
+                map.put("data", biginteger.toString(2));
+            }
 //            map.put("locations", "");
             listOfParityObjects.add(map);
         }
@@ -206,7 +367,7 @@ public class ObjectGenerator {
         int hostID = currHost;
         currHost = (currHost+1)%numOfHosts;
         //find vacant host
-        while ((int) objectsInHosts.get(hostID).get("capacity") < objectSize){
+        while ((int) hostsContents.get(hostID).get("capacity") < objectSize){
             if (visitedHosts==numOfHosts)
                 return hosts;
             hostID = (hostID+1)%numOfHosts;
@@ -219,7 +380,7 @@ public class ObjectGenerator {
             hostID = (hostID+1)%numOfHosts;
             visitedHosts++;
             //find vacant host
-            while ((int) objectsInHosts.get(hostID).get("capacity") < objectSize){
+            while ((int) hostsContents.get(hostID).get("capacity") < objectSize){
                 if (visitedHosts==numOfHosts)
                     return hosts;
                 hostID = (hostID+1)%numOfHosts;
@@ -251,7 +412,7 @@ public class ObjectGenerator {
             }*/
 
 //            String objects = (String)objectsInHosts.get(currentHost).get("objects");
-            String currentHostObjects = (String)objectsInHosts.get(currentHost).get("objects");
+            String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
             StringTokenizer st= new StringTokenizer(currentHostObjects, " "); // Space as delimiter
             Set<String> objectsSet = new HashSet<String>();
             while (st.hasMoreTokens())
@@ -260,9 +421,9 @@ public class ObjectGenerator {
             //if object is already in node select another
 //            if(currentHostObjects.contains(objectID + " ")) {
             if(!objectsSet.contains(objectID)) {
-                int capacity = (int)objectsInHosts.get(currentHost).get("capacity");
-                objectsInHosts.get(currentHost).put("capacity",capacity-objectSize);
-                objectsInHosts.get(currentHost).put("objects", addLocation(objectID, currentHostObjects));
+                int capacity = (int) hostsContents.get(currentHost).get("capacity");
+                hostsContents.get(currentHost).put("capacity",capacity-objectSize);
+                hostsContents.get(currentHost).put("objects", addLocation(objectID, currentHostObjects));
             }
 
 
@@ -286,6 +447,46 @@ public class ObjectGenerator {
         }
         return stripe;
     }
+
+    //Provides locations of data objects not located on the client
+    private void completeMetadataForDataObjects(){
+        List<Map> dataMetadataObjects = new ArrayList(numOfDataObjects);
+
+        for (Map<String,String> KV : dataObjects){
+            boolean noMetadata=true;
+            String objectID = KV.get("id");
+            for (int i=0; i<metadataObjects.size();i++){
+                if (metadataObjects.get(i).containsKey(objectID)) {
+                    noMetadata=false;
+                    break;
+                }
+            }
+            if(noMetadata) {
+                Map<String, String> metadataObject = new HashMap<String, String>();
+                metadataObject.put("id", "md_" + objectID);
+                metadataObject.put("data", objectID);
+                metadataObject.put("type", "metadata");
+                metadataObject.put(objectID, KV.get("locations"));
+                dataMetadataObjects.add(metadataObject);
+
+            }
+        }
+        metadataObjects.addAll(dataMetadataObjects);
+    }
+
+/*    List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);
+        for (int i=0; i<numOfDataObjects; i++){
+        Map<String, String> map = new HashMap<String,String>();
+        map.put("id", "d" + Integer.toString(i));
+        map.put("size", objectSize);
+        map.put("type", "data");
+        if (SimSettings.getInstance().isOrbitMode()){
+            map.put("data", getBinaryString(100));
+        }
+//            map.put("location", "");
+        listOfDataObjects.add(map);
+    }
+        return listOfDataObjects;*/
 
     private Map<String, String> createMetadataObject(int numofObjectsInStripe, List<Map> stripe){
 //        List<Map> objects = new ArrayList<>(numofObjectsInStripe);
@@ -324,10 +525,10 @@ public class ObjectGenerator {
         //go over each object
         for (Map<String,String> KV : dataObjects){
             KV.put("locations", Integer.toString(host));
-            objectsInHosts.get(host).put("capacity", (int) objectsInHosts.get(host).get("capacity")-objectSize);
-            objectsInHosts.get(host).put("objects", addLocation(KV.get("id"), (String) objectsInHosts.get(host).get("objects")));
+            hostsContents.get(host).put("capacity", (int) hostsContents.get(host).get("capacity")-objectSize);
+            hostsContents.get(host).put("objects", addLocation(KV.get("id"), (String) hostsContents.get(host).get("objects")));
             //TODO: write test
-            if ((int) objectsInHosts.get(host).get("capacity")<0)
+            if ((int) hostsContents.get(host).get("capacity")<0)
                 System.out.println("hostStorageCapacity[host]<0");
             //next host in list
             host = currHost;
@@ -342,16 +543,19 @@ public class ObjectGenerator {
         int i=1;
         int currentHost=0;
         int stripeID;
-        stripeID = getObject(numOfStripes,"stripes");
+        //select stripe according to popularity policy
+        stripeID = getObjectID(numOfStripes,"stripes");
         String objectName;
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         while(1==1) {
             //TODO: currently support one parity
+            //get name of object by its ID
             objectName = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("id");
-            String currentHostObjects = (String) objectsInHosts.get(currentHost).get("objects");
+            //start with host 0, get objects it contains
+            String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
 
-            String objects = (String)objectsInHosts.get(currentHost).get("objects");
+            String objects = (String) hostsContents.get(currentHost).get("objects");
             StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
             Set<String> objectsSet = new HashSet<String>();
             while (st.hasMoreTokens())
@@ -360,30 +564,20 @@ public class ObjectGenerator {
             //if object is already in node select another
 //            if(currentHostObjects.contains(objectID + " ")) {
             if(objectsSet.contains(objectName)) {
-                stripeID = getObject(numOfStripes,"stripes");
+                stripeID = getObjectID(numOfStripes,"stripes");
                 continue;
             }
-            else {
+            else { //selected object not in host
+                //list of object locations
                 String locations = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("locations");
-                //add new location
+                //add new location to coding object (location index = numOfDataInStripe)
                 listOfStripes.get(stripeID).get(numOfDataInStripe).put("locations",addLocation(Integer.toString(currentHost),locations));
-                objectsInHosts.get(currentHost).put("capacity", (int) objectsInHosts.get(currentHost).get("capacity")-objectSize);
-                objectsInHosts.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
-
-/*                Node datacenterNode = datacenterList.item(currentHost);
-                Element datacenterElement = (Element) datacenterNode;
-                int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
-                objects = (String)objectsInHosts.get(currentHost).get("objects");
-                st= new StringTokenizer(objects, " "); // Space as delimiter
-                objectsSet = new HashSet<String>();
-                while (st.hasMoreTokens())
-                    objectsSet.add(st.nextToken());
-                if ((objectsSet.size() * objectSize) < hostCapacity - (int) objectsInHosts.get(currentHost).get("capacity"))
-                    System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(currentHost));*/
+                hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-objectSize);
+                hostsContents.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
 
                 currentHost = (currentHost+1)%numOfHosts;
                 //run until vacant host is found or return
-                while ((int) objectsInHosts.get(currentHost).get("capacity") < objectSize)
+                while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
                 {
                     if(i==numOfHosts) {
                         //check if hosts are full
@@ -391,7 +585,7 @@ public class ObjectGenerator {
                             Node datacenterNode = datacenterList.item(j);
                             Element datacenterElement = (Element) datacenterNode;
                             int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
-                            objects = (String)objectsInHosts.get(j).get("objects");
+                            objects = (String) hostsContents.get(j).get("objects");
                             st= new StringTokenizer(objects, " "); // Space as delimiter
                             objectsSet = new HashSet<String>();
                             while (st.hasMoreTokens())
@@ -405,7 +599,7 @@ public class ObjectGenerator {
                     i++;
                 }
                 i=1;
-                stripeID = getObject(numOfStripes,"stripes");
+                stripeID = getObjectID(numOfStripes,"stripes");
             }
         }
     }
@@ -417,15 +611,15 @@ public class ObjectGenerator {
         int i=1;
         int currentHost=0;
         int objectID=0;
-        objectID = getObject(numOfDataObjects,"objects");
+        objectID = getObjectID(numOfDataObjects,"objects");
         String objectName;
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         while(1==1) {
             objectName = (String)dataObjects.get(objectID).get("id");
-            String currentHostObjects = (String) objectsInHosts.get(currentHost).get("objects");
+            String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
 
-            String objects = (String)objectsInHosts.get(currentHost).get("objects");
+            String objects = (String) hostsContents.get(currentHost).get("objects");
             StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
             Set<String> objectsSet = new HashSet<String>();
             while (st.hasMoreTokens())
@@ -434,19 +628,19 @@ public class ObjectGenerator {
             //if object is already in node select another
 //            if(currentHostObjects.contains(objectID + " ")) {
             if(objectsSet.contains(objectName)) {
-                objectID = getObject(numOfDataObjects,"objects");
+                objectID = getObjectID(numOfDataObjects,"objects");
                 continue;
             }
             else {
                 String locations = (String)dataObjects.get(objectID).get("locations");
                 //add new location
                 dataObjects.get(objectID).put("locations",addLocation(Integer.toString(currentHost),locations));
-                objectsInHosts.get(currentHost).put("capacity", (int) objectsInHosts.get(currentHost).get("capacity")-objectSize);
-                objectsInHosts.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
+                hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-objectSize);
+                hostsContents.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
 
                 currentHost = (currentHost+1)%numOfHosts;
                 //run until vacant host is found or return
-                while ((int) objectsInHosts.get(currentHost).get("capacity") < objectSize)
+                while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
                 {
                     if(i==numOfHosts) {
                         //check if hosts are full
@@ -454,7 +648,7 @@ public class ObjectGenerator {
                             Node datacenterNode = datacenterList.item(j);
                             Element datacenterElement = (Element) datacenterNode;
                             int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
-                            objects = (String)objectsInHosts.get(j).get("objects");
+                            objects = (String) hostsContents.get(j).get("objects");
                             st= new StringTokenizer(objects, " "); // Space as delimiter
                             objectsSet = new HashSet<String>();
                             while (st.hasMoreTokens())
@@ -469,7 +663,7 @@ public class ObjectGenerator {
                     i++;
                 }
                 i=1;
-                objectID = getObject(numOfDataObjects,"objects");
+                objectID = getObjectID(numOfDataObjects,"objects");
             }
         }
     }
@@ -504,7 +698,7 @@ public class ObjectGenerator {
             Set<Integer> listOfIndices = new HashSet<Integer>();
             // Collect data objects with selected distribution
             for (int j = 0; j<numOfDataInStripe; j++) {
-                int objectID = getObject(numOfDataObjects,"objects");
+                int objectID = getObjectID(numOfDataObjects,"objects");
                 //Check if same object not used twice. If yes, repeat.
                 if (listOfIndices.contains(objectID)){
                     j--;
@@ -534,7 +728,7 @@ public class ObjectGenerator {
                     List<Map> oneObjectStripe;
 
                     do {
-                        int objectID = getObject(numOfDataObjects,"objects");
+                        int objectID = getObjectID(numOfDataObjects,"objects");
                         dataList = new ArrayList();
                         dataList.add(dataObjects.get(objectID));
                         oneObjectStripe = placeObjects(1, dataList);
@@ -570,8 +764,18 @@ public class ObjectGenerator {
         return metadataObjects;
     }
 
-    public HashMap<Integer, HashMap<String, Object>> getObjectsInHosts() {
+    public HashMap<Integer, HashMap<String, Object>> getHostsContents() {
+        return hostsContents;
+    }
+    public List<Map> getListOfObjects() {
+        return listOfObjects;
+    }
+
+    public Map<Integer, List<Map>> getObjectsInHosts() {
         return objectsInHosts;
     }
 
+    public static int getSeed() {
+        return seed;
+    }
 }

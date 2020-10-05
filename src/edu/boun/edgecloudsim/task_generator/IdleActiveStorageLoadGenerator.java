@@ -1,20 +1,14 @@
 package edu.boun.edgecloudsim.task_generator;
 
-import edu.boun.edgecloudsim.applications.sample_app2.SampleNetworkModel;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
-import edu.boun.edgecloudsim.edge_orchestrator.StorageEdgeOrchestrator;
-import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.apache.commons.math3.distribution.ZipfDistribution;
-import org.apache.commons.math3.geometry.spherical.twod.Edge;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -28,12 +22,15 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
     static private int numOfIOTasks=0;
     String orchestratorPolicy;
+    String objectPlacementPolicy;
     Random random = new Random();
     RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
-    public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy) {
+    public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
+                                          String _objectPlacementPolicy) {
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
         orchestratorPolicy = _orchestratorPolicy;
-        random.setSeed(ObjectGenerator.seed);
+        objectPlacementPolicy = _objectPlacementPolicy;
+        random.setSeed(ObjectGenerator.getSeed());
 
     }
 
@@ -41,6 +38,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     public void initializeModel() {
         int ioTaskID=0;
         taskList = new ArrayList<TaskProperty>();
+        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
 
         //exponential number generator for file input size, file output size and task length
         ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][ACTIVE_PERIOD];
@@ -106,7 +104,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     continue;
                 }
 
-                String objectID = RedisListHandler.getObject();
+//                String objectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects");
+                String objectID = OG.getDataObjectID();
 
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;

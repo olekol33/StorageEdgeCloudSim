@@ -8,29 +8,23 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.applications.sample_app5;
+package edu.boun.edgecloudsim.applications.ORBIT_KV_Generator;
 
 import edu.boun.edgecloudsim.cloud_server.CloudServerManager;
 import edu.boun.edgecloudsim.cloud_server.DefaultCloudServerManager;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
-import edu.boun.edgecloudsim.edge_client.DefaultMobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.DefaultMobileServerManager;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileServerManager;
-import edu.boun.edgecloudsim.edge_orchestrator.BasicEdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_orchestrator.StorageEdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.DefaultEdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
-import edu.boun.edgecloudsim.mobility.NomadicMobility;
-import edu.boun.edgecloudsim.mobility.StaticMobility;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
-import edu.boun.edgecloudsim.network.MM1Queue;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
-import edu.boun.edgecloudsim.task_generator.IdleActiveLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 
@@ -42,10 +36,10 @@ public class SampleScenarioFactory implements ScenarioFactory {
 	private String objectPlacementPolicy;
 	
 	SampleScenarioFactory(int _numOfMobileDevice,
-			double _simulationTime,
-			String _orchestratorPolicy,
-			String _simScenario,
-						  String _objectPlacementPolicy){
+                          double _simulationTime,
+                          String _orchestratorPolicy,
+                          String _simScenario,
+                          String _objectPlacementPolicy){
 		orchestratorPolicy = _orchestratorPolicy;
 		numOfMobileDevice = _numOfMobileDevice;
 		simulationTime = _simulationTime;

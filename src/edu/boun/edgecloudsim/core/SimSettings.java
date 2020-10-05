@@ -119,6 +119,10 @@ public class SimSettings {
 	private int HOST_FAILURE_ID;
 	private double HOST_FAILURE_TIME;
 
+	//ORBIT
+	private boolean ORBIT_MODE;
+	private int NUMBER_OF_EDGE_NODES;
+
     
     // following values are stored for each applications defined in applications.xml
     // [0] usage percentage (%)
@@ -201,6 +205,11 @@ public class SimSettings {
 			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
 			HOST_FAILURE_ID = Integer.parseInt(prop.getProperty("host_failure_id"));
 			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
+
+			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
+			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
+
+
 
 			//avg waiting time in a place (min)
 			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
@@ -533,6 +542,14 @@ public class SimSettings {
 
 	public double getHostFailureTime() {
 		return HOST_FAILURE_TIME;
+	}
+
+	public boolean isOrbitMode() {
+		return ORBIT_MODE;
+	}
+
+	public int getNumberOfEdgeNodes() {
+		return NUMBER_OF_EDGE_NODES;
 	}
 	
 	/**

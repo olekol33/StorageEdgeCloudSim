@@ -42,7 +42,11 @@ public class StaticRangeMobility extends MobilityModel {
         //places each mobile device at a location of a DC
         for(int i=0; i<numberOfMobileDevices; i++) {
             treeMapArray.add(i, new TreeMap<Double, Location>());
-            Location placedDevice = randomPlaceDevice(random);
+            Location placedDevice;
+            if (SimSettings.getInstance().isOrbitMode())
+                placedDevice = orbitPlaceDevice(random);
+            else
+                placedDevice = randomPlaceDevice(random);
             try {
                 logAccessLocation(i,placedDevice.getServingWlanId());
             } catch (FileNotFoundException e) {
@@ -281,8 +285,43 @@ public class StaticRangeMobility extends MobilityModel {
             return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
 //            return host;
         }
+    }
+
+    private Location orbitPlaceDevice(Random random){
+        //get grid size
+        int xRange = SimSettings.getInstance().getXRange();
+        int yRange = SimSettings.getInstance().getYRange();
+        int xPos = 0;
+        int yPos = 0;
+        List<Integer> hosts = new ArrayList<Integer>();
+//        Location deviceLocation;
+        int host = random.nextInt(SimSettings.getInstance().getNumOfEdgeDatacenters());
+        hosts.add(host);
+        Location deviceLocation = getDCLocation(host);
+        return new Location(deviceLocation.getPlaceTypeIndex(), deviceLocation.getServingWlanId(), xPos, yPos,hosts);
 
 
+        //Initialize list of hosts in proximity of device
+/*        while (hosts.size() == 0){
+            xPos = random.nextInt(xRange)+1;
+            yPos = random.nextInt(yRange)+1;
+            deviceLocation = new Location(0,0,xPos,yPos);
+            //Returns list of hosts for which device is in range
+            hosts = checkLegalPlacement(deviceLocation);
+        }
+        //When one host in range it's the only element in the list
+        if (hosts.size()==1) {
+            Location host = getDCLocation(hosts.get(0));
+//            Location host = dcLocations.get(hosts.get(0));
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
+        }
+        //When several hosts in range, take nearest
+        else {
+            Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
+//            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
+//            return host;
+        }*/
     }
 
 

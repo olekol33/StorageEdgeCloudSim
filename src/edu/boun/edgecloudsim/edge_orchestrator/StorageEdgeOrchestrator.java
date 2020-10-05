@@ -275,7 +275,10 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     //TODO: Need both edge and cloud
     public int getDeviceToOffload(Task task) {
         int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
-        if(!simScenario.equals("SINGLE_TIER")){
+        if(simScenario.equals("ORBIT")){
+
+        }
+        else if(!simScenario.equals("SINGLE_TIER")){
             if(policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED")){
                 Location deviceLocation = task.getSubmittedLocation();
                 NetworkModel networkModel = SimManager.getInstance().getNetworkModel();

@@ -7,11 +7,14 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.applications.sample_app5;
+package edu.boun.edgecloudsim.applications.ORBIT_KV_Generator;
 
+import edu.boun.edgecloudsim.applications.ORBIT_KV_Generator.SampleScenarioFactory;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
+import edu.boun.edgecloudsim.storage.ObjectGenerator;
+import edu.boun.edgecloudsim.storage.OrbitReader;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
@@ -22,10 +25,11 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
-public class MainApp {
+public class OrbitMain {
 
 	/**
 	 * Creates main() to run this example
@@ -38,11 +42,14 @@ public class MainApp {
 		SimLogger.enablePrintLog();
 		
 		int iterationNumber = 1;
+		int currentHost=0;
+		long currentTime;
+		String runType = "";
 		String configFile = "";
 		String outputFolder = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
-		if (args.length == 5){
+/*		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
 			applicationsFile = args[2];
@@ -61,7 +68,29 @@ public class MainApp {
 			applicationsFile = "scripts/sample_app5/config/applications.xml";
 			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
+		}*/
+
+
+
+
+		if (args.length == 3){
+			runType = args[0];
+			currentHost = Integer.valueOf(args[1]);
+			currentTime = Long.valueOf(args[2]);
 		}
+		else {
+			runType = "client";
+			currentHost = 0;
+			currentTime = Instant.now().toEpochMilli();
+		}
+
+
+
+		configFile = "scripts/ORBIT_KV_Generator/default_config.properties";
+		applicationsFile = "scripts/ORBIT_KV_Generator/applications.xml";
+		edgeDevicesFile = "scripts/ORBIT_KV_Generator/edge_devices.xml";
+		outputFolder = "sim_results/ite" + iterationNumber;
+
 		File file = new File(outputFolder);
 		File parent = file.getParentFile();
 		if (!parent.exists()) {
@@ -74,7 +103,7 @@ public class MainApp {
 			System.out.println("No sub folder");
 			parent.mkdir();
 			file.mkdir();
-			System.out.println("Sub dolder created");
+			System.out.println("Sub folder created");
 		}
 		else {
 			System.out.println("Output folder exists");
@@ -108,10 +137,18 @@ public class MainApp {
 						String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
 						Date ScenarioStartDate = Calendar.getInstance().getTime();
 						now = df.format(ScenarioStartDate);
-//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
-						// Storage: Generate Redis KV list
-						RedisListHandler.closeConnection();
-						RedisListHandler.createList(objectPlacementPolicy);
+						// Storage: Generate Redis KV list on hosts
+						if (runType.equals("host")) {
+							RedisListHandler.closeConnection();
+							RedisListHandler.orbitCreateList(objectPlacementPolicy, currentHost);
+							System.out.println("Objects placed on host " + currentHost);
+							System.exit(0);
+						}
+						//place metadata on clients
+						else {
+/*							ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+							RedisListHandler.orbitPlaceMetadata();*/
+						}
 
 						String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
 
@@ -123,8 +160,10 @@ public class MainApp {
 								" - #iteration: " + iterationNumber);
 						SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
 								SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
+//						SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
+//								"_" + objectPlacementPolicy + "_" + j + "DEVICES");
 						SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
-								"_" + objectPlacementPolicy + "_" + j + "DEVICES");
+								"_" + objectPlacementPolicy + "_" + j + "DEVICES",runType,currentHost,currentTime);
 
 						try {
 							// First step: Initialize the CloudSim package. It should be called
@@ -137,14 +176,22 @@ public class MainApp {
 							CloudSim.init(num_user, calendar, trace_flag, 0.01);
 
 							// Generate EdgeCloudsim Scenario Factory
-							ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario,objectPlacementPolicy);
+							ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario,
+									objectPlacementPolicy);
 
 
 							// Generate EdgeCloudSim Simulation Manager
 							SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy,objectPlacementPolicy);
 
 							// Start simulation
-							manager.startSimulation();
+							if (runType.equals("client")) {
+								OrbitReader orbitClient = new OrbitReader(currentHost);
+								orbitClient.clientRun();
+								//TODO: close all connections
+								RedisListHandler.closeConnection();
+							}
+
+//								manager.startSimulation();
 
 						} catch (Exception e) {
 							SimLogger.printLine("The simulation has been terminated due to an unexpected error");

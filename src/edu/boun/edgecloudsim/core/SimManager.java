@@ -15,6 +15,7 @@ package edu.boun.edgecloudsim.core;
 import java.io.IOException;
 import java.util.List;
 
+import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -282,7 +283,10 @@ public class SimManager extends SimEntity {
 					///Send task for each object read
 /*					System.out.println("At " + CloudSim.clock() + " Submitting ioTaskID = " + edgeTask.getIoTaskID() +
 							", of time: " + edgeTask.getStartTime() +", isParity = " + edgeTask.getIsParity());*/
-					mobileDeviceManager.submitTask(edgeTask);
+					if (SimSettings.getInstance().isOrbitMode())
+						((StorageMobileDeviceManager) mobileDeviceManager).submitOrbitTask(edgeTask);
+					else
+						mobileDeviceManager.submitTask(edgeTask);
 
 				} catch (Exception e) {
 					e.printStackTrace();
