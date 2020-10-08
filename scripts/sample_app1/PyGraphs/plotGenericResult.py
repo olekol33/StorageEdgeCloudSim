@@ -49,7 +49,8 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
-    fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(12,20))
+#     fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(12,20))
+    fig, ax = plt.subplots(1, 1,figsize=(12,8))
     for p, objectPlacement in enumerate(objectPlacements):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
             all_results = np.zeros((numOfSimulations, 1, numOfMobileDevices))
@@ -66,6 +67,8 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                             mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop*j
                             filePath = ''.join([folderPath, '\ite', str(s+1), '\SIMRESULT_', str(scenarioType[i]), '_',
                                                 orchestratorPolicy,'_',objectPlacement,'_',str(mobileDeviceNumber), 'DEVICES_', appType, '_GENERIC.log'])
+                            if (not path.exists(filePath)):
+                                break
                             with open(filePath,'r') as csvfile:
                                 csvreader = csv.reader(csvfile, delimiter=';')
                                 for row in csvreader:
@@ -94,6 +97,7 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                                 all_results[s, 0, j] = value
                         except FileNotFoundError:
                             print("The following file doesn't exist:\n" + filePath)
+
 
             if numOfSimulations == 1:
                 results = all_results
@@ -137,6 +141,9 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
             #         min_results[j] = results[j] - CI[0]
             #         max_results[j] = CI[1] - results[j]
 
+            #skip if it contains only zeros
+            if (not np.any(results)):
+                continue
             for j in range(numOfMobileDevices):
                 min_results = np.zeros((numOfMobileDevices))
                 max_results = np.zeros((numOfMobileDevices))
@@ -169,18 +176,22 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                 # TODO: temp removed
                 # yIndex.append(results[j][i])
                 yIndex.append(results[i])
-            ax[p].scatter(xIndex, yIndex, marker = markers[o])
-            ax[p].plot(xIndex, yIndex, label=orchestratorPolicy)
-            ax[p].set_title(objectPlacements[p])
+            ax.scatter(xIndex, yIndex, marker = markers[o])
+            ax.plot(xIndex, yIndex, label=objectPlacement+" | "+orchestratorPolicy)
+            # ax.set_title(objectPlacements[p])
 
-    for axis in ax:
-        axis.legend()
-        axis.set_xlabel("Number of Mobile Devices")
-        axis.set_ylabel(yLabel)
+    # for axis in ax:
+    #     axis.legend()
+    #     axis.set_xlabel("Number of Mobile Devices")
+    #     axis.set_ylabel(yLabel)
+    ax.legend()
+    ax.set_xlabel("Number of Mobile Devices")
+    ax.set_ylabel(yLabel)
 
     # ax.legend()
     # ax.set_xlabel("Number of Mobile Devices")
     # ax.set_ylabel(yLabel)
+    fig.suptitle(yLabel)
     fig.savefig(folderPath + '\\fig\\' + yLabel+ '.png', bbox_inches='tight')
     plt.close(fig)
 

@@ -14,10 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class OrbitReader {
     private long startTime;
@@ -51,32 +48,40 @@ public class OrbitReader {
 
     private long[] readObject (String srcHost, String objectID){
         String source="";
-        String destination="";
+        String destination = "node1-1.sb5.orbit-lab.org";
         String objectName = "object:"+objectID;
-        System.out.println("objectName: " + objectName);
+//        System.out.println("objectName: " + objectName);
 
         long pttlBefore, pttlAfter;
         if (srcHost.equals("0")) {
-            source = "node1-1.sb5.orbit-lab.org";
-            destination = "node1-2.sb5.orbit-lab.org";
+//            source = "node1-1.sb5.orbit-lab.org";
+            Jedis jedisLocalhost = new Jedis(localhost, 6379);
+//            pttlBefore = jedisLocalhost.pttl(objectName);
+//            pttlAfter = jedisLocalhost.pttl(objectName);
+            pttlBefore = Instant.now().toEpochMilli();
+            pttlAfter = Instant.now().toEpochMilli();
+            return new long[] {pttlBefore,pttlAfter};
         }
         else if (srcHost.equals("1")) {
             source = "node1-2.sb5.orbit-lab.org";
-            destination = "node1-1.sb5.orbit-lab.org";
         }
         Jedis jedisSrc = new Jedis(source, 6379);
-        pttlBefore = jedisSrc.pttl(objectName);
-        System.out.println("pttlBefore=" + pttlBefore);
+        Jedis jedisLocalhost = new Jedis(localhost, 6379);
+//        pttlBefore = jedisSrc.pttl(objectName);
+        pttlBefore = Instant.now().toEpochMilli();
+//        System.out.println("pttlBefore=" + pttlBefore);
 
         MigrateParams params = new MigrateParams();
         params.copy();
         params.replace();
-//        System.out.println("Migrating " + objectName + " from source " + source + " to dest " + destination);
+        System.out.println("Migrating " + objectName + " from source " + source + " to dest " + destination);
         jedisSrc.migrate(destination,6379, 0,5000, params, objectName);
-//        System.out.println("Done migrating");
-        Jedis jedisLocalhost = new Jedis(localhost, 6379);
-        pttlAfter = jedisLocalhost.pttl(objectName);
-//        System.out.println("pttlAfter=" + pttlAfter);
+        Map<String, String> hgetall = jedisLocalhost.hgetAll(objectName);
+        System.out.println("At time " + Instant.now().toEpochMilli() + "read object " + hgetall.get("id"));
+
+        pttlAfter = Instant.now().toEpochMilli();
+//        pttlAfter = jedisLocalhost.pttl(objectName);
+        System.out.println("pttlAfter=" + pttlAfter);
         jedisSrc.close();
         jedisLocalhost.close();
 //        System.out.println("Finished reading: " + objectName + ", pttlBefore=" + pttlBefore + ", pttlAfter=" + pttlAfter);
@@ -89,7 +94,7 @@ public class OrbitReader {
             long[] pttl = new long[2];
             if (currentTime >= clientTaskList.get(0).getStartTime()+startTime){
                 String objectID = clientTaskList.get(0).getObjectRead();
-                System.out.println("Read object: " + objectID);
+//                System.out.println("Read object: " + objectID);
                 List<String> mdObjects = RedisListHandler.getObjectsFromRedis("object:md*_"+objectID+"_*");
                 //no parities
                 //TODO:check not accidentally taking another object
@@ -97,7 +102,7 @@ public class OrbitReader {
                     mdObjects = RedisListHandler.getObjectsFromRedis("object:md_"+objectID);
                 //TODO: currently selects random stripe
                 int mdObjectID = random.nextInt(mdObjects.size());
-                System.out.println("mdObjectID: " + mdObjectID + ", mdObjects: " + mdObjects.get(mdObjectID));
+//                System.out.println("mdObjectID: " + mdObjectID + ", mdObjects: " + mdObjects.get(mdObjectID));
                 Set<String> locations = ObjectGenerator.tokenizeList(RedisListHandler.getObjectLocationsFromMetadata(localhost,
                         mdObjects.get(mdObjectID), objectID));
                 //TODO: currently takes first location

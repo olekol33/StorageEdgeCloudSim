@@ -15,7 +15,7 @@ def getConfiguration(argType):
     elif (argType == "startOfMobileDeviceLoop"):  #3
         return 100 #min number of mobile device
     elif (argType == "stepOfMobileDeviceLoop"): #4
-        return 100 #step size of mobile device count
+        return 200 #step size of mobile device count
     elif (argType == "endOfMobileDeviceLoop"): #5
         return 1000 #max number of mobile device
     elif (argType == "xTickLabelCoefficient"): #6
@@ -37,12 +37,9 @@ def getConfiguration(argType):
          # return ['NEAREST_WITH_PARITY']
          # return ['UNIFORM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY',
          #         'CLOUD_OR_NEAREST_IF_CONGESTED']
-         return ['UNIFORM_HOST',
-                 'NEAREST_HOST',
-                 'SHORTEST_QUEUE_IN_RANGE',
+         return ['NEAREST_HOST',
                  'CLOUD_OR_NEAREST_IF_CONGESTED',
-                 'IF_CONGESTED_READ_PARITY',
-                 'IF_CONGESTED_READ_ONLY_PARITY']
+                 'IF_CONGESTED_READ_PARITY']
                  # 'CLOUD_OR_NEAREST_IF_CONGESTED','SHORTEST_QUEUE']
          # return ['UNIFORM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY']
          # return ['NEAREST_OR_PARITY']

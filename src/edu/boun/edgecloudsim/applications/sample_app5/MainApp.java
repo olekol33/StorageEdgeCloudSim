@@ -20,8 +20,13 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -42,6 +47,9 @@ public class MainApp {
 		String outputFolder = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
+		String[] codingPolicies = {"IF_CONGESTED_READ_PARITY"};
+		String[] replicationPolicies = {"IF_CONGESTED_READ_PARITY","NEAREST_HOST","CLOUD_OR_NEAREST_IF_CONGESTED"};
+		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -106,6 +114,26 @@ public class MainApp {
 						String objectPlacementPolicy  = SS.getObjectPlacement()[p];
 						String simScenario = SS.getSimulationScenarios()[k];
 						String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
+
+						//Proceed only if orchestrator policy matches placement
+						if(objectPlacementPolicy.equals("CODING_PLACE")){
+							if(!Arrays.asList(codingPolicies).contains(orchestratorPolicy))
+								continue;
+						}
+						else if(objectPlacementPolicy.equals("REPLICATION_PLACE")) {
+							if (!Arrays.asList(replicationPolicies).contains(orchestratorPolicy))
+								continue;
+						}
+						else if(objectPlacementPolicy.equals("DATA_PARITY_PLACE")) {
+							if (!Arrays.asList(dataParityPolicies).contains(orchestratorPolicy))
+								continue;
+						}
+						else {
+								System.out.println("ERROR: Placement policy doesn't exist");
+								System.exit(0);
+							}
+
+
 						Date ScenarioStartDate = Calendar.getInstance().getTime();
 						now = df.format(ScenarioStartDate);
 //						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
@@ -165,5 +193,29 @@ public class MainApp {
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
+
+		//touch to mark run has finished
+		String hostname = "Unknown";
+		try
+		{
+			InetAddress addr;
+			addr = InetAddress.getLocalHost();
+			hostname = addr.getHostName();
+		}
+		catch (UnknownHostException ex)
+		{
+			System.out.println("Hostname can not be resolved");
+		}
+		try
+		{
+			file = new File(outputFolder+"/done_"+hostname);
+			if (!file.exists())
+				new FileOutputStream(file).close();
+		}
+		catch (IOException e)
+		{
+		}
+
+
 	}
 }

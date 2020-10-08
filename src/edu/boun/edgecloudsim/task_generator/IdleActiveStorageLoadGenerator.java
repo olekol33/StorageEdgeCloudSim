@@ -13,10 +13,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
@@ -25,12 +22,14 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     String objectPlacementPolicy;
     Random random = new Random();
     RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
+    Map<Integer,Integer> activeCodedIOTasks;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
                                           String _objectPlacementPolicy) {
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
         orchestratorPolicy = _orchestratorPolicy;
         objectPlacementPolicy = _objectPlacementPolicy;
         random.setSeed(ObjectGenerator.getSeed());
+        activeCodedIOTasks = new HashMap<>();
 
     }
 
@@ -124,25 +123,24 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         int taskType = task.getTaskType();
         int isParity=1;
         //If replication policy, read the same object, but mark it as parity
-        if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
+        //if DATA_PARITY_PLACE - if replica exists, read it
+        if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE") ||
+                SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("DATA_PARITY_PLACE")) {
             String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
             List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
-            //if no replicas
-            if (objectLocations.size()==1)
+            //if no replicas and REPLICATION_PLACE
+            if (objectLocations.size()==1 && SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE"))
                 return false;
             else if(objectLocations.size()==0) {
                 System.out.println("ERROR: No such object");
                 System.exit(0);
             }
-            //TODO: rewrite better for parities to read
-            if (SimManager.getInstance().getOrchestratorPolicy().equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY"))
-                taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(), task.getObjectRead(),
-                        task.getIoTaskID(), isParity,1,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
-            else
-                taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(), task.getObjectRead(),
-                        task.getIoTaskID(), isParity,0,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
-            SimManager.getInstance().createNewTask();
-            return true;
+            else if(objectLocations.size()>= 2) {
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
+                        task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+                SimManager.getInstance().createNewTask();
+                return true;
+            }
         }
         List<String> mdObjects = RedisListHandler.getObjectsFromRedis("object:md*_"+task.getObjectRead()+"_*");
         //no parities
@@ -155,9 +153,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         List<String> dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
         List<String> parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
         int i=0;
-        int paritiesToRead=0;
-        if (SimManager.getInstance().getOrchestratorPolicy().equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY"))
-            paritiesToRead=1;
+        int paritiesToRead=1;
+/*        if (SimManager.getInstance().getOrchestratorPolicy().equalsIgnoreCase("IF_CONGESTED_READ_PARITY"))
+            paritiesToRead=1;*/
         for (String objectID:dataObjects){
             i++;
             //if data object, skip
@@ -179,11 +177,31 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         }
         if (i!=(SimSettings.getInstance().getNumOfDataInStripe()+SimSettings.getInstance().getNumOfParityInStripe()))
             System.out.println("Not created tasks for all parities");
+        activeCodedIOTasks.put(task.getIoTaskID(),i-1);
         return true;
     }
 
     public static int getNumOfIOTasks() {
         return numOfIOTasks;
+    }
+
+    //counts parities which haven't been read yet
+    public int updateActiveCodedIOTasks(int ioTaskID, int operation){ //operation: 1 - reduce by 1, 0 - check, -1-remove key
+        //if key doesn't exist
+        if (!activeCodedIOTasks.containsKey(ioTaskID))
+            return -1;
+        if (operation==1) {
+            activeCodedIOTasks.put(ioTaskID, activeCodedIOTasks.get(ioTaskID) - 1);
+            return activeCodedIOTasks.get(ioTaskID);
+        }
+        if (operation==0){
+            return activeCodedIOTasks.get(ioTaskID);
+        }
+        else if(operation==-1){
+            activeCodedIOTasks.remove(ioTaskID);
+            return -1;
+        }
+        return -2;
     }
 
 }

@@ -8,6 +8,8 @@ import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.SampleNetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
+import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
@@ -287,6 +289,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         }
 
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+        int activeCodedRequests = 0;
 
         switch (ev.getTag()) {
             case UPDATE_MM1_QUEUE_MODEL:
@@ -349,7 +353,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             case RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE:
             {
                 Task task = (Task) ev.getData();
-//                networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID+1);
                 //TODO: recheck, stop read from data host and then read from access point
                 //TODO: GENERIC_EDGE_DEVICE_ID+1 is MAN, not affecting count at host
                 if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0))
@@ -366,8 +369,10 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     Location currentLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(),CloudSim.clock()+delay);
                     if(task.getSubmittedLocation().getServingWlanId() == currentLocation.getServingWlanId())
                     {
-//                        networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
-                        if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0))
+                        if(task.getIsParity()==1)
+                            activeCodedRequests = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).updateActiveCodedIOTasks(task.getIoTaskID(),1);
+//                        if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0))
+                        if(activeCodedRequests==0)
                             networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
                         SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
 //                        System.out.println("4Submitting IoTask " + task.getIoTaskID() + " object " + task.getObjectRead() + "\n");
@@ -392,7 +397,29 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             case RESPONSE_RECEIVED_BY_MOBILE_DEVICE:
             {
                 Task task = (Task) ev.getData();
-
+                if(task.getIsParity()==1) {
+                    activeCodedRequests = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).updateActiveCodedIOTasks(task.getIoTaskID(), 0);
+                    //key was removed
+                    if (activeCodedRequests == -1) {
+                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+                        break;
+                    }
+                    //need to remove key
+                    if (activeCodedRequests==0){
+                        if(task.getAssociatedDatacenterId() == SimSettings.CLOUD_DATACENTER_ID)
+                            networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
+                        else {
+                            ((IdleActiveStorageLoadGenerator) loadGeneratorModel).updateActiveCodedIOTasks(task.getIoTaskID(), -1);
+                            networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
+                        }
+                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+                        break;
+                    }
+                    else if(activeCodedRequests>0){
+                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+                        break;
+                    }
+                }
                 if(task.getAssociatedDatacenterId() == SimSettings.CLOUD_DATACENTER_ID) {
                     if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0))
                         networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
@@ -414,6 +441,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
     @Override
     protected void processCloudletReturn(SimEvent ev) {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+        int activeCodedRequests = 0;
         Task task = (Task) ev.getData();
 
         SimLogger.getInstance().taskExecuted(task.getCloudletId());
@@ -426,7 +455,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 Location currentLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(),CloudSim.clock()+WanDelay);
                 if(task.getSubmittedLocation().getServingWlanId() == currentLocation.getServingWlanId())
                 {
-//                    networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
+//                    if(task.getIsParity()==1)
+//                        activeCodedRequests = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).updateActiveCodedIOTasks(task.getIoTaskID(),1);
                     if(!(task.getIsParity()==1 && task.getParitiesToRead()==0))
                         ((StorageNetworkModel) networkModel).downloadStarted(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID,
                                 task.getAssociatedHostId());
@@ -475,7 +505,10 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 //TODO: under static mobility no need to check if device has moved, otherwise check
 /*                if((task.getSubmittedLocation().getXPos() == currentLocation.getXPos()) && task.getSubmittedLocation().getYPos() == currentLocation.getYPos())
                 {*/
-                if(!(task.getIsParity()==1 && task.getParitiesToRead()==0))
+                if(task.getIsParity()==1 && nextDeviceForNetworkModel==SimSettings.GENERIC_EDGE_DEVICE_ID)
+                    activeCodedRequests = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).updateActiveCodedIOTasks(task.getIoTaskID(),1);
+//                if(!(task.getIsParity()==1 && task.getParitiesToRead()==0))
+                if(activeCodedRequests==0)
                     ((StorageNetworkModel) networkModel).downloadStarted(task.getSubmittedLocation(), nextDeviceForNetworkModel,
                             task.getAssociatedHostId());
 

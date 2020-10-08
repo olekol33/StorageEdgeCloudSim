@@ -72,4 +72,4 @@ for s in range(numOfSimulations):
                     fig2.savefig(folderPath + '\\fig\\' + "GRID_LOCATIONS_" + str(scenarioType[i]) + "_" +
                                 orchestratorPolicy+ "_" + str(mobileDeviceNumber) + "DEVICE_ACCESS" + '.png', bbox_inches='tight')
                     plt.close(fig2)
-                exit()
+            exit()

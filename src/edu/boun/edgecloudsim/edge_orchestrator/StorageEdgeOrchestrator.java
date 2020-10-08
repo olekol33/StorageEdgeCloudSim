@@ -144,19 +144,20 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         }
 
         //for all non parity policies check if object can be read
-        if(policy.equalsIgnoreCase("UNIFORM_HOST") || policy.equalsIgnoreCase("SHORTEST_QUEUE_IN_RANGE") ||
-                policy.equalsIgnoreCase("NEAREST_HOST")){
+//        if(policy.equalsIgnoreCase("UNIFORM_HOST") || policy.equalsIgnoreCase("SHORTEST_QUEUE_IN_RANGE") ||
+//                policy.equalsIgnoreCase("NEAREST_HOST")){
+        if(policy.equalsIgnoreCase("NEAREST_HOST")){
             if (objectLocations.size()==0) {
                 SimLogger.getInstance().taskFailedDueToInaccessibility(task.getCloudletId(), CloudSim.clock(),SimSettings.VM_TYPES.EDGE_VM.ordinal());
                 return selectedVM;
             }
         }
-        if(policy.equalsIgnoreCase("UNIFORM_HOST")){
+/*        if(policy.equalsIgnoreCase("UNIFORM_HOST")){
             int relatedHostId= randomlySelectHostToRead(operativeHosts);
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
-        }
-        else if(policy.equalsIgnoreCase("SHORTEST_QUEUE_IN_RANGE")){
+        }*/
+/*        else if(policy.equalsIgnoreCase("SHORTEST_QUEUE_IN_RANGE")){
             //get host with shortest queue as access point
             int selectedAccessHost = getHostWithShortestQueueInRange(deviceLocation);
             //if object on access point read from it, otherwise it doesn't matter
@@ -172,17 +173,37 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             }
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
-        }
-        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
-                policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
+        }*/
+//        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
+//                policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
+        if(policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
             //if it's the parity, don't read from congested host
             if (task.getIsParity()==1){
                 if (objectLocations.size()==0) {
                     SimLogger.getInstance().taskFailedDueToInaccessibility(task.getCloudletId(), CloudSim.clock(),SimSettings.VM_TYPES.EDGE_VM.ordinal());
                     return selectedVM;
                 }
-                //TODO: first check if exists in nearest host
-                int selectedHost= getHostWithShortestManQueue(operativeHosts,deviceLocation);
+                //if in access point, read it
+                int relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
+                if (relatedHostId == deviceLocation.getServingWlanId()){
+                    List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+                    selectedVM = vmArray.get(0);
+                    return selectedVM;
+                }
+
+
+                //Get host of original data object to avoid reading from same host
+                int hostOfOriginalData = SimLogger.getInstance().hostOfOriginalData(task.getIoTaskID());
+                objectLocations = new ArrayList<String>(Arrays.asList(operativeHosts.split(" ")));
+                //if can avoid reading from this host (since its queue it long) - do it
+                if(objectLocations.size()>1 && objectLocations.contains(hostOfOriginalData))
+                    objectLocations.remove(hostOfOriginalData);
+                for (String s : objectLocations)
+                {
+                    operativeHosts += s + " ";
+                }
+                //if reading on grid, randomly select host
+                int selectedHost= randomlySelectHostToRead(operativeHosts);
                 if (selectedHost>=SimSettings.getInstance().getNumOfEdgeDatacenters())
                     System.out.println("ERROR: Illegal host id " + selectedHost);
                 List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(selectedHost);
@@ -199,18 +220,30 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                     return selectedVM;
                 }
                 int relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
-                int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(relatedHostId);
                 //if not nearest host contains object, read from it - read on grid
                 if (relatedHostId!=deviceLocation.getServingWlanId()){
+                    //uniformly select host on grid
+                    relatedHostId = randomlySelectHostToRead(operativeHosts);
+                    int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(relatedHostId);
                     //if MAN queue too large
                     if (queueSize >= SimSettings.getInstance().getManThreshold()) {
+                        double probContinueRead = SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][LoadGeneratorModel.PROB_CLOUD_SELECTION];
+                        //with probability probContinueRead proceed with original request
+                        if (random.nextInt(100)<=probContinueRead) {
+                            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+                            selectedVM = vmArray.get(0);
+                            return selectedVM;
+                        }
                         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
                         boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
                         //don't read data, only parity
-                        if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
+//                        if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
+                        if (parityGenerated==true) {
                             //return null
                             //TODO: SimSettings.VM_TYPES.EDGE_VM.ordinal() - what about cloud?
                             SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),SimSettings.VM_TYPES.EDGE_VM.ordinal());
+                            SimLogger.getInstance().setHostId(task.getCloudletId(),relatedHostId);
+
                             return selectedVM;
                         }
                     }
@@ -223,9 +256,12 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 //            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
 //            selectedVM = vmArray.get(0);
         }
-        else if(policy.equalsIgnoreCase("NEAREST_HOST") ||
-                policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED") ){
+        //if access point doesn't contain the object, pick one randomly
+        else if(policy.equalsIgnoreCase("NEAREST_HOST") || policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED")){
             int relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
+            if (relatedHostId != deviceLocation.getServingWlanId()){
+                relatedHostId = randomlySelectHostToRead(operativeHosts);
+            }
             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
             selectedVM = vmArray.get(0);
         }
@@ -275,10 +311,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     //TODO: Need both edge and cloud
     public int getDeviceToOffload(Task task) {
         int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
-        if(simScenario.equals("ORBIT")){
-
-        }
-        else if(!simScenario.equals("SINGLE_TIER")){
+        if(!simScenario.equals("SINGLE_TIER")){
             if(policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED")){
                 Location deviceLocation = task.getSubmittedLocation();
                 NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
@@ -299,8 +332,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 if (objectLocations.size()==0)
                     result = SimSettings.CLOUD_DATACENTER_ID;
                 //if wan queue is above threshold
-                else if (wanQueueSize >= SimSettings.getInstance().getMaxCloudRequests())
-                    result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+/*                else if (wanQueueSize >= SimSettings.getInstance().getMaxCloudRequests())
+                    result = SimSettings.GENERIC_EDGE_DEVICE_ID;*/
                 //if WLAN queue size larger than threshold
                 else if (wlanQueueSize >= SimSettings.getInstance().getCongestedThreshold())
                     result = SimSettings.CLOUD_DATACENTER_ID;

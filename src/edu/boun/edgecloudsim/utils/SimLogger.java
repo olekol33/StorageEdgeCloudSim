@@ -104,6 +104,10 @@ public class SimLogger {
 		return startTime;
 	}
 
+	public Map<Integer, LogItem> getTaskMap() {
+		return taskMap;
+	}
+
 	public void appendToFile(BufferedWriter bw, String line) throws IOException {
 		bw.write(line);
 		bw.newLine();
@@ -391,6 +395,7 @@ public class SimLogger {
 		int [] hostID = new int[taskMap.size()];
 		int [] ioTaskID = new int[taskMap.size()];
 		int [] isParity = new int[taskMap.size()];
+		int [] isParityToRead = new int[taskMap.size()];
 		int [] accessID = new int[taskMap.size()];
 		double [] objectReadDelay = new double[taskMap.size()];
 		String [] readSource = new String[taskMap.size()];
@@ -398,6 +403,7 @@ public class SimLogger {
 		Arrays.fill(hostID,-1);
 		Arrays.fill(ioTaskID,-1);
 		Arrays.fill(isParity,-1);
+		Arrays.fill(isParityToRead,-1);
 		Arrays.fill(accessID,-1);
 
 		DecimalFormat df = new DecimalFormat();
@@ -440,7 +446,7 @@ public class SimLogger {
 			objectsFW = new FileWriter(objectsFile, true);
 			objectsBW = new BufferedWriter(objectsFW);
 //			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay;Status");
-			appendToFile(objectsBW, "ioTaskID;ObjectID;isParity;HostID;AccessID;ReadSrc;Read Delay");
+			appendToFile(objectsBW, "ioTaskID;ObjectID;isParity;isParityToRead;HostID;AccessID;ReadSrc;Read Delay");
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
@@ -528,6 +534,7 @@ public class SimLogger {
 				ioTaskID[key-1] = value.getIoTaskID();
 				accessID[key-1] = value.getAccessHostID();
 				isParity[key-1] = value.getIsParity();
+				isParityToRead[key-1] = value.getParitiesToRead();
 				objectReadDelay[key-1] = value.getNetworkDelay();
 				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
 				if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
@@ -793,7 +800,7 @@ public class SimLogger {
 				if (objectID[i] == null)
 					continue;
 				objectsBW.write((ioTaskID[i] + SimSettings.DELIMITER + objectID[i] + SimSettings.DELIMITER + isParity[i] +
-						SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
+						SimSettings.DELIMITER + isParityToRead[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
 						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + df.format(objectReadDelay[i])));
 //						SimSettings.DELIMITER + objectStatusID[i]));
 				objectsBW.newLine();
@@ -825,7 +832,7 @@ public class SimLogger {
 				//if one of the tasks hasn't finished
 				if (list.contains(NOT_FINISHED))
 				{
-					//TODO: check this
+					//single element not finished
 					if((list.get(0).equals(NOT_FINISHED)) && list.size()==1){
 //						System.out.println("Entire list not finished");
 						notFinished++;
@@ -840,15 +847,15 @@ public class SimLogger {
 						objectsRead=1;
 					}
 					//if also parity wasn't read
-					else if(list.subList(1, numOfObjectsInStripe).contains(NOT_FINISHED)) {
+					else if(list.subList(1, list.size()).contains(NOT_FINISHED)) {
 						notFinished++;
 						continue;
 					}
 					//parity finished
 					else {
 						dataTypeRead = "parity";
-						readDelay = Collections.max(list.subList(1, numOfObjectsInStripe));
-						for(Double d : list.subList(1, numOfObjectsInStripe)) {
+						readDelay = Collections.max(list.subList(1, list.size()));
+						for(Double d : list.subList(1, list.size())) {
 							readCost += d;
 							objectsRead++;
 						}
@@ -1134,6 +1141,17 @@ public class SimLogger {
 		taskMap.clear();
 		vmLoadList.clear();
 	}
+
+	public int hostOfOriginalData(int ioTaskID){
+		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
+			Integer key = entry.getKey();
+			LogItem value = entry.getValue();
+			if (value.getIoTaskID()==ioTaskID && value.getIsParity()==0)
+				return value.getHostId();
+		}
+		return -1;
+
+	}
 }
 
 class VmLoadLogItem {
@@ -1167,6 +1185,8 @@ class VmLoadLogItem {
 				SimSettings.DELIMITER + vmLoadOnCloud +
 				SimSettings.DELIMITER + vmLoadOnMobile;
 	}
+
+
 }
 
 class LogItem {
@@ -1334,6 +1354,8 @@ class LogItem {
 		cpuCost = _cpuCos;
 	}
 
+
+
 	public boolean isInWarmUpPeriod() {
 		return isInWarmUpPeriod;
 	}
@@ -1356,6 +1378,10 @@ class LogItem {
 
 	public int getDatacenterId() {
 		return datacenterId;
+	}
+
+	public int getParitiesToRead() {
+		return paritiesToRead;
 	}
 
 	public double getNetworkUploadDelay(NETWORK_DELAY_TYPES delayType) {

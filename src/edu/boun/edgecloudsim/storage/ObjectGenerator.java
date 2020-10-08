@@ -314,7 +314,7 @@ public class ObjectGenerator {
             map.put("size", objectSize);
             map.put("type", "data");
             if (SimSettings.getInstance().isOrbitMode()){
-                map.put("data", getBinaryString(100));
+                map.put("data", getBinaryString(Integer.valueOf(objectSize)));
             }
 //            map.put("location", "");
             listOfDataObjects.add(map);

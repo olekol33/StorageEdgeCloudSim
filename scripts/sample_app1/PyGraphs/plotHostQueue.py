@@ -65,7 +65,7 @@ def plotHostQueue():
             queue_size_frame = {}
             mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
 
-            fig2, ax2 = plt.subplots(len(objectPlacements), 1, figsize=(12, 17))
+            fig2, ax2 = plt.subplots(1, 1, figsize=(17, 12))
             for p, objectPlacement in enumerate(objectPlacements):
                 for i in range(len(scenarioType)):
                     for o, orchestratorPolicy in enumerate(orchestratorPolicies):
@@ -74,16 +74,19 @@ def plotHostQueue():
                         elif (scenarioType[i] != "TWO_TIER" and "CLOUD" in orchestratorPolicy):
                             continue
                         c = 0
-                        fig, ax = plt.subplots(1, 1, figsize=(20,10))
+                        policy = objectPlacement + " | " + orchestratorPolicy
+
                         filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
                                             orchestratorPolicy, '_', objectPlacement, '_',str(mobileDeviceNumber), 'DEVICES_HOST_QUEUE.log'])
                         if (not path.exists(filePath)):
                             continue
+                        fig, ax = plt.subplots(1, 1, figsize=(20,10))
                         data = pd.read_csv(filePath, delimiter=';')
                         NUM_COLORS = max(data["HostID"])
                         exists = False
                         queue_size_series = data.groupby(['HostID']).mean()["Requests"]
-                        queue_size_frame[orchestratorPolicy] = queue_size_series
+                        # queue_size_frame[orchestratorPolicy] = queue_size_series
+                        queue_size_frame[policy] = queue_size_series
                         if data["Requests"].max()>30:
                         # if mobileDeviceNumber==1000:
                             exists = True
@@ -102,20 +105,20 @@ def plotHostQueue():
                         # ax.legend()
                         ax.set_xlabel("Time")
                         ax.set_ylabel("Queue Size")
-                        fig.savefig(folderPath + '\\fig\\HOST_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
+                        fig.savefig(folderPath + '\\fig\\HOST_WLAN_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
                                     str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
                         plt.close(fig)
 
-                queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
-                queue_size_df.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[p])
-                ax2[p].set_title(objectPlacements[p])
-                ax2[p].legend()
-                ax2[p].set_xlabel("Host Number")
-                ax2[p].set_ylabel("Average Queue Size")
-                fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
-                fig2.savefig(folderPath + '\\fig\\Average_WLAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
-                            bbox_inches='tight')
-                plt.close(fig2)
+            queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
+            queue_size_df.plot(kind="bar", use_index=True, ax=ax2)
+            # ax2.set_title(objectPlacements[p])
+            ax2.legend()
+            ax2.set_xlabel("Host Number")
+            ax2.set_ylabel("Average Queue Size")
+            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
+            fig2.savefig(folderPath + '\\fig\\Average_WLAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
+                        bbox_inches='tight')
+            plt.close(fig2)
 
     # initializing the titles and rows list
     for s in range(numOfSimulations):
@@ -123,7 +126,7 @@ def plotHostQueue():
             queue_size_frame = {}
             mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
 
-            fig2, ax2 = plt.subplots(len(objectPlacements), 1, figsize=(12, 17))
+            fig2, ax2 = plt.subplots(1, 1, figsize=(17, 12))
             for p, objectPlacement in enumerate(objectPlacements):
                 for i in range(len(scenarioType)):
                     for o, orchestratorPolicy in enumerate(orchestratorPolicies):
@@ -132,16 +135,17 @@ def plotHostQueue():
                         elif (scenarioType[i] != "TWO_TIER" and "CLOUD" in orchestratorPolicy):
                             continue
                         c = 0
-                        fig, ax = plt.subplots(1, 1, figsize=(20,10))
+                        policy = objectPlacement + " | " + orchestratorPolicy
                         filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
                                             orchestratorPolicy, '_', objectPlacement, '_',str(mobileDeviceNumber), 'DEVICES_MAN_QUEUE.log'])
                         if (not path.exists(filePath)):
                             continue
+                        fig, ax = plt.subplots(1, 1, figsize=(20,10))
                         data = pd.read_csv(filePath, delimiter=';')
                         NUM_COLORS = max(data["HostID"])
                         exists = False
                         queue_size_series = data.groupby(['HostID']).mean()["Requests"]
-                        queue_size_frame[orchestratorPolicy] = queue_size_series
+                        queue_size_frame[policy] = queue_size_series
                         if data["Requests"].max()>50:
                         # if mobileDeviceNumber==1000:
                             exists = True
@@ -162,20 +166,19 @@ def plotHostQueue():
                                      objectPlacement + ", Devices: " + str(mobileDeviceNumber))
                         ax.set_xlabel("Time")
                         ax.set_ylabel("Queue Size")
-                        fig.savefig(folderPath + '\\fig\\HOST_MAN_' + orchestratorPolicy + "_" + objectPlacement + "_" +
+                        fig.savefig(folderPath + '\\fig\\HOST_MAN_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
                                     str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
                         plt.close(fig)
 
-                queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
-                queue_size_df.plot(y=orchestratorPolicies, kind="bar", use_index=True, ax=ax2[p])
-                ax2[p].set_title(objectPlacements[p])
-                ax2[p].legend()
-                ax2[p].set_xlabel("Host Number")
-                ax2[p].set_ylabel("Average Queue Size")
-                fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
-                fig2.savefig(folderPath + '\\fig\\Average_MAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
-                            bbox_inches='tight')
-                plt.close(fig2)
+            queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
+            queue_size_df.plot(kind="bar", use_index=True, ax=ax2)
+            ax2.legend()
+            ax2.set_xlabel("Host Number")
+            ax2.set_ylabel("Average Queue Size")
+            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
+            fig2.savefig(folderPath + '\\fig\\Average_MAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
+                        bbox_inches='tight')
+            plt.close(fig2)
 
 
 
