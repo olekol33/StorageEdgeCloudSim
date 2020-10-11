@@ -123,8 +123,21 @@ public class SimSettings {
 	private boolean ORBIT_MODE;
 	private int NUMBER_OF_EDGE_NODES;
 
-    
-    // following values are stored for each applications defined in applications.xml
+	//SPECIAL EXPERIMENT
+	private boolean NSF_EXPERIMENT;
+	private double LAMBDA0_MIN;
+	private double LAMBDA0_MAX;
+	private double LAMBDA1_MIN;
+	private double LAMBDA1_MAX;
+	private double LAMBDA0_STEP;
+	private double LAMBDA1_STEP;
+
+
+	public void setPoissonInTaskLookUpTable(int task, double poisson_interarrival) {
+		taskLookUpTable[task][2] = poisson_interarrival;
+	}
+
+	// following values are stored for each applications defined in applications.xml
     // [0] usage percentage (%)
     // [1] prob. of selecting cloud (%)
     // [2] poisson mean (sec)
@@ -208,6 +221,20 @@ public class SimSettings {
 
 			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
+
+			NSF_EXPERIMENT = false;
+			try {
+				LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
+				LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
+				LAMBDA1_MIN = Double.parseDouble(prop.getProperty("lambda1_min"));
+				LAMBDA1_MAX = Double.parseDouble(prop.getProperty("lambda1_max"));
+				LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
+				LAMBDA1_STEP = Double.parseDouble(prop.getProperty("lambda1_step"));
+			}
+			catch (Exception e)
+			{
+
+			}
 
 
 
@@ -551,6 +578,31 @@ public class SimSettings {
 	public int getNumberOfEdgeNodes() {
 		return NUMBER_OF_EDGE_NODES;
 	}
+
+
+	public double getLambda0Min() {
+		return LAMBDA0_MIN;
+	}
+
+	public double getLambda0Max() {
+		return LAMBDA0_MAX;
+	}
+
+	public double getLambda1Min() {
+		return LAMBDA1_MIN;
+	}
+
+	public double getLambda1Max() {
+		return LAMBDA1_MAX;
+	}
+
+	public double getLambda0step() {
+		return LAMBDA0_STEP;
+	}
+
+	public double getLambda1step() {
+		return LAMBDA1_STEP;
+	}
 	
 	/**
 	 * returns mobility characteristic within an array
@@ -634,6 +686,14 @@ public class SimSettings {
 
 	public int getNumOfDataObjects() {
 		return NUM_OF_DATA_OBJECTS;
+	}
+
+	public boolean isNsfExperiment() {
+		return NSF_EXPERIMENT;
+	}
+
+	public void setNsfExperiment(boolean NSF_EXPERIMENT) {
+		this.NSF_EXPERIMENT = NSF_EXPERIMENT;
 	}
 
 	public int getNumOfStripes() {

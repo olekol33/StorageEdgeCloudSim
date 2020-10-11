@@ -543,8 +543,15 @@ public class ObjectGenerator {
         int i=1;
         int currentHost=0;
         int stripeID;
+        List<Integer> listOfStripeIDs = null;
         //select stripe according to popularity policy
-        stripeID = getObjectID(numOfStripes,"stripes");
+        if(SimSettings.getInstance().isNsfExperiment()) {
+            listOfStripeIDs = getNumbersInRange(0,SimSettings.getInstance().getNumOfStripes());
+            stripeID = listOfStripeIDs.get(0);
+            listOfStripeIDs.remove(0);
+        }
+        else
+            stripeID = getObjectID(numOfStripes,"stripes");
         String objectName;
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
@@ -567,41 +574,65 @@ public class ObjectGenerator {
                 stripeID = getObjectID(numOfStripes,"stripes");
                 continue;
             }
-            else { //selected object not in host
-                //list of object locations
-                String locations = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("locations");
-                //add new location to coding object (location index = numOfDataInStripe)
-                listOfStripes.get(stripeID).get(numOfDataInStripe).put("locations",addLocation(Integer.toString(currentHost),locations));
-                hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-objectSize);
-                hostsContents.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
-
-                currentHost = (currentHost+1)%numOfHosts;
-                //run until vacant host is found or return
-                while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
-                {
-                    if(i==numOfHosts) {
-                        //check if hosts are full
-                        for(int j=0;j<numOfHosts ; j++) {
-                            Node datacenterNode = datacenterList.item(j);
-                            Element datacenterElement = (Element) datacenterNode;
-                            int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
-                            objects = (String) hostsContents.get(j).get("objects");
-                            st= new StringTokenizer(objects, " "); // Space as delimiter
-                            objectsSet = new HashSet<String>();
-                            while (st.hasMoreTokens())
-                                objectsSet.add(st.nextToken());
-                            if ((objectsSet.size() * objectSize) < hostCapacity)
-                                System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(j));
-                        }
-                        return; //all are full
+            //avoid having parity and data of same stripe in the same host
+            boolean flag=false;
+            for (int id=0; id<numOfDataInStripe;id++){
+                if(objectsSet.contains((String)listOfStripes.get(stripeID).get(id).get("id"))){
+                    if(SimSettings.getInstance().isNsfExperiment()) {
+                        //return previous id to list and select next
+                        listOfStripeIDs.add(stripeID);
+                        stripeID = listOfStripeIDs.get(0);
+                        listOfStripeIDs.remove(0);
                     }
-                    currentHost = (currentHost+1)%numOfHosts;
-                    i++;
+                    else
+                        stripeID = getObjectID(numOfStripes,"stripes");
+                    flag=true;
+                    break;
                 }
-                i=1;
-                stripeID = getObjectID(numOfStripes,"stripes");
             }
+            if(flag==true)
+                continue;
+
+
+            //list of object locations
+            String locations = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("locations");
+            //add new location to coding object (location index = numOfDataInStripe)
+            listOfStripes.get(stripeID).get(numOfDataInStripe).put("locations",addLocation(Integer.toString(currentHost),locations));
+            hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-objectSize);
+            hostsContents.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
+
+            currentHost = (currentHost+1)%numOfHosts;
+            //run until vacant host is found or return
+            while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
+            {
+                if(i==numOfHosts) {
+                    //check if hosts are full
+                    for(int j=0;j<numOfHosts ; j++) {
+                        Node datacenterNode = datacenterList.item(j);
+                        Element datacenterElement = (Element) datacenterNode;
+                        int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
+                        objects = (String) hostsContents.get(j).get("objects");
+                        st= new StringTokenizer(objects, " "); // Space as delimiter
+                        objectsSet = new HashSet<String>();
+                        while (st.hasMoreTokens())
+                            objectsSet.add(st.nextToken());
+                        if ((objectsSet.size() * objectSize) < hostCapacity)
+                            System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(j));
+                    }
+                    return; //all are full
+                }
+                currentHost = (currentHost+1)%numOfHosts;
+                i++;
+            }
+            i=1;
+            if(SimSettings.getInstance().isNsfExperiment()) {
+                stripeID = listOfStripeIDs.get(0);
+                listOfStripeIDs.remove(0);
+            }
+            else
+                stripeID = getObjectID(numOfStripes,"stripes");
         }
+
     }
 
     //place coding objects in hosts by policy
@@ -688,17 +719,35 @@ public class ObjectGenerator {
         }
     }
 
+    private List<Integer> getNumbersInRange(int start, int end) {
+        List<Integer> result = new ArrayList<>();
+        for (int i = start; i < end; i++) {
+            result.add(i);
+        }
+        return result;
+    }
+
     private List<List<Map>> createStripes(int numOfStripes, int numOfDataInStripe, int numOfParityInStripe, int numOfDataObjects){
 
         List<List<Map>> listOfStripes = new ArrayList();
         List<Set<Integer>> existingStripes = new ArrayList();
+        List<Integer> listOfDataObjectIDs = null;
+        if(SimSettings.getInstance().isNsfExperiment()){
+            listOfDataObjectIDs = getNumbersInRange(0,SimSettings.getInstance().getNumOfDataObjects());
+        }
         // For each stripe
         for (int i = 0; i< numOfStripes; i++){
             List<Map> dataList = new ArrayList();
             Set<Integer> listOfIndices = new HashSet<Integer>();
             // Collect data objects with selected distribution
             for (int j = 0; j<numOfDataInStripe; j++) {
-                int objectID = getObjectID(numOfDataObjects,"objects");
+                int objectID=-1;
+                if(SimSettings.getInstance().isNsfExperiment()){
+                    objectID=listOfDataObjectIDs.get(0);
+                    listOfDataObjectIDs.remove(0);
+                }
+                else
+                    objectID = getObjectID(numOfDataObjects,"objects");
                 //Check if same object not used twice. If yes, repeat.
                 if (listOfIndices.contains(objectID)){
                     j--;

@@ -102,9 +102,19 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     virtualTime = activePeriodStartTime;
                     continue;
                 }
-
+                String objectID="";
 //                String objectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects");
-                String objectID = OG.getDataObjectID();
+                if(SimSettings.getInstance().isNsfExperiment()) {
+                    //odd/even tasks will read only odd/even objects
+                    while (1==1){
+                        objectID = OG.getDataObjectID();
+                        int objectNum = Integer.valueOf(objectID.replaceAll("[^\\d.]", ""));
+                        if(objectNum%2 == randomTaskType)
+                            break;
+                    }
+                }
+                else
+                    objectID = OG.getDataObjectID();
 
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;

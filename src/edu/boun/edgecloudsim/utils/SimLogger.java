@@ -416,6 +416,7 @@ public class SimLogger {
 		Map<Integer, String> nameToReadStripe = new HashMap<Integer, String>();
 		final double NOT_FINISHED = -1;
 		final double REJECTED = -2;
+		final double FINISHED_ON_CLOUD = -3;
 
 		// open all files and prepare them for write
 		if (fileLogEnabled) {
@@ -551,6 +552,8 @@ public class SimLogger {
 				if(value.getIsParity()==0) {
 					//put at location 0
 					delays.set(0, value.getNetworkDelay());
+					if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
+						delays.add(1, FINISHED_ON_CLOUD);
 				}
 				else
 					//or append
@@ -865,6 +868,12 @@ public class SimLogger {
 				//if only one object read
 				else if (list.size() ==1) {
 					readDelay = list.get(0);
+					readCost=readDelay;
+					objectsRead=1;
+				}
+				else if (list.size() ==2 && list.contains(FINISHED_ON_CLOUD)) {
+					readDelay = list.get(0);
+					dataTypeRead = "parity";
 					readCost=readDelay;
 					objectsRead=1;
 				}

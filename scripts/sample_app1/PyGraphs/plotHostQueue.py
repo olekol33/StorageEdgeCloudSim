@@ -146,7 +146,7 @@ def plotHostQueue():
                         exists = False
                         queue_size_series = data.groupby(['HostID']).mean()["Requests"]
                         queue_size_frame[policy] = queue_size_series
-                        if data["Requests"].max()>50:
+                        if data["Requests"].max()>20:
                         # if mobileDeviceNumber==1000:
                             exists = True
                             for host in data["HostID"].unique():
