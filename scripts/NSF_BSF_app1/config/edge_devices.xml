@@ -17,14 +17,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>3000</storage>
-				<readRate>150</readRate>
+				<readRate>25</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>3000</storage>
-						<readRate>150</readRate>
+						<readRate>25</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -47,14 +47,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>3000</storage>
-				<readRate>150</readRate>
+				<readRate>25</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>3000</storage>
-						<readRate>150</readRate>
+						<readRate>25</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -77,14 +77,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>3000</storage>
-				<readRate>150</readRate>
+				<readRate>25</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>3000</storage>
-						<readRate>150</readRate>
+						<readRate>25</readRate>
 					</VM>
 				</VMs>
 			</host>

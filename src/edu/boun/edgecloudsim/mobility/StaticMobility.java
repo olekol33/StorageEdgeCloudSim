@@ -44,8 +44,11 @@ public class StaticMobility extends MobilityModel{
         //initialize tree maps and position of mobile devices
         for(int i=0; i<numberOfMobileDevices; i++) {
             treeMapArray.add(i, new TreeMap<Double, Location>());
-
-            int randDatacenterId = SimUtils.getRandomNumber(0, SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
+            int randDatacenterId=-1;
+            if(SimSettings.getInstance().isNsfExperiment())
+                randDatacenterId=i;
+            else
+                randDatacenterId = SimUtils.getRandomNumber(0, SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
             Node datacenterNode = datacenterList.item(randDatacenterId);
             Element datacenterElement = (Element) datacenterNode;
             Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);

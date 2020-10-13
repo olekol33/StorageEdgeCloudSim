@@ -22,6 +22,7 @@ import edu.boun.edgecloudsim.edge_orchestrator.StorageEdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.DefaultEdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
+import edu.boun.edgecloudsim.mobility.StaticMobility;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
@@ -59,7 +60,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 
 	@Override
 	public MobilityModel getMobilityModel() {
-		return new StaticRangeMobility(numOfMobileDevice,simulationTime);
+		return new StaticMobility(numOfMobileDevice,simulationTime);
 	}
 
 	@Override

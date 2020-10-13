@@ -481,8 +481,6 @@ public class SampleNetworkModel extends NetworkModel {
 
 //		System.out.println("delay: " + result); //To remove
 		result += propogationDelay;
-		if(result>1)
-			System.out.println("Delay too large in calculateMM1");
 		
 		return (result > 1) ? -1 : result;
 	}

@@ -122,6 +122,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
 //            return delay = getManDownloadDelay();
             return delay = getManDownloadDelay(task.getAssociatedHostId());
         }
+        else if(sourceDeviceId == destDeviceId)
+            delay = getManDownloadDelay(task.getAssociatedHostId());
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId, CloudSim.clock());
         Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
 //        Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
@@ -130,14 +132,15 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //cloud server to mobile device
         //TODO: update for cloud
         if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
-            delay = getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
+            delay += getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
         }
         //edge device (wifi access point) to mobile device
         else{
             //factor of #accesses
-            delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
+            double wlanDelay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
+            delay += wlanDelay;
             //In case something went wrong
-            if (delay==0)
+            if (wlanDelay==0)
                 System.out.println("delay=0");
 //                return delay;
             //Add delay on network if access point not in range
@@ -319,10 +322,10 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
 
         //check for overflow on the fly
-        double lamda = ((double)1/(double)hostManPoissonMeanForDownload[hostIndex]); //task per seconds
+        double lambda = ((double)1/(double)hostManPoissonMeanForDownload[hostIndex]); //task per seconds
         //TODO: convert KB to Kb
         double mu = bandwidth /*Kbps*/ / (8*previousHostAvgManTaskOutputSize[hostIndex]) /*Kb*/; //task per seconds
-        if ((lamda*(double)manHostClients[hostIndex]>mu) || 1 >mu - (lamda*(double)manHostClients[hostIndex])) {
+        if ((lambda*(double)manHostClients[hostIndex]>mu) || 1 >mu - (lambda*(double)manHostClients[hostIndex])) {
             manHostClients[hostIndex]--;
             hostTotalManTaskOutputSize[hostIndex] -= hostAvgManTaskOutputSize[hostIndex];
             return -1;
