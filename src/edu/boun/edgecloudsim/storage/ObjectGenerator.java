@@ -71,7 +71,13 @@ public class ObjectGenerator {
         //Create data objects
         dataObjects = createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
         //Initial data object placement
-        InitializeDataObjectPlacement();
+        if(SimSettings.getInstance().isNsfExperiment()) {
+            NSFBSFInitializeDataObjectPlacement();
+            //RAID 5 NSF
+//            InitializeDataObjectPlacement();
+        }
+        else
+            InitializeDataObjectPlacement();
 
 
 
@@ -236,14 +242,14 @@ public class ObjectGenerator {
         return "1";
     }*/
 
-    public int getObjectID(int numberOfElements, String type)  throws NotStrictlyPositiveException {
-        String dist="";
+    public int getObjectID(int numberOfElements, String type, String dist)  throws NotStrictlyPositiveException {
+/*        String dist="";
         if (type.equalsIgnoreCase("objects"))
             dist = SimSettings.getInstance().getObjectDistPlace();
         else if (type.equalsIgnoreCase("stripes"))
             dist = SimSettings.getInstance().getStripeDistPlace();
         else
-            System.out.println("Type not recognized");
+            System.out.println("Type not recognized");*/
 
         int objectNum = -1;
         if (dist.equals("UNIFORM"))
@@ -261,7 +267,8 @@ public class ObjectGenerator {
     }
 
     public String getDataObjectID(){
-        int objectID = getObjectID(numOfDataObjects,"objects");
+        String dist = SimSettings.getInstance().getObjectDistRead();
+        int objectID = getObjectID(numOfDataObjects,"objects",dist);
         return (String)dataObjects.get(objectID).get("id");
     }
 
@@ -536,6 +543,26 @@ public class ObjectGenerator {
         }
     }
 
+    //Object from each group are on a separate host
+    private void NSFBSFInitializeDataObjectPlacement(){
+//        int numOfHosts = SimSettings.getInstance().getNumOfEdgeDatacenters();
+        int numOfDataHosts = 2;
+        int host = currHost;
+        currHost = (currHost+1)% numOfDataHosts;
+        //go over each object
+        for (Map<String,String> KV : dataObjects){
+            KV.put("locations", Integer.toString(host));
+            hostsContents.get(host).put("capacity", (int) hostsContents.get(host).get("capacity")-objectSize);
+            hostsContents.get(host).put("objects", addLocation(KV.get("id"), (String) hostsContents.get(host).get("objects")));
+            //TODO: write test
+            if ((int) hostsContents.get(host).get("capacity")<0)
+                System.out.println("hostStorageCapacity[host]<0");
+            //next host in list
+            host = currHost;
+            currHost = (currHost+1)% numOfDataHosts;
+        }
+    }
+
     //place coding objects in hosts by policy
     private void fillHostsWithCodingObjects(){
         String stripeDist = SimSettings.getInstance().getStripeDistPlace();
@@ -544,18 +571,24 @@ public class ObjectGenerator {
         int currentHost=0;
         int stripeID;
         List<Integer> listOfStripeIDs = null;
+        String dist = SimSettings.getInstance().getStripeDistPlace();
         //select stripe according to popularity policy
         if(SimSettings.getInstance().isNsfExperiment()) {
             listOfStripeIDs = getNumbersInRange(0,SimSettings.getInstance().getNumOfStripes());
             stripeID = listOfStripeIDs.get(0);
             listOfStripeIDs.remove(0);
         }
-        else
-            stripeID = getObjectID(numOfStripes,"stripes");
+        else {
+
+            stripeID = getObjectID(numOfStripes, "stripes",dist);
+        }
         String objectName;
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         while(1==1) {
+            //RAID 4 NSF
+            if(SimSettings.getInstance().isNsfExperiment())
+                currentHost=2;
             //TODO: currently support one parity
             //get name of object by its ID
             objectName = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("id");
@@ -571,7 +604,7 @@ public class ObjectGenerator {
             //if object is already in node select another
 //            if(currentHostObjects.contains(objectID + " ")) {
             if(objectsSet.contains(objectName)) {
-                stripeID = getObjectID(numOfStripes,"stripes");
+                stripeID = getObjectID(numOfStripes,"stripes",dist);
                 continue;
             }
             //avoid having parity and data of same stripe in the same host
@@ -585,7 +618,7 @@ public class ObjectGenerator {
                         listOfStripeIDs.remove(0);
                     }
                     else
-                        stripeID = getObjectID(numOfStripes,"stripes");
+                        stripeID = getObjectID(numOfStripes,"stripes",dist);
                     flag=true;
                     break;
                 }
@@ -630,7 +663,7 @@ public class ObjectGenerator {
                 listOfStripeIDs.remove(0);
             }
             else
-                stripeID = getObjectID(numOfStripes,"stripes");
+                stripeID = getObjectID(numOfStripes,"stripes",dist);
         }
 
     }
@@ -642,11 +675,19 @@ public class ObjectGenerator {
         int i=1;
         int currentHost=0;
         int objectID=0;
-        objectID = getObjectID(numOfDataObjects,"objects");
+        String dist = SimSettings.getInstance().getObjectDistPlace();
+        objectID = getObjectID(numOfDataObjects,"objects",dist);
         String objectName;
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         while(1==1) {
+            if(SimSettings.getInstance().isNsfExperiment()) {
+                currentHost = 2;
+                if (objectID%2 !=0) {
+                    objectID = getObjectID(numOfDataObjects,"objects",dist);
+                    continue;
+                }
+            }
             objectName = (String)dataObjects.get(objectID).get("id");
             String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
 
@@ -659,7 +700,7 @@ public class ObjectGenerator {
             //if object is already in node select another
 //            if(currentHostObjects.contains(objectID + " ")) {
             if(objectsSet.contains(objectName)) {
-                objectID = getObjectID(numOfDataObjects,"objects");
+                objectID = getObjectID(numOfDataObjects,"objects",dist);
                 continue;
             }
             else {
@@ -694,7 +735,7 @@ public class ObjectGenerator {
                     i++;
                 }
                 i=1;
-                objectID = getObjectID(numOfDataObjects,"objects");
+                objectID = getObjectID(numOfDataObjects,"objects",dist);
             }
         }
     }
@@ -739,6 +780,7 @@ public class ObjectGenerator {
         for (int i = 0; i< numOfStripes; i++){
             List<Map> dataList = new ArrayList();
             Set<Integer> listOfIndices = new HashSet<Integer>();
+            String dist = SimSettings.getInstance().getObjectDistPlace();
             // Collect data objects with selected distribution
             for (int j = 0; j<numOfDataInStripe; j++) {
                 int objectID=-1;
@@ -747,7 +789,7 @@ public class ObjectGenerator {
                     listOfDataObjectIDs.remove(0);
                 }
                 else
-                    objectID = getObjectID(numOfDataObjects,"objects");
+                    objectID = getObjectID(numOfDataObjects,"objects", dist);
                 //Check if same object not used twice. If yes, repeat.
                 if (listOfIndices.contains(objectID)){
                     j--;
@@ -756,6 +798,8 @@ public class ObjectGenerator {
                     listOfIndices.add(objectID);
                     dataList.add(dataObjects.get(objectID));
                 }
+                //from this point parities will be selected, and we want uniform selection
+                dist = "UNIFORM";
             }
             //Check for duplicacy in stripes
             if (existingStripes.contains(listOfIndices)){
@@ -773,11 +817,12 @@ public class ObjectGenerator {
             //place objects
             if (objectPlacementPolicy.equalsIgnoreCase("DATA_PARITY_PLACE")) {
                 stripe = placeObjects(numOfDataInStripe + numOfParityInStripe, stripe);
-                if (stripe.size() == 0) { //can't fill a whole stripe
+                if (stripe.size() == 0) { //can't fill a whole stripe, just fill objects
                     List<Map> oneObjectStripe;
+                    dist = SimSettings.getInstance().getObjectDistPlace();
 
                     do {
-                        int objectID = getObjectID(numOfDataObjects,"objects");
+                        int objectID = getObjectID(numOfDataObjects,"objects",dist);
                         dataList = new ArrayList();
                         dataList.add(dataObjects.get(objectID));
                         oneObjectStripe = placeObjects(1, dataList);

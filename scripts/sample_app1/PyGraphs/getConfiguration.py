@@ -5,6 +5,13 @@
 #--------------------------------------------------------------
 import os, sys
 from pathlib import Path
+from os.path import isfile, join
+from os import listdir
+import re
+
+def Filter(list, subs):
+    filter_data = [i for i in list if subs in i]
+    return filter_data
 
 def getConfiguration(argType):
     if (argType == "folderPath"): #1
@@ -47,6 +54,10 @@ def getConfiguration(argType):
          # return ['DATA_PARITY_PLACE','CODING_PLACE']
          return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
          # return ['NEAREST_OR_PARITY']
-    elif (argType == 20):
-        return 1 #return 1 if graph is plotted colerful
+    elif (argType == "runType"):
+        folderPath = ''.join([getConfiguration("folderPath"), '\ite1'])
+        all_files = [f for f in listdir(folderPath) if isfile(join(folderPath, f))]
+        filtered_files = Filter(all_files, '.tar')
+        runtype = re.findall(r'ite_(.*)\.tar', filtered_files[0])
+        return runtype[0]
 

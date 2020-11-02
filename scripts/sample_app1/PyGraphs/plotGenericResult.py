@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import t
 import itertools
 from os import path
+import pandas as pd
+import inspect
+from df_to_csv import *
 
 #Rows
 TotalTasks = 0
@@ -36,7 +39,7 @@ failedTaskDuetoLanBw = 4
 failedTaskDuetoManBw = 5
 failedTaskDuetoWanBw = 6
 
-def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentage):
+def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentage, dataType=''):
     folderPath = getConfiguration("folderPath")
     numOfSimulations = getConfiguration("numOfSimulations")
     startOfMobileDeviceLoop = getConfiguration("startOfMobileDeviceLoop")
@@ -48,9 +51,12 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     orchestratorPolicies = getConfiguration("orchestratorPolicy");
     objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
+    running_function=inspect.stack()[1][3]
 #    pos = getConfiguration(9);
 #     fig, ax = plt.subplots(len(objectPlacements), 1,figsize=(12,20))
+    sum_df = pd.DataFrame(columns=["Devices","Policy","Latency","Type"])
     fig, ax = plt.subplots(1, 1,figsize=(12,8))
+
     for p, objectPlacement in enumerate(objectPlacements):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
             all_results = np.zeros((numOfSimulations, 1, numOfMobileDevices))
@@ -78,6 +84,11 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                                         rows.append(row)
         #                        value = [row for idx, row in enumerate(rows) if idx in (rowOfset, columnOfset)]
                                 value = float(rows[rowOfset][columnOfset])
+                                if("Network" in running_function):
+                                    policy=objectPlacement+" | "+orchestratorPolicy
+                                    sum_df = sum_df.append(
+                                        {'Devices': mobileDeviceNumber, 'Latency': value,'Policy': policy, 'Type': dataType},
+                                        ignore_index=True)
                                 if calculatePercentage == 'percentage_for_all':
         #                            readData = [row for idx, row in enumerate(rows) if idx in (1, 0)]
         #                            totalTask = readData[0][0] + readData[0][1]
@@ -191,9 +202,15 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
     # ax.legend()
     # ax.set_xlabel("Number of Mobile Devices")
     # ax.set_ylabel(yLabel)
-    fig.suptitle(yLabel)
+    fig.suptitle(yLabel+ " - " + getConfiguration("runType"))
     fig.savefig(folderPath + '\\fig\\' + yLabel+ '.png', bbox_inches='tight')
     plt.close(fig)
+
+    if ("Network" in running_function):
+        header="Configuration,Devices,Policy,Latency,Type\n"
+        for index, row in sum_df.iterrows():
+            entry = str(row["Devices"]) + "," + str(row["Policy"]) + "," + str(row["Latency"]) + "," + str(row["Type"]) + "\n"
+            df_to_csv(''.join([folderPath, '\csv\\delay_data.csv']), getConfiguration("runType"), entry, header)
 
 
 

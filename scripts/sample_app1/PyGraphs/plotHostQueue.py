@@ -105,8 +105,10 @@ def plotHostQueue():
                         # ax.legend()
                         ax.set_xlabel("Time")
                         ax.set_ylabel("Queue Size")
+                        fig.suptitle('HOST WLAN QUEUE - ' + orchestratorPolicy + "; " + objectPlacement + "; " +
+                                    str(mobileDeviceNumber)+ 'Devices'+ "; " + getConfiguration("runType"))
                         fig.savefig(folderPath + '\\fig\\HOST_WLAN_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
-                                    str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
+                                    str(mobileDeviceNumber)+ ' Devices.png',bbox_inches='tight')
                         plt.close(fig)
 
             queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
@@ -115,7 +117,7 @@ def plotHostQueue():
             ax2.legend()
             ax2.set_xlabel("Host Number")
             ax2.set_ylabel("Average Queue Size")
-            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
+            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
             fig2.savefig(folderPath + '\\fig\\Average_WLAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
                         bbox_inches='tight')
             plt.close(fig2)
@@ -162,10 +164,12 @@ def plotHostQueue():
                             plt.close(fig)
                             continue
                         # ax.legend()
-                        ax.set_title('MAN Queue - Orchestrator Policy: ' + orchestratorPolicy + ", Object Placement: " +
-                                     objectPlacement + ", Devices: " + str(mobileDeviceNumber))
+                        # ax.set_title('MAN Queue - Orchestrator Policy: ' + orchestratorPolicy + ", Object Placement: " +
+                        #              objectPlacement + ", Devices: " + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
                         ax.set_xlabel("Time")
                         ax.set_ylabel("Queue Size")
+                        fig.suptitle('HOST MAN QUEUE - ' + orchestratorPolicy + "; " + objectPlacement + "; " +
+                                    str(mobileDeviceNumber)+ ' Devices'+ "; " + getConfiguration("runType"))
                         fig.savefig(folderPath + '\\fig\\HOST_MAN_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
                                     str(mobileDeviceNumber)+ 'Devices.png',bbox_inches='tight')
                         plt.close(fig)
@@ -175,7 +179,7 @@ def plotHostQueue():
             ax2.legend()
             ax2.set_xlabel("Host Number")
             ax2.set_ylabel("Average Queue Size")
-            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber))
+            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
             fig2.savefig(folderPath + '\\fig\\Average_MAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
                         bbox_inches='tight')
             plt.close(fig2)

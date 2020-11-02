@@ -120,10 +120,10 @@ public class StorageNetworkModel extends SampleNetworkModel {
         // When edge downloads from itself
         if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
 //            return delay = getManDownloadDelay();
-            return delay = getManDownloadDelay(task.getAssociatedHostId());
+            return delay = getManDownloadDelay(task.getAssociatedHostId(),1);
         }
-        else if(sourceDeviceId == destDeviceId)
-            delay = getManDownloadDelay(task.getAssociatedHostId());
+        else if(sourceDeviceId == destDeviceId && sourceDeviceId != SimSettings.CLOUD_DATACENTER_ID)
+            delay = getManDownloadDelay(task.getAssociatedHostId(),0);
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId, CloudSim.clock());
         Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
 //        Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
@@ -186,8 +186,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
         if(numOfWanUser < experimentalWanDelay.length)
             result = taskSizeInKb /*Kb*/ / (experimentalWanDelay[numOfWanUser]) /*Kbps*/;
-        else
-            System.out.println("Insufficient delay data at experimentalWanDelay for " + wanClients[accessPointLocation.getServingWlanId()]+ " tasks");
+/*        else
+            System.out.println("Insufficient delay data at experimentalWanDelay for " + wanClients[accessPointLocation.getServingWlanId()]+ " tasks");*/
 
         //System.out.println("--> " + numOfWanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
 
@@ -256,10 +256,12 @@ public class StorageNetworkModel extends SampleNetworkModel {
         }
         //update failed host if this is the scenario
         if (SimSettings.getInstance().isHostFailureScenario()) {
-            if (CloudSim.clock() > SimSettings.getInstance().getHostFailureTime())
-                hostOperativity[SimSettings.getInstance().getHostFailureID()]=0;
+            if (CloudSim.clock() > SimSettings.getInstance().getHostFailureTime()) {
+                for (int host:SimSettings.getInstance().getHostFailureID())
+                    hostOperativity[host] = 0;
+            }
         }
-
+//        System.out.println("Time: " + CloudSim.clock() + ", Tasks: " + numOfManTaskForDownload);
         if(numOfManTaskForDownload != 0){
             ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
             avgManTaskOutputSize = totalManTaskOutputSize / numOfManTaskForDownload;
@@ -296,7 +298,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         numOfManTaskForUpload = 0;
     }
     //Use M/M/1 queue for each node on the grid
-    double getManDownloadDelay(int hostIndex) {
+    double getManDownloadDelay(int hostIndex, int readOnGrid) {
         //calculateMM1(propogationDelay=0,bandwidth param, PoissonMean paran,avgTaskSize param,deviceCount i)
         int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
         if (hostIndex>=numOfEdgeDatacenters)
@@ -325,13 +327,14 @@ public class StorageNetworkModel extends SampleNetworkModel {
         double lambda = ((double)1/(double)hostManPoissonMeanForDownload[hostIndex]); //task per seconds
         //TODO: convert KB to Kb
         double mu = bandwidth /*Kbps*/ / (8*previousHostAvgManTaskOutputSize[hostIndex]) /*Kb*/; //task per seconds
-        if ((lambda*(double)manHostClients[hostIndex]>mu) || 1 >mu - (lambda*(double)manHostClients[hostIndex])) {
+        if (1 >mu - (lambda*(double)manHostClients[hostIndex])) {
+//        if ((lambda*(double)manHostClients[hostIndex]>mu)) {
             manHostClients[hostIndex]--;
             hostTotalManTaskOutputSize[hostIndex] -= hostAvgManTaskOutputSize[hostIndex];
             return -1;
         }
 
-        double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
+        double result = calculateMM1(readOnGrid * SimSettings.getInstance().getInternalLanDelay(),
                 bandwidth,
 //                ManPoissonMeanForDownload,
                 hostManPoissonMeanForDownload[hostIndex],

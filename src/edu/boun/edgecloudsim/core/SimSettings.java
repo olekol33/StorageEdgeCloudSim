@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -116,7 +117,7 @@ public class SimSettings {
 
 	//Host failure
 	private boolean HOST_FAILURE_SCENARIO;
-	private int HOST_FAILURE_ID;
+	private String HOST_FAILURE_ID;
 	private double HOST_FAILURE_TIME;
 
 	//ORBIT
@@ -216,7 +217,7 @@ public class SimSettings {
 			OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
 
 			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
-			HOST_FAILURE_ID = Integer.parseInt(prop.getProperty("host_failure_id"));
+			HOST_FAILURE_ID = prop.getProperty("host_failure_id");
 			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
 
 			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
@@ -563,8 +564,8 @@ public class SimSettings {
 		return HOST_FAILURE_SCENARIO;
 	}
 
-	public int getHostFailureID() {
-		return HOST_FAILURE_ID;
+	public int[] getHostFailureID() {
+		return Arrays.asList(HOST_FAILURE_ID.split(",")).stream().mapToInt(Integer::parseInt).toArray();
 	}
 
 	public double getHostFailureTime() {

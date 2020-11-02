@@ -12,6 +12,7 @@ package edu.boun.edgecloudsim.applications.NSF_BSF_app1;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
+import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
@@ -24,10 +25,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Properties;
+import java.util.*;
 
 public class NSFMainApp {
 
@@ -104,7 +102,8 @@ public class NSFMainApp {
 		String now = df.format(SimulationStartDate);
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
-
+		double i0=1;
+		double i1=1;
 
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
 		{
@@ -113,9 +112,16 @@ public class NSFMainApp {
 				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
 				{
 					for(int p=0; p<SS.getObjectPlacement().length; p++) {
-
-						for(double lambda0= SS.getLambda0Min(); lambda0<=SS.getLambda0Max();lambda0=lambda0+SS.getLambda0step()) {
-							for(double lambda1= SS.getLambda1Min(); lambda1<=SS.getLambda1Max();lambda1=lambda1+SS.getLambda1step()) {
+						//exponential growing step
+						double step0=SS.getLambda0step();
+						for(double lambda0= SS.getLambda0Min(); lambda0<=SS.getLambda0Max();lambda0=lambda0+step0) {
+							step0*=i0;
+							i0+=0.05;
+							double step1=SS.getLambda1step();
+							i1=1;
+							for(double lambda1= SS.getLambda1Min(); lambda1<=SS.getLambda1Max();lambda1=lambda1+step1) {
+								step1*=i1;
+								i1+=0.05;
 
 								String objectPlacementPolicy = SS.getObjectPlacement()[p];
 								String simScenario = SS.getSimulationScenarios()[k];
@@ -174,7 +180,8 @@ public class NSFMainApp {
 									CloudSim.init(num_user, calendar, trace_flag, 0.01);
 
 									// Generate EdgeCloudsim Scenario Factory
-									ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
+									ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(),
+											orchestratorPolicy, simScenario, objectPlacementPolicy);
 
 
 									// Generate EdgeCloudSim Simulation Manager

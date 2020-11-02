@@ -7,6 +7,7 @@ import itertools
 import pandas as pd
 import seaborn as sns
 from os import path
+from df_to_csv import *
 
 #Rows
 TotalTasks = 0
@@ -56,6 +57,7 @@ def plotStripesRead():
     latencies = pd.DataFrame(index=numOfDevices)
     costs = pd.DataFrame(index=numOfDevices)
     requests = pd.DataFrame(index=numOfDevices)
+    df = pd.DataFrame(columns=["Devices","Policy","Latency","Cost","Total Requests","Data Requests","Parity Requests"])
     latency_cost_df = pd.DataFrame(columns=["Devices","Latency","Cost","Policy"])
     latency_requests_df = pd.DataFrame(columns=["Devices","Latency","Requests","Policy"])
     latency_index=0
@@ -85,17 +87,25 @@ def plotStripesRead():
                             break
                         data = pd.read_csv(filePath, delimiter=';')
                         latencies.at[mobileDeviceNumber,policy] = data["latency"].mean()
+
                         costs.at[mobileDeviceNumber,policy] = data["Read Cost"].mean()
                         requests.at[mobileDeviceNumber,policy] = data.shape[0]
                         type_read_data.at[mobileDeviceNumber,policy] = data[data["type"]=="data"].shape[0]
                         type_read_total.at[mobileDeviceNumber, policy] = data["type"].shape[0]
                         if "parity" in data["type"].unique():
-                            type_read_parity.at[mobileDeviceNumber,policy] = data[data["type"]=="parity"].shape[0]
-                            # parity_col.at[mobileDeviceNumber, policy] = data[data["type"]=="parity"].shape[0]
+                            parity_count = data[data["type"]=="parity"].shape[0]
                         else:
-                            type_read_parity.at[mobileDeviceNumber,policy] = 0
-                            # parity_col.at[mobileDeviceNumber, policy] = 0
-                            # plt.show()
+                            parity_count = 0
+
+                        type_read_parity.at[mobileDeviceNumber, policy] = parity_count
+                        #TODO: use df for all
+                        df = df.append(
+                            {'Devices': mobileDeviceNumber, 'Latency': data["latency"].mean(),
+                             'Cost': data["Read Cost"].mean(), 'Policy': policy,
+                             'Total Requests': data["type"].shape[0],
+                             'Data Requests': data[data["type"] == "data"].shape[0], 'Parity Requests': parity_count},
+                            ignore_index=True)
+
             if (not latencies.empty):
 
                 # type_read_data[policy] = data_col
@@ -104,19 +114,20 @@ def plotStripesRead():
                 if policy in latencies:
                     ax.scatter(numOfDevices, latencies[policy], marker=markers[o])
                     ax.plot(numOfDevices, latencies[policy], marker=markers[o], label=policy)
+                    # header = "configuration,devices,policy,latency\n"
+                    # for col in latencies.columns:
+                    #     for index, row in type_read_total.iterrows():
+                    #         entry = str(index) + "," + col + "," + str(row[col]) + "\n"
+                    #         df_to_csv(''.join([folderPath, '\csv\\Average_Data_Read_Latency_per_IO_Request.csv']), getConfiguration("runType"),
+                    #                   entry, header)
+
                     # ax.set_title(policy)
     for row in latencies.iterrows():
         for column in latencies.columns:
-            # latency_cost_df.loc[-1] = [row[0], latencies.loc[row[0]][column], costs.loc[row[0]][column], column,objectPlacement]
-            # latency_cost_df.index = latency_cost_df.index + 1  # shifting index
-            # latency_cost_df = latency_cost_df.sort_index()  # sorting by index
             latency_cost_df = latency_cost_df.append({'Devices': row[0], 'Latency': latencies.loc[row[0]][column],
                                   'Cost': costs.loc[row[0]][column], 'Policy': column}, ignore_index=True)
             latency_requests_df = latency_requests_df.append({'Devices': row[0], 'Latency': latencies.loc[row[0]][column],
                                   'Requests': requests.loc[row[0]][column], 'Policy': column}, ignore_index=True)
-            # latency_cost_df.loc[latency_index] = [row[0], latencies.loc[row[0]][column], costs.loc[row[0]][column],
-            #                                       column,objectPlacement]
-            # latency_index+=1
 
     fig2, ax2 = plt.subplots(3, 1, figsize=(12, 10))
     type_read_total.plot(kind="bar", use_index=True, ax=ax2[0])
@@ -135,22 +146,35 @@ def plotStripesRead():
 
     plt.close(fig2)
 
-    #
-    # for axis in ax:
-    #     axis.legend()
-    #     axis.set_xlabel("Devices")
-    #     axis.set_ylabel("Average Data Read Latency[s]")
-    #     axis.grid(True)
+    header="Configuration,Devices,Policy,Latency,Cost,Total Requests,Data Requests,Parity Requests\n"
+    # for col in df.columns:
+    #     for index, row in df.iterrows():
+    #         entry=str(index)+",total,"+col+","+str(row[col])+"\n"
+    #         df_to_csv(''.join([folderPath, '\csv\\read_by_type.csv']),getConfiguration("runType"),entry,header)
+    for index, row in df.iterrows():
+        entry = str(row["Devices"]) + "," + str(row["Policy"]) + "," + str(row["Latency"]) + "," + str(row["Cost"]) + ","+\
+                str(row["Total Requests"]) + "," + str(row["Data Requests"]) +"," + str(row["Parity Requests"]) + "\n"
+        df_to_csv(''.join([folderPath, '\csv\\stripe_data.csv']), getConfiguration("runType"), entry, header)
+    # for col in type_read_data.columns:
+    #     for index, row in type_read_total.iterrows():
+    #         entry=str(index)+",data,"+col+","+str(row[col])+"\n"
+    #         df_to_csv(''.join([folderPath, '\csv\\read_by_type.csv']),getConfiguration("runType"),entry,header)
+    # for col in type_read_parity.columns:
+    #     for index, row in type_read_total.iterrows():
+    #         entry=str(index)+",parity,"+col+","+str(row[col])+"\n"
+    #         df_to_csv(''.join([folderPath, '\csv\\read_by_type.csv']),getConfiguration("runType"),entry,header)
+
     ax.legend()
     ax.set_xlabel("Devices")
     ax.set_ylabel("Average Data Read Latency[s]")
     ax.grid(True)
 
     fig.tight_layout(h_pad=2)
-    fig.suptitle("Average Data Read Latency per IO Request", y=1.01)
+    fig.suptitle("Average Data Read Latency per IO Request"+ " - " + getConfiguration("runType"), y=1.01)
     fig.savefig(folderPath + '\\fig\\Average Data Read Latency per IO Request' + '.png',
                 bbox_inches='tight')
     plt.close(fig)
+
 
 
         # plt.show()

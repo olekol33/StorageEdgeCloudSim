@@ -35,7 +35,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 	private String orchestratorPolicy;
 	private String simScenario;
 	private String objectPlacementPolicy;
-	
+
 	SampleScenarioFactory(int _numOfMobileDevice,
 			double _simulationTime,
 			String _orchestratorPolicy,
@@ -47,7 +47,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 		simScenario = _simScenario;
 		objectPlacementPolicy = _objectPlacementPolicy;
 	}
-	
+
 	@Override
 	public LoadGeneratorModel getLoadGeneratorModel() {
 		return new IdleActiveStorageLoadGenerator(numOfMobileDevice, simulationTime, simScenario, orchestratorPolicy,objectPlacementPolicy);
@@ -59,8 +59,12 @@ public class SampleScenarioFactory implements ScenarioFactory {
 	}
 
 	@Override
+//	public MobilityModel getMobilityModel() { return new StaticMobility(numOfMobileDevice,simulationTime); }
 	public MobilityModel getMobilityModel() {
-		return new StaticMobility(numOfMobileDevice,simulationTime);
+		if(numOfMobileDevice>2)
+			return new StaticRangeMobility(numOfMobileDevice,simulationTime);
+		else
+			return new StaticMobility(numOfMobileDevice,simulationTime);
 	}
 
 	@Override

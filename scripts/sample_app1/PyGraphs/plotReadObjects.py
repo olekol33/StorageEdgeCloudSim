@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from os import path
+from os import makedirs
 import seaborn as sns
 
 #Rows
@@ -50,7 +51,6 @@ def plotReadObjects():
     objectPlacements = getConfiguration("objectPlacement");
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
-
 
 
     # initializing the titles and rows list
@@ -109,7 +109,7 @@ def plotReadObjects():
             #     axis.legend()
             #     axis.set_xlabel("Host Number")
             #     axis.set_ylabel("Read Objects")
-            fig.suptitle("Placed_Objects_" + str(mobileDeviceNumber))
+            fig.suptitle("Placed_Objects_" + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
             fig.savefig(folderPath + '\\fig\\Placed_Objects_' + "_" + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
             plt.close(fig)
 
@@ -118,21 +118,88 @@ def plotReadObjects():
             #     axis.legend()
             #     axis.set_xlabel("Host Number")
             #     axis.set_ylabel("Read Objects")
-            fig2.suptitle("Accessed_Hosts_" + str(mobileDeviceNumber))
+            fig2.suptitle("Accessed Hosts " + str(mobileDeviceNumber) + " - " + getConfiguration("runType"))
             fig2.savefig(folderPath + '\\fig\\Accessed_Hosts_' + "_" + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
             plt.close(fig2)
 
-            fig3.suptitle("Average Delay In Accessed Host " + str(mobileDeviceNumber))
+            fig3.suptitle("Average Delay In Accessed Host " + str(mobileDeviceNumber) + " - " + getConfiguration("runType"))
             fig3.savefig(folderPath + '\\fig\\Average_Delay_in_Accessed_Hosts_' + "_" + str(mobileDeviceNumber) + '.png', bbox_inches='tight')
+            plt.close(fig3)
+
+    num_policies = len(placedObjects.columns)
+    policies = []
+
+    for s in range(numOfSimulations):
+        for j in range(numOfMobileDevices):
+            fig3, ax3 = plt.subplots(num_policies, 2, figsize=(26, 17), sharey=True)
+            policy_ind = 0
+            for i in range(len(scenarioType)):
+                for o, orchestratorPolicy in enumerate(orchestratorPolicies):
+                    for p, objectPlacement in enumerate(objectPlacements):
+                        if (scenarioType[i] == "TWO_TIER" and not "CLOUD" in orchestratorPolicy):
+                            continue
+                        elif (scenarioType[i] != "TWO_TIER" and "CLOUD" in orchestratorPolicy):
+                            continue
+                        mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
+
+                        filePath = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
+                                            orchestratorPolicy, '_', objectPlacement, '_', str(mobileDeviceNumber),
+                                            'DEVICES_OBJECT_DISTRIBUTION.log'])
+                        if (not path.exists(filePath)):
+                            continue
+                        data = pd.read_csv(filePath, delimiter=';')
+                        policy = objectPlacement + " | " + orchestratorPolicy
+
+                        filePathObjects = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
+                                            orchestratorPolicy, '_', objectPlacement, '_', str(mobileDeviceNumber), 'DEVICES_OBJECTS.log'])
+                        objects_read = pd.read_csv(filePathObjects, delimiter=';')
+                        read_count = objects_read['ObjectID'].value_counts()
+                        for ind,row in data.iterrows():
+                            if row['Object Name'] in read_count.index:
+                                data.loc[ind,'Read Objects']  = read_count[row['Object Name']]
+                            else:
+                                data.loc[ind, 'Read Objects'] = 0
+                        data["Read Objects"] = data["Read Objects"].fillna(0)
+                        df = data[data["Object Type"] == 'data']
+                        df = df.reset_index()
+                        df.plot.bar(y='Read Objects', ax=ax3[policy_ind][0], use_index=True, color='green',
+                                    xticks=list(range(0,max(df.index.values)+2,5)))
+                        df = data[data["Object Type"] == 'parity']
+                        df = df.reset_index()
+                        if(df.shape[0]>0):
+                            # df.plot.bar(y='Occurrences', ax=ax2[p][1], use_index=True, color='blue',xticks=list(range(0,max(df.index.values)+2,5)))
+                            df.plot.bar(y='Read Objects', ax=ax3[policy_ind][1], use_index=True, color='blue',xticks=list(range(0,max(df.index.values)+2,5)))
+                        ax3[policy_ind][1].legend().set_visible(False)
+                        policy_ind += 1
+
+                        policies.append(policy)
+
+            for ax, col in zip(ax3[0], ["Data","Parity"]):
+                ax.set_title(col)
+                ax.legend().set_visible(False)
+            for ax, row in zip(ax3[:, 0], policies):
+                # ax.set_ylabel(row + "\nReads", rotation=90, size='large')
+                ax.set_ylabel("Reads", rotation=90, size='large')
+                ax.set_title(row, size='large')
+                ax.legend().set_visible(False)
+            # ax2[2][1].legend().set_visible(False)
+
+
+            fig3.tight_layout()
+            fig3.suptitle("Number Of Objects Read - "+ str(mobileDeviceNumber) +
+                          " Devices - " + getConfiguration("runType"),y=1.01,fontsize=18)
+            fig3.savefig(folderPath + '\\fig\\Number Of Objects Read - ' + str(mobileDeviceNumber)+ ' Devices.png', bbox_inches='tight')
             plt.close(fig3)
 
     for s in range(numOfSimulations):
         for i in range(len(scenarioType)):
             fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(15, 17))
             fig2, ax2 = plt.subplots(len(objectPlacements), 2, figsize=(15, 17), sharey=True)
+            # fig3, ax3 = plt.subplots(num_policies, 2, figsize=(26, 17), sharey=True)
             generated = []
             for j in range(numOfMobileDevices):
                 objects_df = pd.DataFrame(columns=["Host", "Type", "Value", "Value Type", "Policy"])
+                policy_ind = 0
                 for o, orchestratorPolicy in enumerate(orchestratorPolicies):
                     for p, objectPlacement in enumerate(objectPlacements):
                         width = 0.35
@@ -187,33 +254,65 @@ def plotReadObjects():
                                             orchestratorPolicy, '_', objectPlacement, '_', str(mobileDeviceNumber),
                                             'DEVICES_OBJECT_DISTRIBUTION.log'])
                         data = pd.read_csv(filePath, delimiter=';')
+
+                        filePathObjects = ''.join([folderPath, '\ite', str(s + 1), '\SIMRESULT_', str(scenarioType[i]), '_',
+                                            orchestratorPolicy, '_', objectPlacement, '_', str(mobileDeviceNumber), 'DEVICES_OBJECTS.log'])
+                        objects_read = pd.read_csv(filePathObjects, delimiter=';')
+                        read_count = objects_read['ObjectID'].value_counts()
+                        for ind,row in data.iterrows():
+                            if row['Object Name'] in read_count.index:
+                                data.loc[ind,'Read Objects']  = read_count[row['Object Name']]
+                            else:
+                                data.loc[ind, 'Read Objects'] = 0
+                        data["Read Objects"] = data["Read Objects"].fillna(0)
                         df = data[data["Object Type"] == 'data']
                         df = df.reset_index()
                         df.plot.bar(y='Occurrences', ax=ax2[p][0], use_index=True, color='green',
                                     xticks=list(range(0,max(df.index.values)+2,5)))
+                        # df.plot.bar(y='Read Objects', ax=ax3[policy_ind][0], use_index=True, color='green',
+                        #             xticks=list(range(0,max(df.index.values)+2,5)))
                         df = data[data["Object Type"] == 'parity']
                         df = df.reset_index()
                         if(df.shape[0]>0):
                             df.plot.bar(y='Occurrences', ax=ax2[p][1], use_index=True, color='blue',xticks=list(range(0,max(df.index.values)+2,5)))
+                            # df.plot.bar(y='Read Objects', ax=ax3[policy_ind][1], use_index=True, color='blue',xticks=list(range(0,max(df.index.values)+2,5)))
+                        # policy_ind += 1
+                        # policies.append(policy)
                 for ax, col in zip(ax2[0], ["Data","Parity"]):
                     ax.set_title(col)
                     ax.legend().set_visible(False)
 
+                # for ax, col in zip(ax3[0], ["Data","Parity"]):
+                #     ax.set_title(col)
+                #     ax.legend().set_visible(False)
+
                 for ax, row in zip(ax2[:, 0], objectPlacements):
                     ax.set_ylabel(row + "\nHosts", rotation=90, size='large')
                     ax.legend().set_visible(False)
+                # for ax, row in zip(ax3[:, 0], policies):
+                #     # ax.set_ylabel(row + "\nReads", rotation=90, size='large')
+                #     ax.set_ylabel("Reads", rotation=90, size='large')
+                #     ax.set_title(row, size='large')
+                #     ax.legend().set_visible(False)
                 ax2[2][1].legend().set_visible(False)
+                # ax3[2][1].legend().set_visible(False)
                 # break;
                 fig2.tight_layout()
-                fig2.suptitle("Object Distribution By Hosts",y=1.01,fontsize=18)
+                fig2.suptitle("Object Distribution By Hosts"+ " - " + getConfiguration("runType"),y=1.01,fontsize=18)
                 fig2.savefig(folderPath + '\\fig\\Object Distribution By Hosts' + '.png', bbox_inches='tight')
                 plt.close(fig2)
+
+                # fig3.tight_layout()
+                # fig3.suptitle("Number Of Objects Read - "+ str(mobileDeviceNumber) +
+                #               " Devices - " + getConfiguration("runType"),y=1.01,fontsize=18)
+                # fig3.savefig(folderPath + '\\fig\\Objects_Read\\Number Of Objects Read - ' + str(mobileDeviceNumber)+ '.png', bbox_inches='tight')
+                # plt.close(fig3)
 
                 # fig.suptitle("Placed Objects By Type" + str(mobileDeviceNumber))
                 # fig.savefig(folderPath + '\\fig\\Object_Popularity_' + '.png', bbox_inches='tight')
                 # plt.close(fig)
 
-                fig.suptitle("Object Distribution By Type",y=1.01,fontsize=18)
+                fig.suptitle("Object Distribution By Type"+ " - " + getConfiguration("runType"),y=1.01,fontsize=18)
                 fig.savefig(folderPath + '\\fig\\Object Distribution By Type' + '.png', bbox_inches='tight')
                 plt.close(fig)
 
@@ -226,8 +325,5 @@ def plotReadObjects():
                 g.savefig(folderPath + '\\fig\\Object Rank in Hosts' + '.png', bbox_inches='tight')
                 plt.close()
                 exit()
-
-
-
 
 # plotReadObjects()

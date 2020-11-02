@@ -14,10 +14,7 @@
 
 package edu.boun.edgecloudsim.utils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.DoubleStream;
@@ -30,6 +27,8 @@ import edu.boun.edgecloudsim.edge_server.EdgeHost;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.core.SimEntity;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
@@ -102,6 +101,10 @@ public class SimLogger {
 
 	public long getStartTime() {
 		return startTime;
+	}
+
+	public void setFilePrefix(String filePrefix) {
+		this.filePrefix = filePrefix;
 	}
 
 	public Map<Integer, LogItem> getTaskMap() {
@@ -274,7 +277,11 @@ public class SimLogger {
 			IntSummaryStatistics dataStats = dataObjectPriorities.stream()
 					.mapToInt((x) -> x)
 					.summaryStatistics();
-			int dataMiddle = (dataObjectPriorities.get(dataObjectPriorities.size()/2) +dataObjectPriorities.get((dataObjectPriorities.size()/2)-1) )/2;
+			int dataMiddle;
+			if (dataObjectPriorities.size()==0)
+				dataMiddle=0;
+			else
+				dataMiddle = (dataObjectPriorities.get(dataObjectPriorities.size()/2) +dataObjectPriorities.get((dataObjectPriorities.size()/2)-1) )/2;
 			if (parityObjectPriorities.size()==0) {
 				appendToFile(objectBW, Integer.toString(entry.getKey())+SimSettings.DELIMITER +Integer.toString(objectsSet.size())+
 						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +

@@ -12,7 +12,16 @@ import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
@@ -23,6 +32,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     Random random = new Random();
     RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
     Map<Integer,Integer> activeCodedIOTasks;
+    double[] lambda;
+    boolean[] parityReadStarted;
+    boolean[] parityReadFinished;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
                                           String _objectPlacementPolicy) {
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
@@ -30,6 +42,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         objectPlacementPolicy = _objectPlacementPolicy;
         random.setSeed(ObjectGenerator.getSeed());
         activeCodedIOTasks = new HashMap<>();
+        if(SimSettings.getInstance().isNsfExperiment())
+            lambda = new double[2];
 
     }
 
@@ -53,33 +67,50 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         //Each mobile device utilizes an app type (task type)
         taskTypeOfDevices = new int[numberOfMobileDevices];
+        if(SimSettings.getInstance().isNsfExperiment()) {
+            for(int i=0; i<2; i++) {
+                int randomTaskType = i % 2;
+                Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
+                NodeList datacenterList = doc.getElementsByTagName("datacenter");
+                Node datacenterNode = datacenterList.item(randomTaskType);
+                Element datacenterElement = (Element) datacenterNode;
+                NodeList hostNodeList = datacenterElement.getElementsByTagName("host");
+                Node hostNode = hostNodeList.item(0);
+                Element hostElement = (Element) hostNode;
+                NodeList vmNodeList = hostElement.getElementsByTagName("VM");
+                Node vmNode = vmNodeList.item(0);
+                Element vmElement = (Element) vmNode;
+
+                int bandwidth = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
+
+                double mu = bandwidth * 1000 / SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][DATA_DOWNLOAD];
+                //numberOfMobileDevices/2  times lambda is rate
+                double rate = numberOfMobileDevices / (SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][POISSON_INTERARRIVAL] * 2);
+                lambda[randomTaskType] = rate / mu;
+                System.out.println("\nLambda " + i + ": " + lambda[randomTaskType] + " mu");
+            }
+
+        }
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
-//            double taskTypeSelector = SimUtils.getRandomDoubleNumber(0,100);
-//            double taskTypePercentage = 0;
 
-/*            for (int j=0; j<SimSettings.getInstance().getTaskLookUpTable().length; j++) {
-                taskTypePercentage += SimSettings.getInstance().getTaskLookUpTable()[j][USAGE_PERCENTAGE];
-                // Oleg: Select task if accumulated taskTypePercentage is more than random taskTypeSelector
-                if(taskTypeSelector <= taskTypePercentage){
-                    randomTaskType = j;
-                    break;
-                }
-            }
-            if(randomTaskType == -1){
-                SimLogger.printLine("Impossible is occured! no random task type!");
-                continue;
-            }*/
             //TODO: currently select random task, not by weight
-            randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
+            if(SimSettings.getInstance().isNsfExperiment()) {
+                randomTaskType = i%2;
+
+            }
+            else
+                randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
             taskTypeOfDevices[i] = randomTaskType;
 
             double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][POISSON_INTERARRIVAL];
             double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][ACTIVE_PERIOD];
             double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][IDLE_PERIOD];
-            double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
+/*            double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
                     SimSettings.CLIENT_ACTIVITY_START_TIME,
-                    SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)
+                    SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)*/
+            //random start time with seed
+            double activePeriodStartTime = SimSettings.CLIENT_ACTIVITY_START_TIME + (activePeriod) * random.nextDouble();
             double virtualTime = activePeriodStartTime;
             //storage
 //            double samplingMethod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][SAMPLING_METHOD];
@@ -120,7 +151,41 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 ioTaskID++;
             }
         }
+        if(SimSettings.getInstance().isNsfExperiment()) {
+            DecimalFormat df = new DecimalFormat();
+            df.setMaximumFractionDigits(4);
+            SimLogger.getInstance().setFilePrefix("SIMRESULT_" + df.format(lambda[0]) + "_" + df.format(lambda[1]) + "_" +
+                    simScenario + "_" + orchestratorPolicy +
+                    "_" + objectPlacementPolicy + "_" + numberOfMobileDevices + "DEVICES");
+        }
+        if(SimSettings.getInstance().isOrbitMode())
+            try {
+                exportTaskList();
+            } catch (Exception e) {
+                SimLogger.printLine("Failed to generate task list");
+                System.exit(0);
+            }
         numOfIOTasks = ioTaskID;
+        parityReadStarted = new boolean[numOfIOTasks];
+        parityReadFinished = new boolean[numOfIOTasks];
+    }
+
+    public void exportTaskList() throws IOException {
+        File taskListFile = null;
+        FileWriter taskListFW = null;
+        BufferedWriter taskListBW = null;
+
+        taskListFile = new File(SimLogger.getInstance().getOutputFolder(), "TASK_LIST.txt");
+        taskListFW = new FileWriter(taskListFile, false);
+        taskListBW = new BufferedWriter(taskListFW);
+        taskListBW.write("startTime,length,inputFileSize,outputFileSize,taskType,pesNumber,mobileDeviceId,objectRead,ioTaskID");
+        taskListBW.newLine();
+        for(TaskProperty task:getTaskList()){
+            taskListBW.write(task.getStartTime()+","+task.getLength()+","+task.getInputFileSize()+","+task.getOutputFileSize()+","+
+                    task.getTaskType()+","+task.getPesNumber()+","+task.getMobileDeviceId()+","+task.getObjectRead()+","+task.getIoTaskID());
+            taskListBW.newLine();
+        }
+        taskListBW.close();
     }
 
     @Override
@@ -141,11 +206,22 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //if no replicas and REPLICATION_PLACE
             if (objectLocations.size()==1 && SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE"))
                 return false;
+            //if object not found
             else if(objectLocations.size()==0) {
                 System.out.println("ERROR: No such object");
                 System.exit(0);
             }
+            //if there are replicas of the object
             else if(objectLocations.size()>= 2) {
+/*                double probContinueRead = SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][LoadGeneratorModel.PROB_CLOUD_SELECTION];
+                //If DATA_PARITY_PLACE - with probability probContinueRead proceed with replica, else use coding
+                if ((random.nextInt(100) <= probContinueRead && SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("DATA_PARITY_PLACE")) ||
+                        SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE")) {
+                        taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
+                                task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+                        SimManager.getInstance().createNewTask();
+                        return true;
+                }*/
                 taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
                         task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
                 SimManager.getInstance().createNewTask();
@@ -195,6 +271,10 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return numOfIOTasks;
     }
 
+    public double[] getLambda() {
+        return lambda;
+    }
+
     //counts parities which haven't been read yet
     public int updateActiveCodedIOTasks(int ioTaskID, int operation){ //operation: 1 - reduce by 1, 0 - check, -1-remove key
         //if key doesn't exist
@@ -212,6 +292,25 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             return -1;
         }
         return -2;
+    }
+
+
+    public boolean getParityReadStarted(int ioTaskID) {
+        return parityReadStarted[ioTaskID];
+    }
+
+
+    public void setParityReadStarted(boolean value, int ioTaskID) {
+        this.parityReadStarted[ioTaskID] = value;
+    }
+
+    public boolean getParityReadFinished(int ioTaskID) {
+        return parityReadFinished[ioTaskID];
+    }
+
+
+    public void setParityReadFinished(boolean value, int ioTaskID) {
+        this.parityReadFinished[ioTaskID] = value;
     }
 
 }

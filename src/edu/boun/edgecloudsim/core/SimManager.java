@@ -39,7 +39,7 @@ public class SimManager extends SimEntity {
 	private static final int CHECK_ALL_VM = 1;
 	private static final int GET_LOAD_LOG = 2;
 	private static final int PRINT_PROGRESS = 3;
-	private static final int STOP_SIMULATION = 4;
+	public static final int STOP_SIMULATION = 4;
 	
 	private String simScenario;
 	private String orchestratorPolicy;
