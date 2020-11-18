@@ -54,6 +54,8 @@ public class SimManager extends SimEntity {
 	private MobileServerManager mobileServerManager;
 	private LoadGeneratorModel loadGeneratorModel;
 	private MobileDeviceManager mobileDeviceManager;
+
+	private double lambda0;
 	
 	private static SimManager instance = null;
 	
@@ -192,6 +194,14 @@ public class SimManager extends SimEntity {
 	
 	public int getNumOfMobileDevice(){
 		return numOfMobileDevice;
+	}
+
+	public double getLambda0() {
+		return lambda0;
+	}
+
+	public void setLambda0(double lambda0) {
+		this.lambda0 = lambda0;
 	}
 	
 	public NetworkModel getNetworkModel(){

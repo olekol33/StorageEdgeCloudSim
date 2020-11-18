@@ -122,10 +122,12 @@ public class SimSettings {
 
 	//ORBIT
 	private boolean ORBIT_MODE;
+	private boolean PARAM_SCAN_MODE;
 	private int NUMBER_OF_EDGE_NODES;
 
 	//SPECIAL EXPERIMENT
 	private boolean NSF_EXPERIMENT;
+	private int RAID;
 	private double LAMBDA0_MIN;
 	private double LAMBDA0_MAX;
 	private double LAMBDA1_MIN;
@@ -223,8 +225,10 @@ public class SimSettings {
 			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
+			PARAM_SCAN_MODE = false;
 			NSF_EXPERIMENT = false;
 			try {
+				RAID = Integer.parseInt(prop.getProperty("raid"));
 				LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
 				LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
 				LAMBDA1_MIN = Double.parseDouble(prop.getProperty("lambda1_min"));
@@ -234,7 +238,14 @@ public class SimSettings {
 			}
 			catch (Exception e)
 			{
-
+			}
+			try {
+				LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
+				LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
+				LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
+			}
+			catch (Exception e)
+			{
 			}
 
 
@@ -576,6 +587,53 @@ public class SimSettings {
 		return ORBIT_MODE;
 	}
 
+	public boolean isParamScanMode() {
+		return PARAM_SCAN_MODE;
+	}
+
+	public void checkRunMode(){
+		boolean mode=false;
+		if (isOrbitMode()) {
+			System.out.println("ORBIT Mode\n");
+			if (mode==false)
+				mode = true;
+			else {
+				System.out.println("ERROR: Multiple modes");
+				System.exit(0);
+			}
+		}
+		if (isParamScanMode()) {
+			System.out.println("Param Scan Mode\n");
+			if (mode==false)
+				mode = true;
+			else {
+				System.out.println("ERROR: Multiple modes");
+				System.exit(0);
+			}
+		}
+		if (isNsfExperiment()) {
+			System.out.println("NSF Experiment Mode\n");
+			if (mode==false)
+				mode = true;
+			else {
+				System.out.println("ERROR: Multiple modes");
+				System.exit(0);
+			}
+		}
+		if (isHostFailureScenario()) {
+			System.out.println("Host Failure Mode\n");
+			if (mode==false)
+				mode = true;
+			else {
+				System.out.println("ERROR: Multiple modes");
+				System.exit(0);
+			}
+		}
+		if (mode==false)
+			System.out.println("No special modes\n");
+
+	}
+
 	public int getNumberOfEdgeNodes() {
 		return NUMBER_OF_EDGE_NODES;
 	}
@@ -695,6 +753,18 @@ public class SimSettings {
 
 	public void setNsfExperiment(boolean NSF_EXPERIMENT) {
 		this.NSF_EXPERIMENT = NSF_EXPERIMENT;
+	}
+
+	public void setParamScanMode(boolean PARAM_SCAN_MODE) {
+		this.PARAM_SCAN_MODE = PARAM_SCAN_MODE;
+	}
+
+	public int getRAID() {
+		return RAID;
+	}
+
+	public void setRAID(int RAID) {
+		this.RAID = RAID;
 	}
 
 	public int getNumOfStripes() {

@@ -7,12 +7,11 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.applications.NSF_BSF_app1;
+package edu.boun.edgecloudsim.applications.param_scan_app;
 
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
@@ -25,9 +24,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 
-public class NSFMainApp {
+public class ParamScanApp {
 
 	/**
 	 * Creates main() to run this example
@@ -56,22 +57,15 @@ public class NSFMainApp {
 		}
 		else if (args.length == 1){
 			configFile = args[0];
-			applicationsFile = "scripts/NSF_BSF_app1/config/applications.xml";
-			edgeDevicesFile = "scripts/NSF_BSF_app1/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
-		}
-		else if (args.length == 2){
-			configFile = args[0];
-			iterationNumber = Integer.parseInt(args[1]);
-			applicationsFile = "scripts/NSF_BSF_app1/config/applications.xml";
-			edgeDevicesFile = "scripts/NSF_BSF_app1/config/edge_devices.xml";
+			applicationsFile = "scripts/param_scan_app/config/applications.xml";
+			edgeDevicesFile = "scripts/param_scan_app/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
 		else{
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "scripts/NSF_BSF_app1/config/default_config.properties";
-			applicationsFile = "scripts/NSF_BSF_app1/config/applications.xml";
-			edgeDevicesFile = "scripts/NSF_BSF_app1/config/edge_devices.xml";
+			configFile = "scripts/param_scan_app/config/default_config.properties";
+			applicationsFile = "scripts/param_scan_app/config/applications.xml";
+			edgeDevicesFile = "scripts/param_scan_app/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
 		File file = new File(outputFolder);
@@ -101,8 +95,7 @@ public class NSFMainApp {
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
-		//this is a special experiment
-		SS.setNsfExperiment(true);
+		SS.setParamScanMode(true);
 		SS.checkRunMode();
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
@@ -110,26 +103,19 @@ public class NSFMainApp {
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
 		double i0=1;
-		double i1=1;
 
-		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
-		{
-			for(int k=0; k<SS.getSimulationScenarios().length; k++)
-			{
-				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
+		double step0=SS.getLambda0step();
+		for(double lambda0= SS.getLambda0Min(); lambda0<=SS.getLambda0Max();lambda0=lambda0+step0) {
+			step0 *= i0;
+			i0 += 0.5;
+			scenarioSet:{
+				for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
 				{
-					for(int p=0; p<SS.getObjectPlacement().length; p++) {
-						//exponential growing step
-						double step0=SS.getLambda0step();
-						for(double lambda0= SS.getLambda0Min(); lambda0<=SS.getLambda0Max();lambda0=lambda0+step0) {
-							step0*=i0;
-							i0+=0.05;
-							double step1=SS.getLambda1step();
-							i1=1;
-							for(double lambda1= SS.getLambda1Min(); lambda1<=SS.getLambda1Max();lambda1=lambda1+step1) {
-								step1*=i1;
-								i1+=0.05;
-
+					for(int k=0; k<SS.getSimulationScenarios().length; k++)
+					{
+						for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
+						{
+							for(int p=0; p<SS.getObjectPlacement().length; p++) {
 								String objectPlacementPolicy = SS.getObjectPlacement()[p];
 								String simScenario = SS.getSimulationScenarios()[k];
 								String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
@@ -150,30 +136,32 @@ public class NSFMainApp {
 								}
 
 								//Setting lambdas for iteration
-								SS.setPoissonInTaskLookUpTable(0,lambda0);
-								SS.setPoissonInTaskLookUpTable(1,lambda1);
+								//TODO: currently assume all are equal
+								for (int t = 0; t < SimSettings.getInstance().getTaskLookUpTable().length; t++) {
+									SS.setPoissonInTaskLookUpTable(t, lambda0);
+								}
 
 
 								Date ScenarioStartDate = Calendar.getInstance().getTime();
 								now = df.format(ScenarioStartDate);
-//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
+								//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
 								// Storage: Generate Redis KV list
 								RedisListHandler.closeConnection();
 								RedisListHandler.createList(objectPlacementPolicy);
 
+								//							String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
 								String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
-										Double.toString(lambda0)+'_'+Double.toString(lambda1)};
+										Double.toString(lambda0)};
 
 								SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
 
 								SimLogger.printLine("Scenario started at " + now);
 								SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - Placement: " + objectPlacementPolicy +
-										" - #iteration: " + iterationNumber + " - lambda0: " + lambda0 + " - lambda1: " + lambda1);
+										" - #iteration: " + iterationNumber);
 								SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
 										SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
-								SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + lambda0 + "_" + lambda1 + "_" +
-										simScenario + "_" + orchestratorPolicy +
+								SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
 										"_" + objectPlacementPolicy + "_" + j + "DEVICES");
 
 								try {
@@ -187,8 +175,7 @@ public class NSFMainApp {
 									CloudSim.init(num_user, calendar, trace_flag, 0.01);
 
 									// Generate EdgeCloudsim Scenario Factory
-									ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(),
-											orchestratorPolicy, simScenario, objectPlacementPolicy);
+									ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
 
 
 									// Generate EdgeCloudSim Simulation Manager
@@ -207,11 +194,32 @@ public class NSFMainApp {
 								now = df.format(ScenarioEndDate);
 								SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
 								SimLogger.printLine("----------------------------------------------------------------------");
+								File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
+								if (file2.exists()) {
+									break scenarioSet;
+								}
 							}
 						}
 					}//End of placement policies loop
 				}//End of orchestrators loop
+				try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder+"/"+
+						SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
+					out.print(lambda0);
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
 			}//End of scenarios loop
+			//if all scenarios for this lambda have completed the run
+/*				File file3 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log");
+				if (!file.exists()) {
+					try {
+						file3.wr
+						new FileOutputStream(file3).close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}*/
+
 		}//End of mobile devices loop
 		// Remove KV list
 		RedisListHandler.closeConnection();

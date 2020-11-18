@@ -72,9 +72,11 @@ public class ObjectGenerator {
         dataObjects = createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
         //Initial data object placement
         if(SimSettings.getInstance().isNsfExperiment()) {
-            NSFBSFInitializeDataObjectPlacement();
-            //RAID 5 NSF
-//            InitializeDataObjectPlacement();
+            //RAID 4 or 5
+            if(SimSettings.getInstance().getRAID()==4)
+                NSFBSFInitializeDataObjectPlacement();
+            else             //RAID 5 NSF
+                InitializeDataObjectPlacement();
         }
         else
             InitializeDataObjectPlacement();
@@ -586,9 +588,10 @@ public class ObjectGenerator {
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         while(1==1) {
-            //RAID 4 NSF
+            if(SimSettings.getInstance().getRAID()==4) {
             if(SimSettings.getInstance().isNsfExperiment())
                 currentHost=2;
+            }
             //TODO: currently support one parity
             //get name of object by its ID
             objectName = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("id");

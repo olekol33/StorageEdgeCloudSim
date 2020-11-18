@@ -12,6 +12,7 @@ import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
+import edu.boun.edgecloudsim.utils.SimUtils;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -20,6 +21,8 @@ import org.cloudbus.cloudsim.core.SimEvent;
 
 import java.io.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
     private int taskIdCounter=0;
@@ -577,27 +580,41 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             }
             else
             {
-//                SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
+                //For % of all IO requests, if they've failed, stop run
                 SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
                 failedDueToBW++;
-                if(SimSettings.getInstance().isNsfExperiment()) {
-                    double ratio = (double)failedDueToBW/IdleActiveStorageLoadGenerator.getNumOfIOTasks();
+//                if(SimSettings.getInstance().isNsfExperiment()) {
+                List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
+//                    double ratio = (double)failedDueToBW/IdleActiveStorageLoadGenerator.getNumOfIOTasks();
+                    double ratio = (double)failedDueToBW/taskList.size();
                     if(ratio>0.01) {
                         try {
-                            File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_NSF_TASK_FAILED.log");
+                            if (SimSettings.getInstance().isParamScanMode()) {
+                                int numOfDevices = SimManager.getInstance().getNumOfMobileDevice();
+                                String simScenario = SimManager.getInstance().getSimulationScenario();
+                                String orchestratorPolicy = SimManager.getInstance().getOrchestratorPolicy();
+                                String objectPlacementPolicy = SimManager.getInstance().getObjectPlacementPolicy();
+                                Pattern pattern = Pattern.compile("SIMRESULT_(.*)_SINGLE.*");
+                                Matcher matcher = pattern.matcher(SimLogger.getInstance().getFilePrefix());
+                                matcher.find();
+                                SimManager.getInstance().setLambda0(Double.valueOf(matcher.group(1)));
+                                String[] simParams = {Integer.toString(numOfDevices), simScenario, orchestratorPolicy, objectPlacementPolicy,
+                                        matcher.group(1)};
+                                SimUtils.cleanOutputFolderPerConfiguration(SimLogger.getInstance().getOutputFolder(), simParams);
+                            }
+                            File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
                             if (!file.exists())
                                 new FileOutputStream(file).close();
                             System.out.println("Failed for: " + SimLogger.getInstance().getFilePrefix());
                             SimManager.getInstance().shutdownEntity();
                             SimLogger.printLine("100");
                             CloudSim.terminateSimulation();
-//                            SimLogger.getInstance().simStopped();
                         } catch (IOException e) {
                             e.printStackTrace();
                             System.exit(0);
                         }
                     }
-                }
+//                }
             }
         }
     }

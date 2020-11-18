@@ -63,6 +63,12 @@ public class MainApp {
 			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
+		else if (args.length == 3){
+			configFile = args[0];
+			applicationsFile = args[1];
+			edgeDevicesFile = args[2];
+			outputFolder = "sim_results/ite" + iterationNumber;
+		}
 		else{
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
 			configFile = "scripts/sample_app5/config/default_config.properties";
@@ -97,6 +103,7 @@ public class MainApp {
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
+		SS.checkRunMode();
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);

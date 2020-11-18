@@ -3,6 +3,7 @@ package edu.boun.edgecloudsim.task_generator;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
+import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
@@ -11,6 +12,7 @@ import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
+import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,6 +35,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
     Map<Integer,Integer> activeCodedIOTasks;
     double[] lambda;
+    double singleLambda;
     boolean[] parityReadStarted;
     boolean[] parityReadFinished;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
@@ -50,6 +53,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     @Override
     public void initializeModel() {
         int ioTaskID=0;
+        double sumPoisson = 0;
+        double dataSizeMean = 0;
         taskList = new ArrayList<TaskProperty>();
         ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
 
@@ -63,10 +68,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
             expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
             expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
+            dataSizeMean+=SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD];
         }
+        dataSizeMean /= SimSettings.getInstance().getTaskLookUpTable().length;
 
         //Each mobile device utilizes an app type (task type)
         taskTypeOfDevices = new int[numberOfMobileDevices];
+        //Calculate lambdas for NSF experiment
         if(SimSettings.getInstance().isNsfExperiment()) {
             for(int i=0; i<2; i++) {
                 int randomTaskType = i % 2;
@@ -85,12 +93,14 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
                 double mu = bandwidth * 1000 / SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][DATA_DOWNLOAD];
                 //numberOfMobileDevices/2  times lambda is rate
+                // 1/2 of devices are from group a and 1/2 are b
                 double rate = numberOfMobileDevices / (SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][POISSON_INTERARRIVAL] * 2);
                 lambda[randomTaskType] = rate / mu;
                 System.out.println("\nLambda " + i + ": " + lambda[randomTaskType] + " mu");
             }
 
         }
+
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
 
@@ -112,10 +122,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //random start time with seed
             double activePeriodStartTime = SimSettings.CLIENT_ACTIVITY_START_TIME + (activePeriod) * random.nextDouble();
             double virtualTime = activePeriodStartTime;
-            //storage
-//            double samplingMethod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][SAMPLING_METHOD];
 
-//            ExponentialDistribution rng = new ExponentialDistribution(poissonMean);
+            sumPoisson += poissonMean;
+
             //Oleg: random with seed
             ExponentialDistribution rng = new ExponentialDistribution(rand,
                     poissonMean, ExponentialDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
@@ -158,13 +167,47 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     simScenario + "_" + orchestratorPolicy +
                     "_" + objectPlacementPolicy + "_" + numberOfMobileDevices + "DEVICES");
         }
-        if(SimSettings.getInstance().isOrbitMode())
+        if(SimSettings.getInstance().isOrbitMode()) {
             try {
                 exportTaskList();
             } catch (Exception e) {
                 SimLogger.printLine("Failed to generate task list");
                 System.exit(0);
             }
+        }
+
+        if(SimSettings.getInstance().isParamScanMode()){
+            double muTotal = 0;
+            double poissonMean = sumPoisson/numberOfMobileDevices;
+            Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
+            NodeList datacenterList = doc.getElementsByTagName("datacenter");
+            for (int i = 0; i < datacenterList.getLength(); i++) {
+                Node datacenterNode = datacenterList.item(i);
+                Element datacenterElement = (Element) datacenterNode;
+                NodeList hostNodeList = datacenterElement.getElementsByTagName("host");
+                Node hostNode = hostNodeList.item(0);
+                Element hostElement = (Element) hostNode;
+                NodeList vmNodeList = hostElement.getElementsByTagName("VM");
+                Node vmNode = vmNodeList.item(0);
+                Element vmElement = (Element) vmNode;
+                muTotal += Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
+            }
+//            double muMean = muTotal/datacenterList.getLength();
+            muTotal = (muTotal*1000) / dataSizeMean;
+            double meanRate = numberOfMobileDevices * (1/poissonMean);
+            singleLambda = meanRate / muTotal;
+            System.out.println("\nLambda: " + singleLambda + " mu");
+
+            DecimalFormat df = new DecimalFormat();
+            df.setMaximumFractionDigits(4);
+            SimLogger.getInstance().setFilePrefix("SIMRESULT_" + df.format(singleLambda) + "_" +
+                    simScenario + "_" + orchestratorPolicy +
+                    "_" + objectPlacementPolicy + "_" + numberOfMobileDevices + "DEVICES");
+
+
+        }
+
+
         numOfIOTasks = ioTaskID;
         parityReadStarted = new boolean[numOfIOTasks];
         parityReadFinished = new boolean[numOfIOTasks];

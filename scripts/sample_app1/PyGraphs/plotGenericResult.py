@@ -169,8 +169,12 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
                 if CI[1] < 0:
                     CI[1] = 0
 
-                min_results[j] = results[j] - CI[0]
-                max_results[j] = CI[1] - results[j]
+                if (results.size>1):
+                    min_results[j] = results[j] - CI[0]
+                    max_results[j] = CI[1] - results[j]
+                else:
+                    min_results[j] = results - CI[0]
+                    max_results[j] = CI[1] - results
 
 
             types = np.zeros([1,numOfMobileDevices])
@@ -184,9 +188,10 @@ def plotGenericResult(rowOfset, columnOfset, yLabel, appType, calculatePercentag
             # for j,scen in enumerate(scenarioType):
             yIndex = []
             for i in range(numOfMobileDevices):
-                # TODO: temp removed
-                # yIndex.append(results[j][i])
-                yIndex.append(results[i])
+                if (results.size>1):
+                    yIndex.append(results[i])
+                else:
+                    yIndex.append(results)
             ax.scatter(xIndex, yIndex, marker = markers[o])
             ax.plot(xIndex, yIndex, label=objectPlacement+" | "+orchestratorPolicy)
             # ax.set_title(objectPlacements[p])

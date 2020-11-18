@@ -302,22 +302,12 @@ def plot_locations(gridFilePath,folderPath):
 
 def NsfBsfGraph():
     folderPath = getConfiguration("folderPath")
-    numOfSimulations = getConfiguration("numOfSimulations")
-    startOfMobileDeviceLoop = getConfiguration("startOfMobileDeviceLoop")
-    stepOfMobileDeviceLoop = getConfiguration("stepOfMobileDeviceLoop")
-    endOfMobileDeviceLoop = getConfiguration("endOfMobileDeviceLoop")
-    xTickLabelCoefficient = getConfiguration("xTickLabelCoefficient")
-    scenarioType = getConfiguration("scenarioType");
-    legends = getConfiguration("legends");
-    orchestratorPolicies = getConfiguration("orchestratorPolicy");
-    objectPlacements = getConfiguration("objectPlacement");
-    numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 
     filePath = ''.join([folderPath, '\ite1'])
     all_files = [f for f in listdir(filePath) if isfile(join(filePath, f))]
     unique_configs = Filter(all_files,'MAN_QUEUE')
     filtered_files = Filter(all_files,'READOBJECTS')
-    failed_files = Filter(all_files,'NSF_TASK_FAILED')
+    failed_files = Filter(all_files,'TASK_FAILED')
 
     lambdas = []
     failed_lambdas = []
