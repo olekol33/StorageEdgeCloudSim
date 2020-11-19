@@ -157,30 +157,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 return selectedVM;
             }
         }
-/*        if(policy.equalsIgnoreCase("UNIFORM_HOST")){
-            int relatedHostId= randomlySelectHostToRead(operativeHosts);
-            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
-            selectedVM = vmArray.get(0);
-        }*/
-/*        else if(policy.equalsIgnoreCase("SHORTEST_QUEUE_IN_RANGE")){
-            //get host with shortest queue as access point
-            int selectedAccessHost = getHostWithShortestQueueInRange(deviceLocation);
-            //if object on access point read from it, otherwise it doesn't matter
-            int relatedHostId= selectNearestHostToRead(operativeHosts,StaticRangeMobility.getDCLocation(selectedAccessHost));
-            //if selected access point is different
-            if (deviceLocation.getServingWlanId() != selectedAccessHost) {
-//                System.out.println("deviceID = " + task.getMobileDeviceId() +", ioTaskID = " + task.getIoTaskID() + ", changed from: " + deviceLocation.getServingWlanId() +
-//                        " to: " + selectedAccessHost);
-                deviceLocation.setServingWlanId(selectedAccessHost);
-                task.setSubmittedLocation(StaticRangeMobility.getDCLocation(selectedAccessHost));
-                MobilityModel mobilityModel = SimManager.getInstance().getMobilityModel();
-                ((StaticRangeMobility)mobilityModel).setLocation(task.getMobileDeviceId(),deviceLocation);
-            }
-            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
-            selectedVM = vmArray.get(0);
-        }*/
-//        else if(policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY") ||
-//                policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
         if(policy.equalsIgnoreCase("IF_CONGESTED_READ_PARITY")){
             //if it's the parity, don't read from congested host
             if (task.getIsParity()==1){
@@ -195,26 +171,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 }
                 List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
                 selectedVM = vmArray.get(0);
-//                return selectedVM;
-
-
-/*                //Get host of original data object to avoid reading from same host
-                int hostOfOriginalData = SimLogger.getInstance().hostOfOriginalData(task.getIoTaskID());
-                objectLocations = new ArrayList<String>(Arrays.asList(operativeHosts.split(" ")));
-                //if can avoid reading from this host (since its queue it long) - do it
-                if(objectLocations.size()>1 && objectLocations.contains(hostOfOriginalData))
-                    objectLocations.remove(hostOfOriginalData);
-                for (String s : objectLocations)
-                {
-                    operativeHosts += s + " ";
-                }
-                //if reading on grid, randomly select host
-                int selectedHost= randomlySelectHostToRead(operativeHosts);
-                if (selectedHost>=SimSettings.getInstance().getNumOfEdgeDatacenters())
-                    System.out.println("ERROR: Illegal host id " + selectedHost);
-                List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(selectedHost);
-                selectedVM = vmArray.get(0);
-                return selectedVM;*/
             }
             else { //not parity
 

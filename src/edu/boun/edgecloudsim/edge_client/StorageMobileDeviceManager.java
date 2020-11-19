@@ -269,8 +269,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 schedule(getId(), delay, nextEvent, task);
             }
 //            else if (selectedVM == -1)
-            else{
-//                SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),vmType);
+            else{ //selectedVM not found
+                SimLogger.getInstance().taskFailedDueToInaccessibility(task.getCloudletId(), CloudSim.clock(),vmType);
             }
         }
         else
