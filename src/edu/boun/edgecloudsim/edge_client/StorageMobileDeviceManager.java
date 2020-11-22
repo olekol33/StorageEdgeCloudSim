@@ -230,7 +230,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 
             SimLogger.getInstance().setObjectRead(task.getCloudletId(),task.getObjectRead());
 
-            if(selectedVM != null){
+                if(selectedVM != null){
                 //
 //                SimLogger.getInstance().setHostId(task.getCloudletId(),task.getHostID());
                 SimLogger.getInstance().setHostId(task.getCloudletId(),selectedVM.getHost().getId());

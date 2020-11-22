@@ -14,6 +14,11 @@ from os import listdir
 from os.path import isfile, join
 from matplotlib import ticker
 from collections import Counter
+import matplotlib
+matplotlib.rcParams['ps.useafm'] = True
+matplotlib.rcParams['pdf.use14corefonts'] = True
+#matplotlib.rcParams['text.usetex'] = True
+sns.set_style({'font.family':'serif', 'font.serif':'Times New Roman'})
 
 
 #Rows
@@ -130,12 +135,20 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
     # im = ax.pcolormesh(latencies_df.index.astype(float).values, latencies_df.columns.astype(float).values
     im = ax.pcolormesh(indices, indices
                        , latencies_df.to_numpy(),cmap=sns.cm.rocket_r)
-    ax.set_xlabel('λ_a')
-    ax.set_ylabel('λ_b')
-    fig.colorbar(im, ax=ax)
-    ax.set_title("Latency as a Function of Lambdas",y=1.01)
+    ax.set_xlabel(r'$\lambda_a$',fontsize=22)
+    ax.set_ylabel(r'$\lambda_b$',fontsize=22)
+    # fig.colorbar(im, ax=ax)
+    ax.tick_params(axis='both', labelsize=14)
+    cb = fig.colorbar(im, ax=ax)
+    cb.ax.tick_params(labelsize=14)
+    ax.set_xlim(right=2.5)
+    ax.set_ylim(top=2.5)
+    # cb.set_clim(0.08, 0.4)
+    cb.mappable.set_clim(0.08, 0.4)
+    # ax.set_title("Latency as a Function of Lambdas",y=1.01)
     # plt.show()
-    plt.savefig(folderPath + '\\fig\\Latency' + '.png', bbox_inches='tight')
+    plt.savefig(folderPath + '\\fig\\Latency.png', bbox_inches='tight', format='png')
+    # plt.savefig(folderPath + '\\fig\\Latency.eps', bbox_inches='tight', format='eps')
 
     #Count plot
     # sns.scatterplot(x="lambda0",
@@ -162,12 +175,18 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
     # im = ax.pcolormesh(tasks_df.index.astype(float).values, tasks_df.columns.astype(float).values
     im = ax.pcolormesh(indices, indices
                        , tasks_df.to_numpy(),cmap=sns.cm.rocket_r)
-    ax.set_xlabel('λ_a')
-    ax.set_ylabel('λ_b')
-    fig.colorbar(im, ax=ax)
-    ax.set_title("Number of Completed Tasks",y=1.01)
+    ax.set_xlabel(r'$\lambda_a$',fontsize=22)
+    ax.set_ylabel(r'$\lambda_b$',fontsize=22)
+    # fig.colorbar(im, ax=ax)
+    ax.tick_params(axis='both', labelsize=14)
+    cb = fig.colorbar(im, ax=ax)
+    cb.ax.tick_params(labelsize=14)
+    # ax.set_title("Number of Completed Tasks",y=1.01)
+    ax.set_xlim(right=2.5)
+    ax.set_ylim(top=2.5)
     # plt.show()
-    plt.savefig(folderPath + '\\fig\\Number of Completed Tasks' + '.png', bbox_inches='tight')
+    plt.savefig(folderPath + '\\fig\\Number of Completed Tasks.png', bbox_inches='tight', format ='png')
+    # plt.savefig(folderPath + '\\fig\\Number of Completed Tasks.eps', bbox_inches='tight', format='eps')
 
     return extra_objects_read
 
@@ -211,8 +230,8 @@ def read_by_type(lambdas,failed_lambdas,files,folderPath):
     ax2[1].set_title("Data Reads")
     ax2[2].set_title("Parity Reads")
     fig2.tight_layout(h_pad=2)
-    fig2.savefig(folderPath + '\\fig\\Read_By_Type' + '.png',
-                 bbox_inches='tight')
+    fig2.savefig(folderPath + '\\fig\\Read_By_Type.png', bbox_inches='tight', format ='png')
+    # fig2.savefig(folderPath + '\\fig\\Read_By_Type.eps', bbox_inches='tight', format='eps')
 
     plt.close(fig2)
 
@@ -262,15 +281,15 @@ def average_queue_size(lambdas, failed_lambdas, all_files, type , folderPath):
                         sizes=(20,500),
                         # alpha=0.5,
                         data=queues,ax=ax[ind])
-        ax[ind].set_xlabel("λ_a")
-        ax[ind].set_ylabel("λ_b")
+        ax[ind].set_xlabel(r'$\lambda_a$', fontsize=22)
+        ax[ind].set_ylabel(r'$\lambda_b$', fontsize=22)
         ax[ind].grid(True)
-        ax[ind].set_title('Average ' + type + " of " + host)
+        # ax[ind].set_title('Average ' + type + " of " + host)
         ax[ind].legend(labelspacing=1.5)
     fig.tight_layout(h_pad=2)
     # plt.show()
-    fig.savefig(folderPath + '\\fig\\Average ' + type +'.png',
-                 bbox_inches='tight')
+    fig.savefig(folderPath + '\\fig\\Average ' + type+'.png',bbox_inches='tight', format ='png')
+    # fig.savefig(folderPath + '\\fig\\Average ' + type+'.eps',bbox_inches='tight', format='eps')
 
     plt.close(fig)
 
@@ -294,8 +313,8 @@ def plot_locations(gridFilePath,folderPath):
     ax.set_ylabel("yPos")
     fig.suptitle("Grid Locations",y=1.01)
     if(index>10):
-        fig.savefig(folderPath + '\\fig\\Grid Locations' + '.png',
-                    bbox_inches='tight')
+        fig.savefig(folderPath + '\\fig\\Grid Locations.png',bbox_inches='tight')
+        # fig.savefig(folderPath + '\\fig\\Grid Locations.eps',bbox_inches='tight', format='eps')
     plt.close(fig)
 
 
@@ -339,18 +358,24 @@ def NsfBsfGraph():
         indices1 = extra_objects_read.columns.values[::-1]
     im = ax.pcolormesh(indices0, indices1, extra_objects_read.to_numpy(),
                   vmin=1,vmax=2,cmap=sns.cm.rocket_r)
-    ax.set_xlabel('λ_a')
-    ax.set_ylabel('λ_b')
-    fig.colorbar(im, ax=ax)
+    # ax.set_xlabel('λ_a',fontsize=22)
+    ax.set_xlabel(r'$\lambda_a$',fontsize=22)
+    ax.set_ylabel(r'$\lambda_b$',fontsize=22)
+    ax.tick_params(axis='both', labelsize=14)
+    cb = fig.colorbar(im, ax=ax)
+    cb.ax.tick_params(labelsize=14)
+    ax.set_xlim(right=2.5)
+    ax.set_ylim(top=2.5)
     # fig.suptitle("Average Number Of Objects Read Per IO Request",y=1.01)
-    ax.set_title("Average Number Of Objects Read Per IO Request",y=1.01)
+    # ax.set_title("Average Number Of Objects Read Per IO Request",y=1.01)
     # ax.set_xticks(xs)
     # ax.set_xticklabels(xs, rotation=90)
     # ax.set_yticks(xs)
     # ax.set_yticklabels(xs, rotation=0)
     # plt.tight_layout()
     # plt.show()
-    fig.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request' + '.png', bbox_inches='tight')
+    fig.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request.png', bbox_inches='tight', format ='png')
+    # fig.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request.eps', bbox_inches='tight', format='eps')
 
 
 

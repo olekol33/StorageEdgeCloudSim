@@ -685,10 +685,20 @@ public class ObjectGenerator {
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
         while(1==1) {
             if(SimSettings.getInstance().isNsfExperiment()) {
-                currentHost = 2;
-                if (objectID%2 !=0) {
-                    objectID = getObjectID(numOfDataObjects,"objects",dist);
-                    continue;
+                if (hostsContents.size()==3) { //if 3 hosts, one will contain replicas
+                    currentHost = 2;
+                    if (objectID % 2 != 0) {
+                        objectID = getObjectID(numOfDataObjects, "objects", dist);
+                        continue;
+                    }
+                }
+                else if (hostsContents.size()==4) { //2 will contain replicas
+                    if (objectID % 2 == 0) {
+                        currentHost = 2; //if even, place on host 3
+                    }
+                    else { //else please on host 3
+                        currentHost = 3;
+                    }
                 }
             }
             objectName = (String)dataObjects.get(objectID).get("id");

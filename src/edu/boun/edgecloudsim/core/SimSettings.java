@@ -107,6 +107,7 @@ public class SimSettings {
 	private int MAN_THRESHOLD;
 	private int MAX_CLOUD_REQUESTS;
 
+
 	//storage properties
 	private int RANDOM_SEED;
 	private double ZIPF_EXPONENT;
@@ -120,10 +121,14 @@ public class SimSettings {
 	private String HOST_FAILURE_ID;
 	private double HOST_FAILURE_TIME;
 
+	private boolean VARIABILITY_RUN;
+	private int VARIABILITY_ITERATIONS;
+
 	//ORBIT
 	private boolean ORBIT_MODE;
 	private boolean PARAM_SCAN_MODE;
 	private int NUMBER_OF_EDGE_NODES;
+
 
 	//SPECIAL EXPERIMENT
 	private boolean NSF_EXPERIMENT;
@@ -223,7 +228,10 @@ public class SimSettings {
 			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
 
 			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
+			VARIABILITY_RUN = Boolean.parseBoolean(prop.getProperty("variability_run"));
+			VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
+
 
 			PARAM_SCAN_MODE = false;
 			NSF_EXPERIMENT = false;
@@ -587,6 +595,15 @@ public class SimSettings {
 		return ORBIT_MODE;
 	}
 
+
+	public boolean isVariabilityRun() {
+		return VARIABILITY_RUN;
+	}
+
+	public int getVariabilityIterations() {
+		return VARIABILITY_ITERATIONS;
+	}
+
 	public boolean isParamScanMode() {
 		return PARAM_SCAN_MODE;
 	}
@@ -737,6 +754,10 @@ public class SimSettings {
 
 	public int getRandomSeed() {
 		return RANDOM_SEED;
+	}
+
+	public void setRandomSeed(int RANDOM_SEED) {
+		this.RANDOM_SEED = RANDOM_SEED;
 	}
 
 	public double getZipfExponent() {

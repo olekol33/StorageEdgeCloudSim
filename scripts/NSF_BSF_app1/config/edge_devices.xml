@@ -90,4 +90,34 @@
 			</host>
 		</hosts>
 	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>11</x_pos>
+			<y_pos>11</y_pos>
+			<wlan_id>3</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>3000</storage>
+				<readRate>25</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>3000</storage>
+						<readRate>25</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
 </edge_devices>
