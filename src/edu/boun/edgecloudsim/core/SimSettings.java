@@ -57,6 +57,7 @@ public class SimSettings {
     private double INTERVAL_TO_GET_VM_LOCATION_LOG; //minutes unit in properties file
     private boolean FILE_LOG_ENABLED; //boolean to check file logging option
     private boolean DEEP_FILE_LOG_ENABLED; //boolean to check deep file logging option
+	private boolean CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION; //boolean to check deep file logging option
 
     private int MIN_NUM_OF_MOBILE_DEVICES;
     private int MAX_NUM_OF_MOBILE_DEVICES;
@@ -98,6 +99,7 @@ public class SimSettings {
 	private int X_RANGE;
 	private int Y_RANGE;
 	private int HOST_RADIUS;
+
 	private String OBJECT_DIST_READ;
 	private String STRIPE_DIST_READ;
 	private String OBJECT_DIST_PLACE;
@@ -195,7 +197,8 @@ public class SimSettings {
 			INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
 			FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("file_log_enabled"));
 			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
-			
+			CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = Boolean.parseBoolean(prop.getProperty("terminate_failed_run"));
+
 			MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
 			MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
 			MOBILE_DEVICE_COUNTER_SIZE = Integer.parseInt(prop.getProperty("mobile_device_counter_size"));
@@ -583,8 +586,17 @@ public class SimSettings {
 		return HOST_FAILURE_SCENARIO;
 	}
 
+	public void setHostFailureScenario(boolean HOST_FAILURE_SCENARIO) {
+		this.HOST_FAILURE_SCENARIO = HOST_FAILURE_SCENARIO;
+	}
+
 	public int[] getHostFailureID() {
 		return Arrays.asList(HOST_FAILURE_ID.split(",")).stream().mapToInt(Integer::parseInt).toArray();
+	}
+
+
+	public boolean isTerminateFailedRun() {
+		return CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION;
 	}
 
 	public double getHostFailureTime() {
@@ -611,7 +623,7 @@ public class SimSettings {
 	public void checkRunMode(){
 		boolean mode=false;
 		if (isOrbitMode()) {
-			System.out.println("ORBIT Mode\n");
+			System.out.println("ORBIT Mode");
 			if (mode==false)
 				mode = true;
 			else {
@@ -620,7 +632,7 @@ public class SimSettings {
 			}
 		}
 		if (isParamScanMode()) {
-			System.out.println("Param Scan Mode\n");
+			System.out.println("Param Scan Mode");
 			if (mode==false)
 				mode = true;
 			else {
@@ -629,7 +641,7 @@ public class SimSettings {
 			}
 		}
 		if (isNsfExperiment()) {
-			System.out.println("NSF Experiment Mode\n");
+			System.out.println("NSF Experiment Mode");
 			if (mode==false)
 				mode = true;
 			else {
@@ -638,16 +650,16 @@ public class SimSettings {
 			}
 		}
 		if (isHostFailureScenario()) {
-			System.out.println("Host Failure Mode\n");
+			System.out.println("Host Failure Mode");
 			if (mode==false)
 				mode = true;
 			else {
-				System.out.println("ERROR: Multiple modes");
-				System.exit(0);
+				System.out.println("Multiple modes");
+//				System.exit(0);
 			}
 		}
 		if (mode==false)
-			System.out.println("No special modes\n");
+			System.out.println("No special modes");
 
 	}
 
@@ -741,6 +753,23 @@ public class SimSettings {
 	public String getStripeDistPlace() {
 		return STRIPE_DIST_PLACE;
 	}
+
+	public void setObjectDistRead(String OBJECT_DIST_READ) {
+		this.OBJECT_DIST_READ = OBJECT_DIST_READ;
+	}
+
+	public void setStripeDistRead(String STRIPE_DIST_READ) {
+		this.STRIPE_DIST_READ = STRIPE_DIST_READ;
+	}
+
+	public void setObjectDistPlace(String OBJECT_DIST_PLACE) {
+		this.OBJECT_DIST_PLACE = OBJECT_DIST_PLACE;
+	}
+
+	public void setStripeDistPlace(String STRIPE_DIST_PLACE) {
+		this.STRIPE_DIST_PLACE = STRIPE_DIST_PLACE;
+	}
+
 
 	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;

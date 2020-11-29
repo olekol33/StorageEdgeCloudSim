@@ -53,7 +53,8 @@ def getConfiguration(argType):
          # return ['NEAREST_OR_PARITY']
     elif (argType == "objectPlacement"):  #14
          # return ['DATA_PARITY_PLACE','CODING_PLACE']
-         return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
+         # return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
+         return ['REPLICATION_PLACE']
          # return ['NEAREST_OR_PARITY']
     elif (argType == "runType"):
         folderPath = ''.join([getConfiguration("folderPath"), '\ite1'])

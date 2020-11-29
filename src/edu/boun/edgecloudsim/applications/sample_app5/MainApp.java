@@ -97,6 +97,8 @@ public class MainApp {
 		int seed = SS.getRandomSeed();
 		boolean isVariabilityRun = SS.isVariabilityRun();
 		int variability_iterations = SS.getVariabilityIterations();
+		if (!isVariabilityRun)
+			variability_iterations=0;
 
 		do {
 			SimLogger.printLine("Iteration: " + iterationNumber + ", with seed: " + seed);

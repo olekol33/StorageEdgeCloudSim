@@ -16,7 +16,6 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 
 import java.io.*;
@@ -268,10 +267,10 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //                        " submitted to " + task.getSubmittedLocation().getServingWlanId() + " and " + task.getAccessHostID() + "\n");
                 schedule(getId(), delay, nextEvent, task);
             }
-//            else if (selectedVM == -1)
-            else{ //selectedVM not found
-                SimLogger.getInstance().taskFailedDueToInaccessibility(task.getCloudletId(), CloudSim.clock(),vmType);
-            }
+//            else if (selectedVM == -1){}
+//            else{ //selectedVM not found
+//                SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),vmType);
+//            }
         }
         else
         {
@@ -356,6 +355,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             case RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE:
             {
                 Task task = (Task) ev.getData();
+                SimSettings.NETWORK_DELAY_TYPES delayType = SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY;
                 //TODO: recheck, stop read from data host and then read from access point
                 //TODO: GENERIC_EDGE_DEVICE_ID+1 is MAN, not affecting count at host
                 if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0))
@@ -366,6 +366,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 //get delay between access point and device
                 //TODO: add delay for distance between them (Hops)
                 double delay = networkModel.getDownloadDelay(task.getAssociatedHostId(), task.getMobileDeviceId(), task);
+                if (delay==((StorageNetworkModel) networkModel).MAN_DELAY)
+                    delayType = SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY;
 
                 if(delay > 0)
                 {
@@ -391,7 +393,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 {
 //                    System.out.println("delay < 0");
 //                    SimLogger.getInstance().taskRejectedDueToQueue(task.getCloudletId(), CloudSim.clock());
-                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY);
+                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
                     failedDueToBW++;
                 }
                 else
@@ -527,6 +529,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             int nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID;
             SimSettings.NETWORK_DELAY_TYPES delayType = SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY;
             double delay = networkModel.getDownloadDelay(task.getAssociatedHostId(), task.getMobileDeviceId(), task);
+            if (delay==((StorageNetworkModel) networkModel).MAN_DELAY)
+                delayType = SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY;
             EdgeHost host = (EdgeHost)(SimManager.
                     getInstance().
                     getEdgeServerManager().
@@ -538,10 +542,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             if(host.getLocation().getServingWlanId() != task.getSubmittedLocation().getServingWlanId())
             {
                 delay = networkModel.getDownloadDelay(SimSettings.GENERIC_EDGE_DEVICE_ID, SimSettings.GENERIC_EDGE_DEVICE_ID, task);
-                if (delay<0) {
-                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType);
-                    failedDueToBW++;
-                }
                 nextEvent = RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE;
                 nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID + 1;
                 delayType = SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY;
@@ -587,19 +587,25 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
 //                    double ratio = (double)failedDueToBW/IdleActiveStorageLoadGenerator.getNumOfIOTasks();
                     double ratio = (double)failedDueToBW/taskList.size();
-                    if(ratio>0.01) {
+                    if(ratio>0.01 && SimSettings.getInstance().isTerminateFailedRun()) {
                         try {
                             if (SimSettings.getInstance().isParamScanMode()) {
                                 int numOfDevices = SimManager.getInstance().getNumOfMobileDevice();
                                 String simScenario = SimManager.getInstance().getSimulationScenario();
                                 String orchestratorPolicy = SimManager.getInstance().getOrchestratorPolicy();
                                 String objectPlacementPolicy = SimManager.getInstance().getObjectPlacementPolicy();
+                                String distribution = SimSettings.getInstance().getStripeDistPlace();
+                                String fail = "";
+                                if (SimSettings.getInstance().isHostFailureScenario())
+                                    fail="WITHFAIL";
+                                else
+                                    fail="NOFAIL";
                                 Pattern pattern = Pattern.compile("SIMRESULT_(.*)_SINGLE.*");
                                 Matcher matcher = pattern.matcher(SimLogger.getInstance().getFilePrefix());
                                 matcher.find();
                                 SimManager.getInstance().setLambda0(Double.valueOf(matcher.group(1)));
                                 String[] simParams = {Integer.toString(numOfDevices), simScenario, orchestratorPolicy, objectPlacementPolicy,
-                                        matcher.group(1)};
+                                        matcher.group(1),distribution,fail};
                                 SimUtils.cleanOutputFolderPerConfiguration(SimLogger.getInstance().getOutputFolder(), simParams);
                             }
                             File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");

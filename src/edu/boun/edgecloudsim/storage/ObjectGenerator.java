@@ -99,7 +99,8 @@ public class ObjectGenerator {
         addObjectLocationsToMetadata();
         completeMetadataForDataObjects();
 
-        listOfObjects = new ArrayList<Map>(dataObjects);
+        listOfObjects = new ArrayList<Map>(dataObjects)
+        ;
         listOfObjects.addAll(parityObjects);
         listOfObjects.addAll(metadataObjects);
 

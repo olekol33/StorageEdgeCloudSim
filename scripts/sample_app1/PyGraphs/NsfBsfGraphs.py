@@ -102,30 +102,6 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
     extra_objects_read["index"] = extra_objects_read_index
     extra_objects_read.sort_values(by=["index"], ascending=False,inplace=True)
     extra_objects_read.set_index("index",inplace=True)
-    # extra_objects_read = extra_objects_read.rename(columns={'index': 'new column name'})
-    # df = extra_objects_read.rename_axis('MyIdx').sort_values(by=['MyIdx'])
-
-    #Latency plot
-
-    # sns.scatterplot(x="lambda0",
-    #                 y="lambda1",
-    #                 size="Latency",hue="Latency",
-    #                 sizes=(20, 500),
-    #                 # alpha=0.5,
-    #                 data=latencies)
-    # # Put the legend out of the figure
-    # # plt.legend(labelspacing=1.5,loc='best')
-    # plt.legend(labelspacing=1.5,loc=(1.04,0))
-    # # Put the legend out of the figure
-    # # plt.legend(bbox_to_anchor=(1.01, 0.54),  borderaxespad=0.)
-    # plt.xlabel("λ_a", size=14)
-    # plt.ylabel("λ_b", size=14)
-    # plt.title("Latency as a Function of Lambdas")
-    # plt.tight_layout()
-    # plt.xticks(rotation=90)
-    # # plt.show()
-    # plt.savefig(folderPath + '\\fig\\Latency' + '.png', bbox_inches='tight')
-    # plt.close()
 
     fig,ax=plt.subplots()
     if(len(latencies_df.index.astype(float).values)>len(latencies_df.columns.astype(float).values)):

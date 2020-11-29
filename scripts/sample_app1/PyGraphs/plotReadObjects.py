@@ -77,8 +77,9 @@ def plotReadObjects():
                         policy = objectPlacement + " | " + orchestratorPolicy
                         data = pd.read_csv(filePath, delimiter=';')
                         host_series = data['HostID'].value_counts().sort_index()
-                        #TODO: currently removing 1 parity from total count to avoid double count of access, for more than 2 parities fix
-                        access_series = data['AccessID'].value_counts().sort_index() - data.groupby(['AccessID']).sum()["isParityToRead"]
+                        #currently removing 1 parity from total count to avoid double count of access, for more than 2 parities fix
+                        # access_series = data['AccessID'].value_counts().sort_index() - data.groupby(['AccessID']).sum()["isParityToRead"]
+                        access_series = data['AccessID'].value_counts().sort_index()
                         # delay_series = data['Read Delay'].value_counts().sort_index()
                         delay_series = data.groupby(['AccessID']).mean()['Read Delay']
                         host_frame[policy] = host_series
@@ -193,8 +194,11 @@ def plotReadObjects():
 
     for s in range(numOfSimulations):
         for i in range(len(scenarioType)):
-            fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(15, 17))
-            fig2, ax2 = plt.subplots(len(objectPlacements), 2, figsize=(15, 17), sharey=True)
+            # fig, ax = plt.subplots(len(objectPlacements), 1, figsize=(15, 17))
+            # fig2, ax2 = plt.subplots(len(objectPlacements), 2, figsize=(15, 17), sharey=True)
+            fig, ax = plt.subplots(3, 1, figsize=(15, 17))
+            fig2, ax2 = plt.subplots(3, 2, figsize=(15, 17), sharey=True)
+
             # fig3, ax3 = plt.subplots(num_policies, 2, figsize=(26, 17), sharey=True)
             generated = []
             for j in range(numOfMobileDevices):
@@ -294,7 +298,7 @@ def plotReadObjects():
                 #     ax.set_ylabel("Reads", rotation=90, size='large')
                 #     ax.set_title(row, size='large')
                 #     ax.legend().set_visible(False)
-                ax2[2][1].legend().set_visible(False)
+                ax2[0][1].legend().set_visible(False)
                 # ax3[2][1].legend().set_visible(False)
                 # break;
                 fig2.tight_layout()

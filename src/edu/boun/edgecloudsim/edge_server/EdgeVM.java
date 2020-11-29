@@ -18,6 +18,7 @@ import edu.boun.edgecloudsim.core.SimSettings;
 public class EdgeVM extends Vm {
 	private SimSettings.VM_TYPES type;
 
+
 	private int readRate;
 	
 	public EdgeVM(int id, int userId, double mips, int numberOfPes, int ram,

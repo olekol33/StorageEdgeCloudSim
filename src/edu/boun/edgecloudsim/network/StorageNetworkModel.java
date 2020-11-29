@@ -31,6 +31,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
     protected double[] previousHostNumOfManTaskForDownload;
     protected int[] previousManHostClients;
 
+    public static int MAN_DELAY=-999;
+
 
     public StorageNetworkModel(int _numberOfMobileDevices, String _simScenario) {
         super(_numberOfMobileDevices, _simScenario);
@@ -117,13 +119,19 @@ public class StorageNetworkModel extends SampleNetworkModel {
         double delay = 0;
 
         //special case for man communication
-        // When edge downloads from itself
+        // When communication is between edge nodes -> On grid
         if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
 //            return delay = getManDownloadDelay();
             return delay = getManDownloadDelay(task.getAssociatedHostId(),1);
         }
-        else if(sourceDeviceId == destDeviceId && sourceDeviceId != SimSettings.CLOUD_DATACENTER_ID)
-            delay = getManDownloadDelay(task.getAssociatedHostId(),0);
+/*        else if(sourceDeviceId == destDeviceId && sourceDeviceId != SimSettings.CLOUD_DATACENTER_ID)
+            delay = getManDownloadDelay(task.getAssociatedHostId(),0);*/
+        //When device reads from node, it's MAN delay + WLAN delay
+        else if(sourceDeviceId == destDeviceId && sourceDeviceId != SimSettings.GENERIC_EDGE_DEVICE_ID) {
+            delay = getManDownloadDelay(task.getAssociatedHostId(), 0);
+            if (delay < 0)
+                return MAN_DELAY;
+        }
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId, CloudSim.clock());
         Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
 //        Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());

@@ -48,6 +48,10 @@ public class ParamScanApp {
 		String[] codingPolicies = {"IF_CONGESTED_READ_PARITY"};
 		String[] replicationPolicies = {"IF_CONGESTED_READ_PARITY","NEAREST_HOST","CLOUD_OR_NEAREST_IF_CONGESTED"};
 		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
+		String[] distributions = {"ZIPF","UNIFORM"};
+//		String[] distributions = {"ZIPF"};
+		String[] failScenario = {"NOFAIL","FAIL"};
+//		String[] failScenario = {"NOFAIL"};
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -104,110 +108,126 @@ public class ParamScanApp {
 		SimLogger.printLine("----------------------------------------------------------------------");
 		double i0=1;
 
-		double step0=SS.getLambda0step();
-		for(double lambda0= SS.getLambda0Min(); lambda0<=SS.getLambda0Max();lambda0=lambda0+step0) {
-			step0 *= i0;
-			i0 += 0.5;
-			scenarioSet:{
-				for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
+
+		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
+		{
+			for(int k=0; k<SS.getSimulationScenarios().length; k++)
+			{
+				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
 				{
-					for(int k=0; k<SS.getSimulationScenarios().length; k++)
-					{
-						for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
-						{
-							for(int p=0; p<SS.getObjectPlacement().length; p++) {
-								String objectPlacementPolicy = SS.getObjectPlacement()[p];
-								String simScenario = SS.getSimulationScenarios()[k];
-								String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
+					for(int p=0; p<SS.getObjectPlacement().length; p++) {
+						for(String fail:failScenario) {
+							if (fail.equals("FAIL"))
+								SS.setHostFailureScenario(true);
+							else
+								SS.setHostFailureScenario(false);
+							for (String dist : distributions) {
+								SS.setObjectDistRead(dist);
+								SS.setStripeDistRead(dist);
+								SS.setObjectDistPlace(dist);
+								SS.setStripeDistPlace(dist);
+								double step0 = SS.getLambda0step();
+								for (double lambda0 = SS.getLambda0Min(); lambda0 <= SS.getLambda0Max(); lambda0 = lambda0 + step0) {
+									//			step0 *= i0;
+									//			i0 += 0.5;
+//							scenarioSet:{
+									String objectPlacementPolicy = SS.getObjectPlacement()[p];
+									String simScenario = SS.getSimulationScenarios()[k];
+									String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
 
-								//Proceed only if orchestrator policy matches placement
-								if (objectPlacementPolicy.equals("CODING_PLACE")) {
-									if (!Arrays.asList(codingPolicies).contains(orchestratorPolicy))
-										continue;
-								} else if (objectPlacementPolicy.equals("REPLICATION_PLACE")) {
-									if (!Arrays.asList(replicationPolicies).contains(orchestratorPolicy))
-										continue;
-								} else if (objectPlacementPolicy.equals("DATA_PARITY_PLACE")) {
-									if (!Arrays.asList(dataParityPolicies).contains(orchestratorPolicy))
-										continue;
-								} else {
-									System.out.println("ERROR: Placement policy doesn't exist");
-									System.exit(0);
-								}
+									//Proceed only if orchestrator policy matches placement
+									if (objectPlacementPolicy.equals("CODING_PLACE")) {
+										if (!Arrays.asList(codingPolicies).contains(orchestratorPolicy))
+											continue;
+									} else if (objectPlacementPolicy.equals("REPLICATION_PLACE")) {
+										if (!Arrays.asList(replicationPolicies).contains(orchestratorPolicy))
+											continue;
+									} else if (objectPlacementPolicy.equals("DATA_PARITY_PLACE")) {
+										if (!Arrays.asList(dataParityPolicies).contains(orchestratorPolicy))
+											continue;
+									} else {
+										System.out.println("ERROR: Placement policy doesn't exist");
+										System.exit(0);
+									}
 
-								//Setting lambdas for iteration
-								//TODO: currently assume all are equal
-								for (int t = 0; t < SimSettings.getInstance().getTaskLookUpTable().length; t++) {
-									SS.setPoissonInTaskLookUpTable(t, lambda0);
-								}
-
-
-								Date ScenarioStartDate = Calendar.getInstance().getTime();
-								now = df.format(ScenarioStartDate);
-								//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
-								// Storage: Generate Redis KV list
-								RedisListHandler.closeConnection();
-								RedisListHandler.createList(objectPlacementPolicy);
-
-								//							String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
-								String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
-										Double.toString(lambda0)};
-
-								SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
+									//Setting lambdas for iteration
+									//TODO: currently assume all are equal
+									for (int t = 0; t < SimSettings.getInstance().getTaskLookUpTable().length; t++) {
+										SS.setPoissonInTaskLookUpTable(t, lambda0);
+									}
 
 
-								SimLogger.printLine("Scenario started at " + now);
-								SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - Placement: " + objectPlacementPolicy +
-										" - #iteration: " + iterationNumber);
-								SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
-										SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
-								SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
-										"_" + objectPlacementPolicy + "_" + j + "DEVICES");
+									Date ScenarioStartDate = Calendar.getInstance().getTime();
+									now = df.format(ScenarioStartDate);
+									//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
+									// Storage: Generate Redis KV list
+									RedisListHandler.closeConnection();
+									RedisListHandler.createList(objectPlacementPolicy);
 
-								try {
-									// First step: Initialize the CloudSim package. It should be called
-									// before creating any entities.
-									int num_user = 2;   // number of grid users
-									Calendar calendar = Calendar.getInstance();
-									boolean trace_flag = false;  // mean trace events
+									//							String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
+									String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
+											Double.toString(lambda0)};
 
-									// Initialize the CloudSim library
-									CloudSim.init(num_user, calendar, trace_flag, 0.01);
-
-									// Generate EdgeCloudsim Scenario Factory
-									ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
+									SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
 
-									// Generate EdgeCloudSim Simulation Manager
-									SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy, objectPlacementPolicy);
+									SimLogger.printLine("Scenario started at " + now);
+									SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - Placement: " + objectPlacementPolicy +
+											" - #iteration: " + iterationNumber + " - Distribution: " + dist+ " - Fail Scenario: " + fail);
+									SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
+											SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
+									SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
+											"_" + objectPlacementPolicy + "_" + j + "DEVICES");
 
-									// Start simulation
-									manager.startSimulation();
+									try {
+										// First step: Initialize the CloudSim package. It should be called
+										// before creating any entities.
+										int num_user = 2;   // number of grid users
+										Calendar calendar = Calendar.getInstance();
+										boolean trace_flag = false;  // mean trace events
 
-								} catch (Exception e) {
-									SimLogger.printLine("The simulation has been terminated due to an unexpected error");
-									e.printStackTrace();
-									System.exit(0);
-								}
+										// Initialize the CloudSim library
+										CloudSim.init(num_user, calendar, trace_flag, 0.01);
 
-								Date ScenarioEndDate = Calendar.getInstance().getTime();
-								now = df.format(ScenarioEndDate);
-								SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
-								SimLogger.printLine("----------------------------------------------------------------------");
-								File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
-								if (file2.exists()) {
-									break scenarioSet;
+										// Generate EdgeCloudsim Scenario Factory
+										ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
+
+
+										// Generate EdgeCloudSim Simulation Manager
+										SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy, objectPlacementPolicy);
+
+										// Start simulation
+										manager.startSimulation();
+
+									} catch (Exception e) {
+										SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+										e.printStackTrace();
+										System.exit(0);
+									}
+
+									Date ScenarioEndDate = Calendar.getInstance().getTime();
+									now = df.format(ScenarioEndDate);
+									SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
+									SimLogger.printLine("----------------------------------------------------------------------");
+									File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
+									if (file2.exists()) {
+//								break scenarioSet;
+
+									} else {
+										try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
+												SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
+											out.print(lambda0);
+											break;
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+									}
+//					}
 								}
 							}
 						}
 					}//End of placement policies loop
 				}//End of orchestrators loop
-				try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder+"/"+
-						SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
-					out.print(lambda0);
-				}catch (Exception e) {
-					e.printStackTrace();
-				}
 			}//End of scenarios loop
 			//if all scenarios for this lambda have completed the run
 /*				File file3 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log");
