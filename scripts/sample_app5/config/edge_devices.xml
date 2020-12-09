@@ -17,14 +17,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -47,14 +47,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -77,14 +77,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -107,14 +107,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -137,14 +137,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -167,14 +167,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -197,14 +197,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -227,14 +227,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -257,14 +257,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -287,14 +287,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -317,14 +317,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>100</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>100</readRate>
 					</VM>
 				</VMs>
 			</host>
