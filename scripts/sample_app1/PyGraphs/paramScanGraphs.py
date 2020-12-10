@@ -55,7 +55,7 @@ def extractConfiguration(filename):
     object_placements=["CODING_PLACE","REPLICATION_PLACE","DATA_PARITY_PLACE"]
     simulation_scenarios=["SINGLE_TIER","TWO_TIER","TWO_TIER_WITH_EO"]
     fail_policies=["WITHFAIL","NOFAIL"]
-    dist_policies=["UNIFORM","ZIPF"]
+    dist_policies=["UNIFORM","ZIPF","MMPP"]
     lam = re.findall(r'SIMRESULT_([-+]?\d*\.\d+|\d+)_.*', filename)
     for item in orchestrator_policies:
         if item in filename:
@@ -78,7 +78,7 @@ def extractConfiguration(filename):
 
 
 def paramScanGraph():
-    dataObjects = "70"
+    dataObjects = "50 with inaccess MMPP 40% variability"
     folderPath = getConfiguration("folderPath")
 
     filePath = ''.join([folderPath, '\ite1'])
@@ -94,11 +94,11 @@ def paramScanGraph():
     for run in runs:
         runsPD = runsPD.append(run, ignore_index=True)
 
-    fig,ax = plt.subplots(1,1,figsize=(10,12))
+    fig,ax = plt.subplots(1,1,figsize=(10,6))
     runsPD.plot.barh(ax=ax)
     ax.set_yticklabels(runsPD.orchestrator_policy+ "\n" + runsPD.object_placement+ "\n" +runsPD.fail + "\n" +
                        runsPD.distribution)
-    ax.set_xlim([0.3,1.2])
+    ax.set_xlim([0.1,0.8])
     start, end = ax.get_xlim()
     ax.xaxis.set_ticks(np.arange(start, end, 0.05))
     ax.grid(axis='x')

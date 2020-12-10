@@ -58,6 +58,7 @@ public class SimSettings {
     private boolean FILE_LOG_ENABLED; //boolean to check file logging option
     private boolean DEEP_FILE_LOG_ENABLED; //boolean to check deep file logging option
 	private boolean CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION; //boolean to check deep file logging option
+	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
 
     private int MIN_NUM_OF_MOBILE_DEVICES;
     private int MAX_NUM_OF_MOBILE_DEVICES;
@@ -124,6 +125,7 @@ public class SimSettings {
 	private double HOST_FAILURE_TIME;
 
 	private boolean VARIABILITY_RUN;
+	private boolean MMPP;
 	private int VARIABILITY_ITERATIONS;
 
 	//ORBIT
@@ -198,6 +200,7 @@ public class SimSettings {
 			FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("file_log_enabled"));
 			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
 			CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = Boolean.parseBoolean(prop.getProperty("terminate_failed_run"));
+			COUNT_FAILEDDUETOINACCESSIBILITY = Boolean.parseBoolean(prop.getProperty("count_failedDueToInaccessibility"));
 
 			MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
 			MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
@@ -232,6 +235,7 @@ public class SimSettings {
 
 			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
 			VARIABILITY_RUN = Boolean.parseBoolean(prop.getProperty("variability_run"));
+			MMPP = Boolean.parseBoolean(prop.getProperty("mmpp"));
 			VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
@@ -599,6 +603,11 @@ public class SimSettings {
 		return CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION;
 	}
 
+
+	public boolean isCountFailedduetoinaccessibility() {
+		return COUNT_FAILEDDUETOINACCESSIBILITY;
+	}
+
 	public double getHostFailureTime() {
 		return HOST_FAILURE_TIME;
 	}
@@ -610,6 +619,10 @@ public class SimSettings {
 
 	public boolean isVariabilityRun() {
 		return VARIABILITY_RUN;
+	}
+
+	public boolean isMMPP() {
+		return MMPP;
 	}
 
 	public int getVariabilityIterations() {

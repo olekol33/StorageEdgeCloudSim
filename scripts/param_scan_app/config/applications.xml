@@ -37,7 +37,7 @@
 	</application>
 	<application name="HEAVY_COMP_APP">
 		<usage_percentage>20</usage_percentage>
-		<prob_cloud_selection>40</prob_cloud_selection>
+		<prob_cloud_selection>20</prob_cloud_selection>
 		<poisson_interarrival>1</poisson_interarrival>
 		<delay_sensitivity>0</delay_sensitivity>
 		<active_period>45</active_period>
@@ -54,7 +54,7 @@
 	</application>
 	<application name="INFOTAINMENT_APP">
 		<usage_percentage>30</usage_percentage>
-		<prob_cloud_selection>15</prob_cloud_selection>
+		<prob_cloud_selection>20</prob_cloud_selection>
 		<poisson_interarrival>1</poisson_interarrival>
 		<delay_sensitivity>0</delay_sensitivity>
 		<active_period>45</active_period>

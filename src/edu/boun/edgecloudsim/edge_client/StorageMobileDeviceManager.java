@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
     private int taskIdCounter=0;
     private int failedDueToBW=0;
+    private int failedDueToInaccessibility=0;
     public StorageMobileDeviceManager() throws Exception {
     }
 
@@ -585,43 +586,50 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 failedDueToBW++;
 //                if(SimSettings.getInstance().isNsfExperiment()) {
                 List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
-//                    double ratio = (double)failedDueToBW/IdleActiveStorageLoadGenerator.getNumOfIOTasks();
-                    double ratio = (double)failedDueToBW/taskList.size();
-                    if(ratio>0.01 && SimSettings.getInstance().isTerminateFailedRun()) {
-                        try {
-                            if (SimSettings.getInstance().isParamScanMode()) {
-                                int numOfDevices = SimManager.getInstance().getNumOfMobileDevice();
-                                String simScenario = SimManager.getInstance().getSimulationScenario();
-                                String orchestratorPolicy = SimManager.getInstance().getOrchestratorPolicy();
-                                String objectPlacementPolicy = SimManager.getInstance().getObjectPlacementPolicy();
-                                String distribution = SimSettings.getInstance().getStripeDistPlace();
-                                String fail = "";
-                                if (SimSettings.getInstance().isHostFailureScenario())
-                                    fail="WITHFAIL";
-                                else
-                                    fail="NOFAIL";
-                                Pattern pattern = Pattern.compile("SIMRESULT_(.*)_SINGLE.*");
-                                Matcher matcher = pattern.matcher(SimLogger.getInstance().getFilePrefix());
-                                matcher.find();
-                                SimManager.getInstance().setLambda0(Double.valueOf(matcher.group(1)));
-                                String[] simParams = {Integer.toString(numOfDevices), simScenario, orchestratorPolicy, objectPlacementPolicy,
-                                        matcher.group(1),distribution,fail};
-                                SimUtils.cleanOutputFolderPerConfiguration(SimLogger.getInstance().getOutputFolder(), simParams);
-                            }
-                            File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
-                            if (!file.exists())
-                                new FileOutputStream(file).close();
-                            System.out.println("Failed for: " + SimLogger.getInstance().getFilePrefix());
-                            SimManager.getInstance().shutdownEntity();
-                            SimLogger.printLine("100");
-                            CloudSim.terminateSimulation();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            System.exit(0);
+                double ratio;
+                if (SimSettings.getInstance().isCountFailedduetoinaccessibility())
+                    ratio = (double)(failedDueToBW+failedDueToInaccessibility)/taskList.size();
+                else
+                    ratio = (double)(failedDueToBW)/taskList.size();
+                if(ratio>0.01 && SimSettings.getInstance().isTerminateFailedRun()) {
+                    try {
+                        if (SimSettings.getInstance().isParamScanMode()) {
+                            int numOfDevices = SimManager.getInstance().getNumOfMobileDevice();
+                            String simScenario = SimManager.getInstance().getSimulationScenario();
+                            String orchestratorPolicy = SimManager.getInstance().getOrchestratorPolicy();
+                            String objectPlacementPolicy = SimManager.getInstance().getObjectPlacementPolicy();
+                            String distribution = SimSettings.getInstance().getStripeDistPlace();
+                            String fail = "";
+                            if (SimSettings.getInstance().isHostFailureScenario())
+                                fail="WITHFAIL";
+                            else
+                                fail="NOFAIL";
+                            Pattern pattern = Pattern.compile("SIMRESULT_(.*)_SINGLE.*");
+                            Matcher matcher = pattern.matcher(SimLogger.getInstance().getFilePrefix());
+                            matcher.find();
+                            SimManager.getInstance().setLambda0(Double.valueOf(matcher.group(1)));
+                            String[] simParams = {Integer.toString(numOfDevices), simScenario, orchestratorPolicy, objectPlacementPolicy,
+                                    matcher.group(1),distribution,fail};
+                            SimUtils.cleanOutputFolderPerConfiguration(SimLogger.getInstance().getOutputFolder(), simParams);
+                        }
+                        File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
+                        if (!file.exists())
+                            new FileOutputStream(file).close();
+                        System.out.println("Failed for: " + SimLogger.getInstance().getFilePrefix());
+                        SimManager.getInstance().shutdownEntity();
+                        SimLogger.printLine("100");
+                        CloudSim.terminateSimulation();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.exit(0);
                         }
                     }
 //                }
             }
         }
+    }
+
+    public void incrementFailedDueToInaccessibility() {
+        failedDueToInaccessibility++;
     }
 }

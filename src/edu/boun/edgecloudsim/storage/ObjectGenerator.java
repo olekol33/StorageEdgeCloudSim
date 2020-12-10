@@ -28,7 +28,7 @@ public class ObjectGenerator {
     private int numOfParityInStripe;
     private RandomGenerator rand = null;
     private static RandomGenerator staticRand = null;
-    public static final int seed = SimSettings.getInstance().getRandomSeed();;
+    public static int seed;
 //    private static RandomGenerator rand = null;
     //assuming same size for all objects
     private int objectSize;
@@ -45,6 +45,7 @@ public class ObjectGenerator {
 
 
     public ObjectGenerator(String _objectPlacementPolicy) {
+        seed = SimSettings.getInstance().getRandomSeed();
         numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         numOfStripes = SimSettings.getInstance().getNumOfStripes();
         numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
@@ -272,6 +273,9 @@ public class ObjectGenerator {
     public String getDataObjectID(){
         String dist = SimSettings.getInstance().getObjectDistRead();
         int objectID = getObjectID(numOfDataObjects,"objects",dist);
+        return (String)dataObjects.get(objectID).get("id");
+    }
+    public String getDataObjectID(int objectID){
         return (String)dataObjects.get(objectID).get("id");
     }
 

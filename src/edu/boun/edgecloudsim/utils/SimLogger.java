@@ -23,7 +23,10 @@ import java.util.stream.IntStream;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
+import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
+import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
+import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
@@ -216,6 +219,10 @@ public class SimLogger {
 
 	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType) {
 		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
+		MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
+		//increment by 1
+		((StorageMobileDeviceManager) mobileDeviceManager).incrementFailedDueToInaccessibility();
+
 	}
 
 	public void addVmUtilizationLog(double time, double loadOnEdge, double loadOnCloud, double loadOnMobile) {
@@ -429,11 +436,11 @@ public class SimLogger {
 		if (fileLogEnabled) {
 			if (SimSettings.getInstance().getDeepFileLoggingEnabled()) {
 				successFile = new File(outputFolder, filePrefix + "_SUCCESS.log");
-				successFW = new FileWriter(successFile, true);
+				successFW = new FileWriter(successFile, false);
 				successBW = new BufferedWriter(successFW);
 
 				failFile = new File(outputFolder, filePrefix + "_FAIL.log");
-				failFW = new FileWriter(failFile, true);
+				failFW = new FileWriter(failFile, false);
 				failBW = new BufferedWriter(failFW);
 			}
 
@@ -442,23 +449,23 @@ public class SimLogger {
 			vmLoadBW = new BufferedWriter(vmLoadFW);*/
 
 			locationFile = new File(outputFolder, filePrefix + "_LOCATION.log");
-			locationFW = new FileWriter(locationFile, true);
+			locationFW = new FileWriter(locationFile, false);
 			locationBW = new BufferedWriter(locationFW);
 
 			gridLocationFile = new File(outputFolder, filePrefix + "_GRID_LOCATION.log");
-			gridLocationFW = new FileWriter(gridLocationFile, true);
+			gridLocationFW = new FileWriter(gridLocationFile, false);
 			gridLocationBW = new BufferedWriter(gridLocationFW);
 			
 			//Objects log
 			objectsFile = new File(outputFolder, filePrefix + "_OBJECTS.log");
-			objectsFW = new FileWriter(objectsFile, true);
+			objectsFW = new FileWriter(objectsFile, false);
 			objectsBW = new BufferedWriter(objectsFW);
 //			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay;Status");
 			appendToFile(objectsBW, "ioTaskID;ObjectID;isParity;isParityToRead;HostID;AccessID;ReadSrc;Read Delay");
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
-			readObjectsFW = new FileWriter(readObjectsFile, true);
+			readObjectsFW = new FileWriter(readObjectsFile, false);
 			readObjectsBW = new BufferedWriter(readObjectsFW);
 			appendToFile(readObjectsBW, "ioID;latency;Read Cost;type;Objects Read");
 

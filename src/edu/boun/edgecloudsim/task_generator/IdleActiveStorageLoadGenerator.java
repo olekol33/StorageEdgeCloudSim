@@ -3,28 +3,23 @@ package edu.boun.edgecloudsim.task_generator;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
+import edu.boun.edgecloudsim.storage.MMPP;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
-import edu.boun.edgecloudsim.utils.SimUtils;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
-import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,6 +38,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     double singleLambda;
     boolean[] parityReadStarted;
     boolean[] parityReadFinished;
+    int[][] MMPPObjectDemand;
+    int intervalSize, numOfIntervals;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
                                           String _objectPlacementPolicy) {
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
@@ -53,6 +50,12 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         numOfIOTasks=0;
         numOfAIOTasks = 0;
         numOfBIOTasks = 0;
+        if(SimSettings.getInstance().isMMPP()) {
+            intervalSize = 1;//sec
+            numOfIntervals = (int)(SimSettings.getInstance().getSimulationTime() / intervalSize);
+            MMPPObjectDemand = new int[SimSettings.getInstance().getNumOfDataObjects()][numOfIntervals];
+            createMMPPDemandArray();
+        }
         if(SimSettings.getInstance().isNsfExperiment())
             lambda = new double[2];
 
@@ -110,20 +113,23 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //Oleg: random with seed
             ExponentialDistribution rng = new ExponentialDistribution(rand,
                     poissonMean, ExponentialDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
+//            int requests = 0;
             while(virtualTime < simulationTime) {
-                double interval = rng.sample();
+                double interval;
+                interval = rng.sample();
                 if(interval <= 0){
                     SimLogger.printLine("Impossible is occured! interval is " + interval + " for device " + i + " time " + virtualTime);
                     continue;
                 }
                 //SimLogger.printLine(virtualTime + " -> " + interval + " for device " + i + " time ");
                 virtualTime += interval;
-
+                //if activePeriod has passed, wait (add idlePeriod)
                 if(virtualTime > activePeriodStartTime + activePeriod){
                     activePeriodStartTime = activePeriodStartTime + activePeriod + idlePeriod;
                     virtualTime = activePeriodStartTime;
                     continue;
                 }
+//                requests++;
                 String objectID="";
 //                String objectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects");
                 if(SimSettings.getInstance().isNsfExperiment()) {
@@ -135,6 +141,37 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                             break;
                     }
                 }
+                //for MMPP take object with max requests in interval
+                else if(SimSettings.getInstance().isMMPP()){
+                    int curInterval=(int)(virtualTime/intervalSize);
+                    if (virtualTime>SimSettings.getInstance().getSimulationTime())
+                        continue;
+                    int maxRequests=50; //Above this threshold address as burst
+                    List<Integer> maxID= new ArrayList<>();
+                    for(int id=0;id<SimSettings.getInstance().getNumOfDataObjects();id++){
+                        if (MMPPObjectDemand[id][curInterval]>maxRequests) {
+                            //if object has more requests, empty previous list
+//                            maxID.removeAll(maxID);
+                            maxID.add(id); //add to list of high request objects
+//                            maxRequests=MMPPObjectDemand[id][curInterval];
+                        }
+                        //list of objects with the same popularity
+/*                        else if (MMPPObjectDemand[id][curInterval]==maxRequests)
+                            maxID.add(id);*/
+                    }
+                    //randomly select object with top popularity
+                    double prob = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][PROB_CLOUD_SELECTION];
+                    //Load distribution - to avoid same object requested in each interval
+                    //with probability prob proceed with original distribution
+                    //if no bursty behavior also process with original distribution
+                    if (random.nextInt(100)<=prob || maxID.size()==0)
+                        objectID = OG.getDataObjectID();
+                    else{
+                        int rnd = random.nextInt(maxID.size());
+                        objectID = OG.getDataObjectID(maxID.get(rnd));
+                    }
+
+                }
                 else
                     objectID = OG.getDataObjectID();
 
@@ -145,6 +182,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 else
                     numOfBIOTasks++;*/
             }
+//            System.out.println("Device: " + i + " prdocued request: " + requests);
         }
         numOfIOTasks = ioTaskID;
 
@@ -223,7 +261,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //Calculation from actual number of tasks
             double meanRate = numOfIOTasks/SimSettings.getInstance().getSimulationTime(); //Tasks per second
             singleLambda = meanRate / muTotal;
-            String dist = SimSettings.getInstance().getObjectDistRead();
+            String dist = "";
+            if(SimSettings.getInstance().isMMPP())
+                dist = "MMPP";
+            else
+                dist = SimSettings.getInstance().getObjectDistRead();
             String fail = "";
             if (SimSettings.getInstance().isHostFailureScenario())
                 fail="WITHFAIL";
@@ -424,6 +466,54 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             return -1;
         }
         return -2;
+    }
+
+    //For each data object create array with number of requests in each interval
+    private void createMMPPDemandArray(){
+        int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+        MMPP mmpp = new MMPP(random);
+        for(int i=0; i<numOfDataObjects;i++){
+            int curInterval=1;
+            double arrivalTime = mmpp.gen_interval();
+            int arrivalsInInterval=0;
+            while(curInterval< numOfIntervals){
+                while(arrivalTime<(curInterval+1)* intervalSize){
+                    arrivalsInInterval++;
+                    arrivalTime += mmpp.gen_interval();
+                }
+                MMPPObjectDemand[i][curInterval] = arrivalsInInterval;
+                curInterval++;
+                arrivalsInInterval=0;
+            }
+        }
+        try {
+            logMMPPDemand();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Output demand vector for each object
+    private void logMMPPDemand() throws FileNotFoundException {
+        int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+        for(int i=0; i<numOfDataObjects;i++){
+            String file = SimLogger.getInstance().getOutputFolder()+ "/MMPP";
+            File f = new File(file);
+            f.mkdir();
+            file = SimLogger.getInstance().getOutputFolder()+ "/MMPP/" + SimLogger.getInstance().getFilePrefix() +
+                    "_D" + i + "_DEMAND.log";
+            f = new File(file);
+            PrintWriter out = null;
+            out = new PrintWriter(file);
+            out.append("Interval;Requests");
+            out.append("\n");
+
+            for (int j=0;j<numOfIntervals;j++){
+                out.append(j + SimSettings.DELIMITER + MMPPObjectDemand[i][j]);
+                out.append("\n");
+            }
+            out.close();
+        }
     }
 
 

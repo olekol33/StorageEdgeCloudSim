@@ -92,9 +92,9 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);
     }*/
 
-/*    private int getHostWithShortestManQueue(String locations, Location deviceLocation) {
+    private int getHostWithShortestManQueue(String locations, Location deviceLocation) {
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
-//        List<Integer> intObjectLocations = new ArrayList<>();
+        List<Integer> intObjectLocations = new ArrayList<>();
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         int minQueuesize = Integer.MAX_VALUE;
         int minQueueHost=-1;
@@ -108,21 +108,21 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 minQueuesize = queueSize;
                 minQueueHost = selectedHost;
             }
-*//*            //if large queue, skip
+/*            //if large queue, skip
             if (((StorageNetworkModel) networkModel).getManQueueSize(selectedHost)>SimSettings.getInstance().getCongestedThreshold())
                 continue;
             else
-                intObjectLocations.add(Integer.valueOf(s));*//*
+                intObjectLocations.add(Integer.valueOf(s));*/
         }
-*//*        //all are with queue, return nearest
+/*        //all are with queue, return nearest
         if (intObjectLocations.size()==0)
             return selectNearestHostToRead(locations,deviceLocation);
         else //if some not with queue
-            return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);*//*
+            return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);
         if (minQueueHost==-1)
-            System.out.println("ERROR: No host found");
+            System.out.println("ERROR: No host found");*/
         return minQueueHost;
-    }*/
+    }
 
 
 
@@ -167,7 +167,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 //randomly select host, try to avoid reading from same location as before (filtered in operativeHosts)
                 int relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
                 if (relatedHostId != deviceLocation.getServingWlanId()){
-                    relatedHostId = randomlySelectHostToRead(operativeHosts);
+//                    relatedHostId = randomlySelectHostToRead(operativeHosts);
+                    relatedHostId = getHostWithShortestManQueue(operativeHosts,deviceLocation);
                 }
                 List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
                 selectedVM = vmArray.get(0);

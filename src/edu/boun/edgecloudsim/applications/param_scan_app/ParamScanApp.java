@@ -39,8 +39,10 @@ public class ParamScanApp {
 		
 		//enable console ourput and file output of this application
 		SimLogger.enablePrintLog();
-		
+
+		int variabilityIteNum=1;
 		int iterationNumber = 1;
+
 		String configFile = "";
 		String outputFolder = "";
 		String edgeDevicesFile = "";
@@ -48,10 +50,10 @@ public class ParamScanApp {
 		String[] codingPolicies = {"IF_CONGESTED_READ_PARITY"};
 		String[] replicationPolicies = {"IF_CONGESTED_READ_PARITY","NEAREST_HOST","CLOUD_OR_NEAREST_IF_CONGESTED"};
 		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
-		String[] distributions = {"ZIPF","UNIFORM"};
-//		String[] distributions = {"ZIPF"};
+//		String[] distributions = {"ZIPF","UNIFORM"};
+		String[] distributions = {"UNIFORMZIPF"};
 		String[] failScenario = {"NOFAIL","FAIL"};
-//		String[] failScenario = {"NOFAIL"};
+//		String[] failScenario = {"FAIL"};
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -107,6 +109,7 @@ public class ParamScanApp {
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
 		double i0=1;
+		int seed = SimSettings.getInstance().getRandomSeed();
 
 
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
@@ -122,15 +125,20 @@ public class ParamScanApp {
 							else
 								SS.setHostFailureScenario(false);
 							for (String dist : distributions) {
-								SS.setObjectDistRead(dist);
-								SS.setStripeDistRead(dist);
-								SS.setObjectDistPlace(dist);
-								SS.setStripeDistPlace(dist);
+								if(SS.isMMPP()) {
+									SS.setObjectDistRead("UNIFORM");
+									SS.setStripeDistRead("UNIFORM");
+								}
+								else {
+									SS.setObjectDistRead("ZIPF");
+									SS.setStripeDistRead("ZIPF");
+								}
+								SS.setObjectDistPlace("UNIFORM");
+								SS.setStripeDistPlace("UNIFORM");
+								SimLogger.printLine("Distributions: Read/Place " + SS.getObjectDistRead() + "/" +
+										SS.getObjectDistPlace());
 								double step0 = SS.getLambda0step();
 								for (double lambda0 = SS.getLambda0Min(); lambda0 <= SS.getLambda0Max(); lambda0 = lambda0 + step0) {
-									//			step0 *= i0;
-									//			i0 += 0.5;
-//							scenarioSet:{
 									String objectPlacementPolicy = SS.getObjectPlacement()[p];
 									String simScenario = SS.getSimulationScenarios()[k];
 									String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
@@ -211,9 +219,24 @@ public class ParamScanApp {
 									SimLogger.printLine("----------------------------------------------------------------------");
 									File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
 									if (file2.exists()) {
-//								break scenarioSet;
-
+										//repeat with new seed, avoid increment
+										if(SimSettings.getInstance().isVariabilityRun() &&
+												variabilityIteNum<SimSettings.getInstance().getVariabilityIterations()) {
+											file2.delete();
+											lambda0 -= step0;
+											variabilityIteNum++;
+											SimSettings.getInstance().setRandomSeed(SimSettings.getInstance().getRandomSeed()+1);
+											SimLogger.printLine("Rerun scenario. Iteration: " + variabilityIteNum +
+													" , Seed: " + SimSettings.getInstance().getRandomSeed());
+										}
+										else if (variabilityIteNum==SimSettings.getInstance().getVariabilityIterations()){
+											variabilityIteNum=1;
+											SimSettings.getInstance().setRandomSeed(seed);
+											continue;
+										}
 									} else {
+										variabilityIteNum=1;
+										SimSettings.getInstance().setRandomSeed(seed);
 										try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
 												SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
 											out.print(lambda0);
