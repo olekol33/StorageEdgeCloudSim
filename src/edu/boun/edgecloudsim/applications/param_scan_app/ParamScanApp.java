@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ParamScanApp {
 
@@ -52,8 +54,8 @@ public class ParamScanApp {
 		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
 //		String[] distributions = {"ZIPF","UNIFORM"};
 		String[] distributions = {"UNIFORMZIPF"};
-		String[] failScenario = {"NOFAIL","FAIL"};
-//		String[] failScenario = {"FAIL"};
+//		String[] failScenario = {"NOFAIL","FAIL"};
+		String[] failScenario = {"FAIL"};
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -86,7 +88,7 @@ public class ParamScanApp {
 			System.out.println("No sub folder");
 			parent.mkdir();
 			file.mkdir();
-			System.out.println("Sub dolder created");
+			System.out.println("Sub folder created");
 		}
 		else {
 			System.out.println("Output folder exists");
@@ -110,7 +112,8 @@ public class ParamScanApp {
 		SimLogger.printLine("----------------------------------------------------------------------");
 		double i0=1;
 		int seed = SimSettings.getInstance().getRandomSeed();
-
+		int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+		int numOfStripes = SimSettings.getInstance().getNumOfStripes();
 
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
 		{
@@ -119,7 +122,8 @@ public class ParamScanApp {
 				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
 				{
 					for(int p=0; p<SS.getObjectPlacement().length; p++) {
-						for(String fail:failScenario) {
+//						for(String fail:failScenario) {
+						for(String fail:SS.getFailScenarios()) {
 							if (fail.equals("FAIL"))
 								SS.setHostFailureScenario(true);
 							else
@@ -130,15 +134,27 @@ public class ParamScanApp {
 									SS.setStripeDistRead("UNIFORM");
 								}
 								else {
-									SS.setObjectDistRead("ZIPF");
-									SS.setStripeDistRead("ZIPF");
+//									SS.setObjectDistRead("ZIPF");
+//									SS.setStripeDistRead("ZIPF");
 								}
-								SS.setObjectDistPlace("UNIFORM");
-								SS.setStripeDistPlace("UNIFORM");
+//								SS.setObjectDistPlace("UNIFORM");
+//								SS.setStripeDistPlace("UNIFORM");
 								SimLogger.printLine("Distributions: Read/Place " + SS.getObjectDistRead() + "/" +
 										SS.getObjectDistPlace());
 								double step0 = SS.getLambda0step();
+								double increaseTh = 1;
+								double stepIncrease = 0.5;
+								boolean foundLambda = false;
+								//For overhead scan - reset for new run
+								if(SimSettings.getInstance().isOverheadScan())
+									SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
 								for (double lambda0 = SS.getLambda0Min(); lambda0 <= SS.getLambda0Max(); lambda0 = lambda0 + step0) {
+									//increase step
+									if (lambda0>increaseTh) {
+										step0 *= 2;
+										increaseTh += stepIncrease;
+										stepIncrease *= 2;
+									}
 									String objectPlacementPolicy = SS.getObjectPlacement()[p];
 									String simScenario = SS.getSimulationScenarios()[k];
 									String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
@@ -176,7 +192,7 @@ public class ParamScanApp {
 									String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
 											Double.toString(lambda0)};
 
-									SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
+//									SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
 
 									SimLogger.printLine("Scenario started at " + now);
@@ -231,15 +247,52 @@ public class ParamScanApp {
 										}
 										else if (variabilityIteNum==SimSettings.getInstance().getVariabilityIterations()){
 											variabilityIteNum=1;
+											file2.delete();
 											SimSettings.getInstance().setRandomSeed(seed);
+											//If overhead scan, reduce by step of 5 each time
+											if(SimSettings.getInstance().isOverheadScan() && (lambda0+ step0) > SS.getLambda0Max()) {
+												SimSettings.getInstance().setNumOfDataObjects(SimSettings.getInstance().getNumOfDataObjects() - 5);
+												SimSettings.getInstance().setNumOfStripes(SimSettings.getInstance().getNumOfStripes() - 5);
+												RedisListHandler.updateNumOfDataObjects();
+												RedisListHandler.updateNumOfStripes();
+												step0 = SS.getLambda0step();
+												lambda0 = SS.getLambda0Min()-step0;
+												increaseTh = 1;
+												stepIncrease = 0.5;
+												if (SimSettings.getInstance().getNumOfDataObjects()<=20){
+													SimLogger.printLine("Failed to finish run with value");
+													variabilityIteNum=1;
+													SimSettings.getInstance().setRandomSeed(seed);
+													SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
+													SimSettings.getInstance().setNumOfStripes(numOfStripes);
+													String filePrefix = SimLogger.getInstance().getFilePrefix();
+													//set 0 overhead
+													filePrefix = filePrefix.replaceAll("OH\\d+(\\d.\\d+)?", "OH0");
+													try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
+															filePrefix + "_TASK_COMPLETED.log"))) {
+														out.print("Lambda: " + lambda0+"\nSeed: "+SimSettings.getInstance().getRandomSeed()+"\nData objects: "+
+																"FAILED"+"\n");
+														break;
+													} catch (Exception e) {
+														e.printStackTrace();
+													}
+												}
+
+											}
+
 											continue;
 										}
 									} else {
 										variabilityIteNum=1;
 										SimSettings.getInstance().setRandomSeed(seed);
+										SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
+										SimSettings.getInstance().setNumOfStripes(numOfStripes);
+										RedisListHandler.updateNumOfDataObjects();
+										RedisListHandler.updateNumOfStripes();
 										try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
 												SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
-											out.print(lambda0);
+											out.print("Lambda: " + lambda0+"\nSeed"+SimSettings.getInstance().getRandomSeed()+"\nData objects: "+
+													SimSettings.getInstance().getNumOfDataObjects()+"\n");
 											break;
 										} catch (Exception e) {
 											e.printStackTrace();

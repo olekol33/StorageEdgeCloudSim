@@ -265,8 +265,12 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //update failed host if this is the scenario
         if (SimSettings.getInstance().isHostFailureScenario()) {
             if (CloudSim.clock() > SimSettings.getInstance().getHostFailureTime()) {
-                for (int host:SimSettings.getInstance().getHostFailureID())
-                    hostOperativity[host] = 0;
+                for (int host:SimSettings.getInstance().getHostFailureID()) {
+                    if (hostOperativity[host] != 0) {
+                        SimLogger.printLine("Failed host: " + host);
+                        hostOperativity[host] = 0;
+                    }
+                }
             }
         }
 //        System.out.println("Time: " + CloudSim.clock() + ", Tasks: " + numOfManTaskForDownload);

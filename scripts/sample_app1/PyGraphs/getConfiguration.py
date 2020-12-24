@@ -45,7 +45,8 @@ def getConfiguration(argType):
          # return ['NEAREST_WITH_PARITY']
          # return ['UNIFORM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY',
          #         'CLOUD_OR_NEAREST_IF_CONGESTED']
-         return ['NEAREST_HOST',
+         return [
+             # 'NEAREST_HOST',
                  # 'CLOUD_OR_NEAREST_IF_CONGESTED',
                  'IF_CONGESTED_READ_PARITY']
                  # 'CLOUD_OR_NEAREST_IF_CONGESTED','SHORTEST_QUEUE']
@@ -53,8 +54,8 @@ def getConfiguration(argType):
          # return ['NEAREST_OR_PARITY']
     elif (argType == "objectPlacement"):  #14
          # return ['DATA_PARITY_PLACE','CODING_PLACE']
-         # return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
-         return ['REPLICATION_PLACE']
+         return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
+         # return ['REPLICATION_PLACE']
          # return ['NEAREST_OR_PARITY']
     elif (argType == "runType"):
         folderPath = ''.join([getConfiguration("folderPath"), '\ite1'])

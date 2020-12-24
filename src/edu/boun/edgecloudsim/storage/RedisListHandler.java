@@ -200,6 +200,15 @@ public class RedisListHandler {
     }
 
 
+    public static void updateNumOfDataObjects() {
+        RedisListHandler.numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+    }
+
+    public static void updateNumOfStripes() {
+        RedisListHandler.numOfStripes = SimSettings.getInstance().getNumOfStripes();
+    }
+
+
 
 
 

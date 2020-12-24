@@ -59,6 +59,7 @@ public class SimSettings {
     private boolean DEEP_FILE_LOG_ENABLED; //boolean to check deep file logging option
 	private boolean CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION; //boolean to check deep file logging option
 	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
+	private boolean OVERHEAD_SCAN;
 
     private int MIN_NUM_OF_MOBILE_DEVICES;
     private int MAX_NUM_OF_MOBILE_DEVICES;
@@ -91,6 +92,8 @@ public class SimSettings {
     private String[] ORCHESTRATOR_POLICIES;
 
 	private String[] OBJECT_PLACEMENT;
+
+	private String[] FAIL_SCENARIOS;
 
     // mean waiting time (minute) is stored for each place types
     private double[] mobilityLookUpTable;
@@ -201,6 +204,7 @@ public class SimSettings {
 			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
 			CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = Boolean.parseBoolean(prop.getProperty("terminate_failed_run"));
 			COUNT_FAILEDDUETOINACCESSIBILITY = Boolean.parseBoolean(prop.getProperty("count_failedDueToInaccessibility"));
+			OVERHEAD_SCAN = Boolean.parseBoolean(prop.getProperty("overhead_scan"));
 
 			MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
 			MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
@@ -228,6 +232,7 @@ public class SimSettings {
 			
 			SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
 			OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
+			FAIL_SCENARIOS = prop.getProperty("fail_scenarios").split(",");
 
 			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
 			HOST_FAILURE_ID = prop.getProperty("host_failure_id");
@@ -586,6 +591,11 @@ public class SimSettings {
 		return OBJECT_PLACEMENT;
 	}
 
+
+	public String[] getFailScenarios() {
+		return FAIL_SCENARIOS;
+	}
+
 	public boolean isHostFailureScenario() {
 		return HOST_FAILURE_SCENARIO;
 	}
@@ -606,6 +616,10 @@ public class SimSettings {
 
 	public boolean isCountFailedduetoinaccessibility() {
 		return COUNT_FAILEDDUETOINACCESSIBILITY;
+	}
+
+	public boolean isOverheadScan() {
+		return OVERHEAD_SCAN;
 	}
 
 	public double getHostFailureTime() {
@@ -808,6 +822,15 @@ public class SimSettings {
 
 	public int getNumOfDataObjects() {
 		return NUM_OF_DATA_OBJECTS;
+	}
+
+	public void setNumOfDataObjects(int NUM_OF_DATA_OBJECTS) {
+		this.NUM_OF_DATA_OBJECTS = NUM_OF_DATA_OBJECTS;
+	}
+
+
+	public void setNumOfStripes(int NUM_OF_STRIPES) {
+		this.NUM_OF_STRIPES = NUM_OF_STRIPES;
 	}
 
 	public boolean isNsfExperiment() {
