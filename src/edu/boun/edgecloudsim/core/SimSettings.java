@@ -124,6 +124,7 @@ public class SimSettings {
 
 	//Host failure
 	private boolean HOST_FAILURE_SCENARIO;
+	private boolean DYNAMIC_FAILURE;
 	private String HOST_FAILURE_ID;
 	private double HOST_FAILURE_TIME;
 
@@ -235,6 +236,7 @@ public class SimSettings {
 			FAIL_SCENARIOS = prop.getProperty("fail_scenarios").split(",");
 
 			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
+			DYNAMIC_FAILURE = Boolean.parseBoolean(prop.getProperty("dynamic_failure"));
 			HOST_FAILURE_ID = prop.getProperty("host_failure_id");
 			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
 
@@ -598,6 +600,10 @@ public class SimSettings {
 
 	public boolean isHostFailureScenario() {
 		return HOST_FAILURE_SCENARIO;
+	}
+
+	public boolean isDynamicFailure() {
+		return DYNAMIC_FAILURE;
 	}
 
 	public void setHostFailureScenario(boolean HOST_FAILURE_SCENARIO) {

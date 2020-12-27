@@ -734,6 +734,7 @@ public class ObjectGenerator {
                     }
                 }
             }
+            int objectDenied=0;
             objectName = (String)dataObjects.get(objectID).get("id");
             String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
 
@@ -768,12 +769,10 @@ public class ObjectGenerator {
             }
 
             //if object is already in node select another
-//            if(currentHostObjects.contains(objectID + " ")) {
             if(objectsSet.contains(objectName)) {
                 objectID = getObjectID(numOfDataObjects,"objects",dist);
                 deadlockCount++;
-                if (deadlockCount<20)
-                    continue;
+                continue;
             }
             String objectLocations = (String)dataObjects.get(objectID).get("locations");
             Set<String> locationsSet = new HashSet<String>();
@@ -783,10 +782,13 @@ public class ObjectGenerator {
             //load balancing - avoid object with locationDelta or more placements than min
             if (locationsSet.size()+1>getLowestNumberOfLocationsPerDataObject()+locationDelta){
                 objectID = getObjectID(numOfDataObjects,"objects",dist);
-                continue;
+                deadlockCount++;
+                if (deadlockCount < 20) {
+                    objectDenied = 1;
+                }
             }
 
-            else {
+            if (objectDenied!=1) {
                 deadlockCount=0;
                 String locations = (String)dataObjects.get(objectID).get("locations");
                 //add new location

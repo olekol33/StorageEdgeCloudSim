@@ -24,6 +24,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
@@ -33,6 +34,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     String orchestratorPolicy;
     String objectPlacementPolicy;
     Random random = new Random();
+    Random failRandom = new Random();
+    Random DynamicZipfRandom = new Random();
     RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
     Map<Integer,Integer> activeCodedIOTasks;
     double[] lambda;
@@ -49,6 +52,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         orchestratorPolicy = _orchestratorPolicy;
         objectPlacementPolicy = _objectPlacementPolicy;
         random.setSeed(ObjectGenerator.getSeed());
+        failRandom.setSeed(ObjectGenerator.getSeed());
+        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
         activeCodedIOTasks = new HashMap<>();
         numOfIOTasks=0;
         numOfAIOTasks = 0;
@@ -572,11 +577,56 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             for (int j=0;j<numOfDataObjects;j++)
                 numbers.add(j);
             //Shuffle list for permutations
-            Collections.shuffle(numbers, random);
+            Collections.shuffle(numbers, DynamicZipfRandom);
             int index = 0;
             for( Integer in : numbers )
                 zipfPermutations[i][index++] = in;
         }
+    }
+
+    public int[] dynamicFailureGenerator(int[] hostOperativity){
+        int flipProb = 1;
+        int[] hostOperativityNew = hostOperativity.clone();
+        List<Integer> intArray = new ArrayList<>(hostOperativity.length);
+        for (int i=0;i<hostOperativityNew.length;i++){
+            intArray.add(i);
+        }
+        int hostOperativitySum;
+        do {
+            hostOperativitySum = IntStream.of(hostOperativityNew).sum();
+            int amountOfFailedNodes = hostOperativityNew.length - hostOperativitySum;
+            Collections.shuffle(intArray,failRandom);
+            for (int host : intArray) {
+                int rand = failRandom.nextInt(10000);
+                //flip status with probability flipProb
+                //odds to recover are more than odds to fail
+                if (hostOperativityNew[host] == 1 && amountOfFailedNodes==0) {
+                    if (rand<=10*flipProb)
+                        hostOperativityNew[host] = 0;
+                }
+                //Less chance for another failure (for testing)
+                else if (hostOperativityNew[host] == 1 && amountOfFailedNodes==1) {
+                    if (rand<=1*flipProb)
+                        hostOperativityNew[host] = 0;
+                }
+                else{ //was already failed
+                    if (rand<=100*flipProb)
+                        hostOperativityNew[host] = 1;
+                }
+            }
+            hostOperativitySum = IntStream.of(hostOperativityNew).sum();
+        }
+        //no more than 2 failed nodes at a time
+        while (hostOperativityNew.length - hostOperativitySum >2);
+        for (int i=0;i<hostOperativityNew.length;i++){
+            if (hostOperativity[i]!=hostOperativityNew[i]){
+                if(hostOperativityNew[i]==1)
+                    System.out.println("Host " + i + " recovered\n");
+                else if(hostOperativityNew[i]==0)
+                    System.out.println("Host " + i + " failed\n");
+            }
+        }
+        return hostOperativityNew;
     }
 
 

@@ -87,7 +87,7 @@ def extractConfiguration(filename):
 
 
 def paramScanGraph():
-    dataObjects = "Overhead fail=2% lambda=0.3 warmup"
+    dataObjects = "Overhead fail=2% lambda=0.38 fully balanced"
     folderPath = getConfiguration("folderPath")
     overhead_mode=False
 
@@ -123,7 +123,7 @@ def paramScanGraph():
         start, end = a.get_xlim()
         a.grid(axis='x')
         if (overhead_mode):
-            a.set_xlim([1.2, 3.5])
+            a.set_xlim([2, 5.5])
             start, end = a.get_xlim()
             a.xaxis.set_ticks(np.arange(start, end, 0.5))
             a.set_xlabel('Overhead')

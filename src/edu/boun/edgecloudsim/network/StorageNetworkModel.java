@@ -6,6 +6,7 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
+import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
@@ -265,10 +266,16 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //update failed host if this is the scenario
         if (SimSettings.getInstance().isHostFailureScenario()) {
             if (CloudSim.clock() > SimSettings.getInstance().getHostFailureTime()) {
-                for (int host:SimSettings.getInstance().getHostFailureID()) {
-                    if (hostOperativity[host] != 0) {
-                        SimLogger.printLine("Failed host: " + host);
-                        hostOperativity[host] = 0;
+                if (SimSettings.getInstance().isDynamicFailure()){
+                    LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+                    hostOperativity = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).dynamicFailureGenerator(hostOperativity);
+                }
+                else { //static failure
+                    for (int host : SimSettings.getInstance().getHostFailureID()) {
+                        if (hostOperativity[host] != 0) {
+                            SimLogger.printLine("Failed host: " + host);
+                            hostOperativity[host] = 0;
+                        }
                     }
                 }
             }
