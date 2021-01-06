@@ -94,7 +94,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
     private int getHostWithShortestManQueue(String locations, Location deviceLocation) {
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
-        List<Integer> intObjectLocations = new ArrayList<>();
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         int minQueuesize = Integer.MAX_VALUE;
         int minQueueHost=-1;
@@ -141,7 +140,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         if (task.getIsParity()==1){
             //remove host of data if other options exist
             if (objectLocations.size()>1)
-                objectLocations.remove(task.getHostID());
+                objectLocations.remove(String.valueOf(task.getHostID()));
         }
         for (String s : objectLocations)
         {
@@ -203,6 +202,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                             return selectedVM;
                         }
                         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+                        task.setHostID(relatedHostId);
                         boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
                         //don't read data, only parity
 //                        if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
@@ -211,6 +211,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                             //TODO: SimSettings.VM_TYPES.EDGE_VM.ordinal() - what about cloud?
                             SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),SimSettings.VM_TYPES.EDGE_VM.ordinal());
                             SimLogger.getInstance().setHostId(task.getCloudletId(),relatedHostId);
+
 
                             return selectedVM;
                         }

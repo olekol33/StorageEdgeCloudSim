@@ -149,156 +149,201 @@ public class ParamScanApp {
 								if(SimSettings.getInstance().isOverheadScan())
 									SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
 								for (double lambda0 = SS.getLambda0Min(); lambda0 <= SS.getLambda0Max(); lambda0 = lambda0 + step0) {
-									//increase step
-									if (lambda0>increaseTh) {
-										step0 *= 2;
-										increaseTh += stepIncrease;
-										stepIncrease *= 2;
-									}
-									String objectPlacementPolicy = SS.getObjectPlacement()[p];
-									String simScenario = SS.getSimulationScenarios()[k];
-									String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
+									for (int iSeed = seed; iSeed < seed + SimSettings.getInstance().getVariabilityIterations(); iSeed++) {
+										SimSettings.getInstance().setRandomSeed(iSeed);
+										SimLogger.printLine("Current seed: " + SimSettings.getInstance().getRandomSeed());
+										//increase step
+										if (lambda0 > increaseTh) {
+											step0 *= 2;
+											increaseTh += stepIncrease;
+											stepIncrease *= 2;
+										}
+										String objectPlacementPolicy = SS.getObjectPlacement()[p];
+										String simScenario = SS.getSimulationScenarios()[k];
+										String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
 
-									//Proceed only if orchestrator policy matches placement
-									if (objectPlacementPolicy.equals("CODING_PLACE")) {
-										if (!Arrays.asList(codingPolicies).contains(orchestratorPolicy))
-											continue;
-									} else if (objectPlacementPolicy.equals("REPLICATION_PLACE")) {
-										if (!Arrays.asList(replicationPolicies).contains(orchestratorPolicy))
-											continue;
-									} else if (objectPlacementPolicy.equals("DATA_PARITY_PLACE")) {
-										if (!Arrays.asList(dataParityPolicies).contains(orchestratorPolicy))
-											continue;
-									} else {
-										System.out.println("ERROR: Placement policy doesn't exist");
-										System.exit(0);
-									}
+										//Proceed only if orchestrator policy matches placement
+										if (objectPlacementPolicy.equals("CODING_PLACE")) {
+											if (!Arrays.asList(codingPolicies).contains(orchestratorPolicy))
+												break;
+//												continue;
+										} else if (objectPlacementPolicy.equals("REPLICATION_PLACE")) {
+											if (!Arrays.asList(replicationPolicies).contains(orchestratorPolicy))
+												break;
+//												continue;
+										} else if (objectPlacementPolicy.equals("DATA_PARITY_PLACE")) {
+											if (!Arrays.asList(dataParityPolicies).contains(orchestratorPolicy))
+												break;
+//												continue;
+										} else {
+											System.out.println("ERROR: Placement policy doesn't exist");
+											System.exit(0);
+										}
 
-									//Setting lambdas for iteration
-									//TODO: currently assume all are equal
-									for (int t = 0; t < SimSettings.getInstance().getTaskLookUpTable().length; t++) {
-										SS.setPoissonInTaskLookUpTable(t, lambda0);
-									}
+										//Setting lambdas for iteration
+										//TODO: currently assume all are equal
+										for (int t = 0; t < SimSettings.getInstance().getTaskLookUpTable().length; t++) {
+											SS.setPoissonInTaskLookUpTable(t, lambda0);
+										}
 
 
-									Date ScenarioStartDate = Calendar.getInstance().getTime();
-									now = df.format(ScenarioStartDate);
-									//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
-									// Storage: Generate Redis KV list
-									RedisListHandler.closeConnection();
-									RedisListHandler.createList(objectPlacementPolicy);
+										Date ScenarioStartDate = Calendar.getInstance().getTime();
+										now = df.format(ScenarioStartDate);
+										//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
+										// Storage: Generate Redis KV list
+										RedisListHandler.closeConnection();
+										RedisListHandler.createList(objectPlacementPolicy);
 
-									//							String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
-									String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
-											Double.toString(lambda0)};
+										//							String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
+										String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
+												Double.toString(lambda0)};
 
 //									SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
 
-									SimLogger.printLine("Scenario started at " + now);
-									SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - Placement: " + objectPlacementPolicy +
-											" - #iteration: " + iterationNumber + " - Distribution: " + dist+ " - Fail Scenario: " + fail);
-									SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
-											SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
-									SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
-											"_" + objectPlacementPolicy + "_" + j + "DEVICES");
+										SimLogger.printLine("Scenario started at " + now);
+										SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - Placement: " + objectPlacementPolicy +
+												" - #iteration: " + iterationNumber + " - Distribution: " + dist + " - Fail Scenario: " + fail);
+										SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
+												SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
+										SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
+												"_" + objectPlacementPolicy + "_" + j + "DEVICES");
 
-									try {
-										// First step: Initialize the CloudSim package. It should be called
-										// before creating any entities.
-										int num_user = 2;   // number of grid users
-										Calendar calendar = Calendar.getInstance();
-										boolean trace_flag = false;  // mean trace events
+										try {
+											// First step: Initialize the CloudSim package. It should be called
+											// before creating any entities.
+											int num_user = 2;   // number of grid users
+											Calendar calendar = Calendar.getInstance();
+											boolean trace_flag = false;  // mean trace events
 
-										// Initialize the CloudSim library
-										CloudSim.init(num_user, calendar, trace_flag, 0.01);
+											// Initialize the CloudSim library
+											CloudSim.init(num_user, calendar, trace_flag, 0.01);
 
-										// Generate EdgeCloudsim Scenario Factory
-										ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
+											// Generate EdgeCloudsim Scenario Factory
+											ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
 
 
-										// Generate EdgeCloudSim Simulation Manager
-										SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy, objectPlacementPolicy);
+											// Generate EdgeCloudSim Simulation Manager
+											SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy, objectPlacementPolicy);
 
-										// Start simulation
-										manager.startSimulation();
+											// Start simulation
+											manager.startSimulation();
 
-									} catch (Exception e) {
-										SimLogger.printLine("The simulation has been terminated due to an unexpected error");
-										e.printStackTrace();
-										System.exit(0);
-									}
-
-									Date ScenarioEndDate = Calendar.getInstance().getTime();
-									now = df.format(ScenarioEndDate);
-									SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
-									SimLogger.printLine("----------------------------------------------------------------------");
-									File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
-									if (file2.exists()) {
-										//repeat with new seed, avoid increment
-										if(SimSettings.getInstance().isVariabilityRun() &&
-												variabilityIteNum<SimSettings.getInstance().getVariabilityIterations()) {
-											file2.delete();
-											lambda0 -= step0;
-											variabilityIteNum++;
-											SimSettings.getInstance().setRandomSeed(SimSettings.getInstance().getRandomSeed()+1);
-											SimLogger.printLine("Rerun scenario. Iteration: " + variabilityIteNum +
-													" , Seed: " + SimSettings.getInstance().getRandomSeed());
+										} catch (Exception e) {
+											SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+											e.printStackTrace();
+											System.exit(0);
 										}
-										else if (variabilityIteNum==SimSettings.getInstance().getVariabilityIterations()){
-											variabilityIteNum=1;
+
+										Date ScenarioEndDate = Calendar.getInstance().getTime();
+										now = df.format(ScenarioEndDate);
+										SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
+										SimLogger.printLine("----------------------------------------------------------------------");
+										File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
+										if (file2.exists()) { //failed
+											if (SimSettings.getInstance().isVariabilityRun() &&
+													variabilityIteNum < SimSettings.getInstance().getVariabilityIterations()) { //rerun
 											file2.delete();
-											SimSettings.getInstance().setRandomSeed(seed);
-											//If overhead scan, reduce by step of 5 each time
-											if(SimSettings.getInstance().isOverheadScan() && (lambda0+ step0) > SS.getLambda0Max()) {
-												SimSettings.getInstance().setNumOfDataObjects(SimSettings.getInstance().getNumOfDataObjects() - 5);
-												SimSettings.getInstance().setNumOfStripes(SimSettings.getInstance().getNumOfStripes() - 5);
-												RedisListHandler.updateNumOfDataObjects();
-												RedisListHandler.updateNumOfStripes();
-												step0 = SS.getLambda0step();
-												lambda0 = SS.getLambda0Min()-step0;
-												increaseTh = 1;
-												stepIncrease = 0.5;
-												if (SimSettings.getInstance().getNumOfDataObjects()<=20){
-													SimLogger.printLine("Failed to finish run with value");
-													variabilityIteNum=1;
-													SimSettings.getInstance().setRandomSeed(seed);
-													SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
-													SimSettings.getInstance().setNumOfStripes(numOfStripes);
-													String filePrefix = SimLogger.getInstance().getFilePrefix();
-													//set 0 overhead
-													filePrefix = filePrefix.replaceAll("OH\\d+(\\d.\\d+)?", "OH0");
-													try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
-															filePrefix + "_TASK_COMPLETED.log"))) {
-														out.print("Lambda: " + lambda0+"\nSeed: "+SimSettings.getInstance().getRandomSeed()+"\nData objects: "+
-																"FAILED"+"\n");
-														break;
-													} catch (Exception e) {
-														e.printStackTrace();
+
+//												variabilityIteNum++;
+//												SimSettings.getInstance().setRandomSeed(SimSettings.getInstance().getRandomSeed() + 1);
+												if (SimSettings.getInstance().isOverheadScan()) {
+//													SimLogger.printLine("Rerun scenario. Seed: " + SimSettings.getInstance().getRandomSeed() + 1);
+													//avoid seed increment in next iteration
+													iSeed--;
+													SimSettings.getInstance().setNumOfDataObjects(SimSettings.getInstance().getNumOfDataObjects() - 5);
+													SimSettings.getInstance().setNumOfStripes(SimSettings.getInstance().getNumOfStripes() - 5);
+													RedisListHandler.updateNumOfDataObjects();
+													RedisListHandler.updateNumOfStripes();
+													Pattern pattern = Pattern.compile("_OH(.*)_SEED");
+													Matcher matcher = pattern.matcher(SimLogger.getInstance().getFilePrefix());
+													matcher.find();
+													double overhead =Double.valueOf(matcher.group(1));
+													if (overhead>=8) {
+														SimLogger.printLine("Failed to finish run with value");
+//															variabilityIteNum = 1;
+														SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
+														SimSettings.getInstance().setNumOfStripes(numOfStripes);
+														String filePrefix = SimLogger.getInstance().getFilePrefix();
+														//set 0 overhead
+														filePrefix = filePrefix.replaceAll("OH\\d+(\\d.\\d+)?", "OH100");
+														try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
+																filePrefix + "_TASK_COMPLETED.log"))) {
+															out.print("Lambda: " + lambda0 + "\nSeed: " + SimSettings.getInstance().getRandomSeed() + "\nData objects: " +
+																	"FAILED" + "\n");
+															iSeed++;
+															continue;
+														} catch (Exception e) {
+															e.printStackTrace();
+														}
 													}
 												}
-
+												else{
+													lambda0 -= step0;
+												}
 											}
+											} else if (variabilityIteNum == SimSettings.getInstance().getVariabilityIterations()) { //break
+												variabilityIteNum = 1;
+												file2.delete();
+//												SimSettings.getInstance().setRandomSeed(seed);
+												//If overhead scan, reduce by step of 5 each time
+	/*											if (SimSettings.getInstance().isOverheadScan() && (lambda0 + step0) > SS.getLambda0Max()) {
+													SimSettings.getInstance().setNumOfDataObjects(SimSettings.getInstance().getNumOfDataObjects() - 5);
+													SimSettings.getInstance().setNumOfStripes(SimSettings.getInstance().getNumOfStripes() - 5);
+													RedisListHandler.updateNumOfDataObjects();
+													RedisListHandler.updateNumOfStripes();
+													step0 = SS.getLambda0step();
+													lambda0 = SS.getLambda0Min() - step0;
+													increaseTh = 1;
+													stepIncrease = 0.5;
+													if (SimSettings.getInstance().getNumOfDataObjects() <= 20) {
+														SimLogger.printLine("Failed to finish run with value");
+														variabilityIteNum = 1;
+														SimSettings.getInstance().setRandomSeed(seed);
+														SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
+														SimSettings.getInstance().setNumOfStripes(numOfStripes);
+														String filePrefix = SimLogger.getInstance().getFilePrefix();
+														//set 0 overhead
+														filePrefix = filePrefix.replaceAll("OH\\d+(\\d.\\d+)?", "OH0");
+														try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
+																filePrefix + "_TASK_COMPLETED.log"))) {
+															out.print("Lambda: " + lambda0 + "\nSeed: " + SimSettings.getInstance().getRandomSeed() + "\nData objects: " +
+																	"FAILED" + "\n");
+															break;
+														} catch (Exception e) {
+															e.printStackTrace();
+														}
+													}*/
 
-											continue;
+												continue;
+											}
+										else { //completed
+											if (!SimSettings.getInstance().isOverheadScan())
+												variabilityIteNum = 1;
+											SimSettings.getInstance().setRandomSeed(seed);
+											SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
+											SimSettings.getInstance().setNumOfStripes(numOfStripes);
+											RedisListHandler.updateNumOfDataObjects();
+											RedisListHandler.updateNumOfStripes();
+											if (SimSettings.getInstance().isVariabilityRun() && SimSettings.getInstance().isOverheadScan()) {
+//												lambda0 = SS.getLambda0Min() - step0;
+												SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
+												SimSettings.getInstance().setNumOfStripes(numOfStripes);
+												RedisListHandler.updateNumOfDataObjects();
+												RedisListHandler.updateNumOfStripes();
+											}
+											try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
+													SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
+												out.print("Lambda: " + lambda0 + "\nSeed" + SimSettings.getInstance().getRandomSeed() + "\nData objects: " +
+														SimSettings.getInstance().getNumOfDataObjects() + "\n");
+												//next seed, avoid increment
+												continue;
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
 										}
-									} else {
-										variabilityIteNum=1;
-										SimSettings.getInstance().setRandomSeed(seed);
-										SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
-										SimSettings.getInstance().setNumOfStripes(numOfStripes);
-										RedisListHandler.updateNumOfDataObjects();
-										RedisListHandler.updateNumOfStripes();
-										try (PrintStream out = new PrintStream(new FileOutputStream(outputFolder + "/" +
-												SimLogger.getInstance().getFilePrefix() + "_TASK_COMPLETED.log"))) {
-											out.print("Lambda: " + lambda0+"\nSeed"+SimSettings.getInstance().getRandomSeed()+"\nData objects: "+
-													SimSettings.getInstance().getNumOfDataObjects()+"\n");
-											break;
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
-									}
 //					}
+									}
 								}
 							}
 						}

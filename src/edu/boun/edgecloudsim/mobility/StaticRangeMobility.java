@@ -53,6 +53,7 @@ public class StaticRangeMobility extends MobilityModel {
                 e.printStackTrace();
             }
             treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
+//            System.out.println(placedDevice.getServingWlanId());
 
         }
 
@@ -212,6 +213,15 @@ public class StaticRangeMobility extends MobilityModel {
             System.out.println("error");
         }*/
         return degradation;
+    }
+    public static double getDistance(Location srcLocation, Location destLocation){
+        double x0 = 0;
+        double x1 = 100;
+        //devided y by 2 compared to paper
+        double y0 = 100;
+        double y1 = 5;
+        double m = (y0-y1) / (x0-x1);
+        return getEucledeanDistance(srcLocation,destLocation);
     }
     public static void logDistanceDegradation(Location srcLocation, Location destLocation, double distance, double degradation) throws FileNotFoundException {
         String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_DISTANCE_DEGRADATION.log";

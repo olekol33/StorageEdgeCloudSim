@@ -3,6 +3,7 @@ package edu.boun.edgecloudsim.network;
 import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
+import edu.boun.edgecloudsim.edge_client.SampleMobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
@@ -95,7 +96,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         for(int host=0; host<numOfEdgeDatacenters; host++) {
 //            hostManPoissonMeanForDownload[host] = ManPoissonMeanForDownload;
 
-            hostManPoissonMeanForDownload[host] = 5; //=MM1_QUEUE_MODEL_UPDATE_INTEVAL
+            hostManPoissonMeanForDownload[host] = SampleMobileDeviceManager.getMm1QueueModelUpdateInteval(); //=MM1_QUEUE_MODEL_UPDATE_INTEVAL
             hostAvgManTaskOutputSize[host] = avgManTaskOutputSize;
             hostTotalManTaskOutputSize[host] = 0;
             hostNumOfManTaskForDownload[host] = 0;
@@ -151,13 +152,19 @@ public class StorageNetworkModel extends SampleNetworkModel {
             //In case something went wrong
             if (wlanDelay==0)
                 System.out.println("delay=0");
+            if (wlanDelay<0)
+                System.out.println("delay<0");
 //                return delay;
             //Add delay on network if access point not in range
             Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
             if (nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId())
                 System.out.println("nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId()");
             //divide by factor
+/*            double distance = StaticRangeMobility.getDistance(deviceLocation,nearestAccessPoint);//Inverse-square law
+            double distance2 = Math.sqrt(distance);
+            System.out.println(delay*distance2);*/
             delay /= StaticRangeMobility.getDistanceDegradation(deviceLocation,nearestAccessPoint);
+//            System.out.println(delay);
         }
 
         return delay;
@@ -387,6 +394,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
             System.exit(0);
         }
 //		System.out.println("manClients: " + manClients); //To remove
+/*        if((100<CloudSim.clock()) && (CloudSim.clock()<105))
+            System.out.println(hostIndex);*/
     }
 
     public void downloadFinished(Location accessPointLocation, int sourceDeviceId, int hostIndex) {
@@ -403,6 +412,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
             SimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
             System.exit(0);
         }
+/*        if((100<CloudSim.clock()) && (CloudSim.clock()<105))
+            System.out.println(hostIndex);*/
+
 //		System.out.println("Users in " + accessPointLocation.getServingWlanId() + ": " + wlanClients[accessPointLocation.getServingWlanId()]); //TO remove
     }
 

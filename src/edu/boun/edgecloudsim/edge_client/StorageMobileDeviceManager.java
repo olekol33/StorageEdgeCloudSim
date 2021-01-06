@@ -184,6 +184,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         task.setParitiesToRead(edgeTask.getParitiesToRead());
         task.setIoTaskID(edgeTask.getIoTaskID());
         task.setIsParity(edgeTask.getIsParity());
+        task.setHostID(edgeTask.getHostID());
 
         //add related task to log list
         SimLogger.getInstance().addLog(task.getCloudletId(),
@@ -226,7 +227,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             task.setAccessHostID(task.getSubmittedLocation().getServingWlanId());
             SimLogger.getInstance().setAccessHostID(task.getCloudletId(),task.getSubmittedLocation().getServingWlanId());
             edgeTask.setAccessHostID(task.getSubmittedLocation().getServingWlanId());
-
 
             SimLogger.getInstance().setObjectRead(task.getCloudletId(),task.getObjectRead());
 
@@ -488,7 +488,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
     protected void processCloudletReturn(SimEvent ev) {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
-        int activeCodedRequests = 0;
         Task task = (Task) ev.getData();
 
         SimLogger.getInstance().taskExecuted(task.getCloudletId());
@@ -537,6 +536,10 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     getDatacenterList().get(task.getAssociatedHostId()).
                     getHostList().get(0));
 
+            if(delay < 0 && delayType != SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY) { //access point is full in this case, no point to continue
+                SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType, task);
+                return;
+            }
             //When source host is not at access point (read from distant edge) initiate download from host (MAN delay)
             //host - data location, task.getSubmittedLocation() - access point location
             if(host.getLocation().getServingWlanId() != task.getSubmittedLocation().getServingWlanId())
@@ -590,12 +593,12 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
         int numOfIOTasks = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).getNumOfIOTasks();
         double ratio;
-        double ratioTh = 0.01;
+        double ratioTh = 0.02;
         if (SimSettings.getInstance().isCountFailedduetoinaccessibility()) {
             ratio = (double) (failedDueToBW + failedDueToInaccessibility) / numOfIOTasks;
             //larger threshold in this case
-            if (failedDueToInaccessibility>0)
-                ratioTh *= 2;
+/*            if (failedDueToInaccessibility>0)
+                ratioTh *= 2;*/
         }
         else
             ratio = (double)(failedDueToBW)/numOfIOTasks;
@@ -627,9 +630,20 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //                            SimUtils.cleanOutputFolderPerConfiguration(SimLogger.getInstance().getOutputFolder(), simParams);
                     SimUtils.cleanOutputFolderPerConfiguration(SimLogger.getInstance().getOutputFolder(), new String[]{SimLogger.getInstance().getFilePrefix()});
                 }
-                File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
-                if (!file.exists())
-                    new FileOutputStream(file).close();
+//                File file = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
+
+/*                try (PrintStream out = new PrintStream(new FileOutputStream(SimLogger.getInstance().getOutputFolder() + "/" +
+                        SimLogger.getInstance().getFilePrefix()  + "_TASK_FAILED.log"))) {
+                    out.print("failedDueToBW,failedDueToInaccessibility\n" + failedDueToBW+","+failedDueToInaccessibility);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }*/
+                PrintStream out = new PrintStream(new FileOutputStream(SimLogger.getInstance().getOutputFolder() + "/" +
+                        SimLogger.getInstance().getFilePrefix()  + "_TASK_FAILED.log"));
+                out.print("failedDueToBW,failedDueToInaccessibility\n" + failedDueToBW+","+failedDueToInaccessibility);
+                out.print("failedDueToBW,failedDueToInaccessibility\n" + (double)(failedDueToBW)/numOfIOTasks+","+(double)(failedDueToInaccessibility)/numOfIOTasks);
+/*                if (!file.exists())
+                    new FileOutputStream(file).close();*/
                 System.out.println("Failed for: " + SimLogger.getInstance().getFilePrefix());
                 SimManager.getInstance().shutdownEntity();
                 SimLogger.printLine("100");
@@ -647,4 +661,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
     public void incrementFailedDueToBW() {
         failedDueToBW++;
     }
+
+
+
 }

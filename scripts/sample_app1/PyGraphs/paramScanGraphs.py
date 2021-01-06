@@ -12,6 +12,7 @@ import seaborn as sns
 import re
 from os import listdir
 from os.path import isfile, join
+import matplotlib.patches as mpatches
 from matplotlib import ticker
 from collections import Counter
 
@@ -87,7 +88,7 @@ def extractConfiguration(filename):
 
 
 def paramScanGraph():
-    dataObjects = "Overhead fail=2% lambda=0.38 fully balanced"
+    dataObjects = "Overhead Run, lambda=0.3, Zipf, seed30-44"
     folderPath = getConfiguration("folderPath")
     overhead_mode=False
 
@@ -107,32 +108,91 @@ def paramScanGraph():
     for run in runs:
         runsPD = runsPD.append(run, ignore_index=True)
 
-    fig,ax = plt.subplots(2,1,figsize=(10,8))
-    runsPD[runsPD["fail"]=="NOFAIL"].plot.barh(color = 'red',ax=ax[0])
-    runsPD[runsPD["fail"]=="WITHFAIL"].plot.barh(color = 'blue',ax=ax[1])
+    # fig,ax = plt.subplots(2,1,figsize=(10,8))
+    fig,ax = plt.subplots(1,1,figsize=(10,8))
+    yPos=0
+    c=["cyan","red"]
+    patternPatch = []
+    patterns = ["", "///", "|||", "xxx", "x", "o", "O", ".", "*"]
+    ind=0
+    noFailExists=False
+    for iPol, policy in enumerate(sorted(runsPD.orchestrator_policy.unique())):
+        for iPlace, placement in enumerate(sorted(runsPD.object_placement.unique())):
+            for iFail, f in enumerate(sorted(runsPD.fail.unique())):
+                runsUniqueConfigPD = runsPD[(runsPD["orchestrator_policy"]==policy) & (runsPD["fail"]==f) &
+                                            (runsPD["object_placement"]==placement)]
+                if runsUniqueConfigPD.empty:
+                    if noFailExists:
+                        noFailExists = False
+                        patternPatch.append(mpatches.Patch(facecolor='#DCDCDC', hatch=patterns[ind],
+                                                           label=policy + "," + placement))
+                        ind += 1
+                        yPos += 0.5
+                    continue
+                if f=="NOFAIL":
+                    noFailExists=True
+                elif f == "WITHFAIL":
+                    noFailExists=False
+                runsUniqueConfigPD = runsUniqueConfigPD.drop(runsUniqueConfigPD['value'].idxmax())
+                runsUniqueConfigPD = runsUniqueConfigPD.drop(runsUniqueConfigPD['value'].idxmin())
+                minErr = runsUniqueConfigPD['value'].mean()-min(runsUniqueConfigPD['value'])
+                maxErr = max(runsUniqueConfigPD['value'])-runsUniqueConfigPD['value'].mean()
+                error_kw = dict(lw=5, capsize=5, capthick=3)
+                ax.barh(y=yPos,height=0.5,width=runsUniqueConfigPD['value'].mean(),color = c[iFail],xerr=[[minErr],[maxErr]],
+                        hatch=patterns[ind],error_kw=error_kw)
+                yPos += 0.5
+                if (iFail%2==1):
+                    patternPatch.append(mpatches.Patch(facecolor='#DCDCDC', hatch=patterns[ind],
+                                                       label=policy + "," + placement))
+                    ind += 1;
+            if not runsUniqueConfigPD.empty:
+                yPos += 0.5
 
-    ax[0].set_yticklabels(runsPD[runsPD["fail"]=="NOFAIL"].orchestrator_policy + "\n" + runsPD[runsPD["fail"]=="NOFAIL"].object_placement
-                          + "\n" + runsPD[runsPD["fail"]=="NOFAIL"].fail + "\n" + runsPD[runsPD["fail"]=="NOFAIL"].distribution)
-    ax[0].title.set_text("No Fail")
+    cyan_patch = mpatches.Patch(color='cyan', label=sorted(runsPD.fail.unique())[0])
+    red_patch = mpatches.Patch(color='red', label=sorted(runsPD.fail.unique())[1])
 
-    ax[1].set_yticklabels(runsPD[runsPD["fail"]=="WITHFAIL"].orchestrator_policy + "\n" + runsPD[runsPD["fail"]=="WITHFAIL"].object_placement
-                          + "\n" + runsPD[runsPD["fail"]=="WITHFAIL"].fail + "\n" + runsPD[runsPD["fail"]=="WITHFAIL"].distribution)
-    ax[1].title.set_text("With Fail")
-    # sns.barplot(x="lambda", y=runsPD.index, data=runsPD, hue='fail',ax=ax)
-    for a in ax:
-        start, end = a.get_xlim()
-        a.grid(axis='x')
-        if (overhead_mode):
-            a.set_xlim([2, 5.5])
-            start, end = a.get_xlim()
-            a.xaxis.set_ticks(np.arange(start, end, 0.5))
-            a.set_xlabel('Overhead')
-        else:
-            a.set_xlim([0.1, 0.35])
-            start, end = a.get_xlim()
-            a.xaxis.set_ticks(np.arange(start, end, 0.05))
-            a.set_xlabel('lambda[mu]')
-        a.legend().set_visible(False)
+    # pattern0 = mpatches.Patch(facecolor='#DCDCDC',hatch=patterns[0], label=runsPD.fail.unique()[1])
+    # pattern1 = mpatches.Patch(facecolor='#DCDCDC',hatch=patterns[0], label=runsPD.fail.unique()[1])
+    leg = plt.legend(handles=[red_patch, cyan_patch],loc="upper right")
+    ax.add_artist(leg)
+    plt.legend(handles=patternPatch,loc="lower right")
+    plt.yticks([], [])
+    # fig.show()
+    # runsPD[runsPD["fail"]=="NOFAIL"].plot.barh(color = 'red',ax=ax[0])
+    # runsPD[runsPD["fail"]=="WITHFAIL"].plot.barh(color = 'blue',ax=ax[1])
+    #
+    # ax[0].set_yticklabels(runsPD[runsPD["fail"]=="NOFAIL"].orchestrator_policy + "\n" + runsPD[runsPD["fail"]=="NOFAIL"].object_placement
+    #                       + "\n" + runsPD[runsPD["fail"]=="NOFAIL"].fail + "\n" + runsPD[runsPD["fail"]=="NOFAIL"].distribution)
+    # ax[0].title.set_text("No Fail")
+    #
+    # ax[1].set_yticklabels(runsPD[runsPD["fail"]=="WITHFAIL"].orchestrator_policy + "\n" + runsPD[runsPD["fail"]=="WITHFAIL"].object_placement
+    #                       + "\n" + runsPD[runsPD["fail"]=="WITHFAIL"].fail + "\n" + runsPD[runsPD["fail"]=="WITHFAIL"].distribution)
+    # ax[1].title.set_text("With Fail")
+    # # sns.barplot(x="lambda", y=runsPD.index, data=runsPD, hue='fail',ax=ax)
+    # for a in ax:
+    #     start, end = a.get_xlim()
+    #     a.grid(axis='x')
+    #     if (overhead_mode):
+    #         a.set_xlim([2, 5.5])
+    #         start, end = a.get_xlim()
+    #         a.xaxis.set_ticks(np.arange(start, end, 0.5))
+    #         a.set_xlabel('Overhead')
+    #     else:
+    #         a.set_xlim([0.1, 0.35])
+    #         start, end = a.get_xlim()
+    #         a.xaxis.set_ticks(np.arange(start, end, 0.05))
+    #         a.set_xlabel('lambda[mu]')
+    #     a.legend().set_visible(False)
+    if (overhead_mode):
+        ax.set_xlim([1, 2.5])
+        start, end = ax.get_xlim()
+        ax.xaxis.set_ticks(np.arange(start, end, 0.5))
+        ax.set_xlabel('Overhead')
+    else:
+        ax.set_xlim([0.1, 0.35])
+        start, end = ax.get_xlim()
+        ax.xaxis.set_ticks(np.arange(start, end, 0.05))
+        ax.set_xlabel('lambda[mu]')
     plt.show()
     fig.suptitle("" + dataObjects+ "",y=1.02)
     fig.savefig(folderPath + '\\fig\\' + dataObjects+ '.png', bbox_inches='tight', format ='png')

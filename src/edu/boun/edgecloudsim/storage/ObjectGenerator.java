@@ -375,7 +375,6 @@ public class ObjectGenerator {
     private List<Integer> sequentialRandomPlacement(int numOfHosts, int numofObjectsInStripe){
         int visitedHosts=1;
         List<Integer> hosts = new ArrayList<>(numofObjectsInStripe);
-//        int hostID = Math.abs(getRandomGenerator().nextInt(numOfHosts));
         int hostID = currHost;
         currHost = (currHost+1)%numOfHosts;
         //find vacant host
