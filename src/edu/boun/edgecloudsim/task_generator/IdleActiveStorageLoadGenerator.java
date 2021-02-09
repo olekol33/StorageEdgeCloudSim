@@ -33,10 +33,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     static private int numOfAIOTasks,numOfBIOTasks; //NSF
     String orchestratorPolicy;
     String objectPlacementPolicy;
-    Random random = new Random();
-    Random parityRandom = new Random();
-    Random failRandom = new Random();
-    Random DynamicZipfRandom = new Random();
+
+
     RandomGenerator rand = new Well19937c(ObjectGenerator.seed);
     Map<Integer,Integer> activeCodedIOTasks;
     double[] lambda;
@@ -46,6 +44,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int[][] MMPPObjectDemand;
     int[][] zipfPermutations;
     int numOfZipfPermutations;
+    Random parityRandom;
+    Random failRandom;
+//    Random DynamicZipfRandom;
     int intervalSize, numOfIntervals;
     int nZIPF;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
@@ -53,20 +54,18 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         super(_numberOfMobileDevices, _simulationTime, _simScenario);
         orchestratorPolicy = _orchestratorPolicy;
         objectPlacementPolicy = _objectPlacementPolicy;
-        random.setSeed(ObjectGenerator.getSeed());
-        failRandom.setSeed(ObjectGenerator.getSeed());
-        parityRandom.setSeed(ObjectGenerator.getSeed());
-        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
+
+
         activeCodedIOTasks = new HashMap<>();
         numOfIOTasks=0;
         numOfAIOTasks = 0;
         numOfBIOTasks = 0;
-        nZIPF=4;
+        nZIPF=2;
         if(SimSettings.getInstance().isMMPP()) {
             intervalSize = 1;//sec
             numOfIntervals = (int)(SimSettings.getInstance().getSimulationTime() / intervalSize);
             MMPPObjectDemand = new int[SimSettings.getInstance().getNumOfDataObjects()][numOfIntervals];
-            createMMPPDemandArray();
+//            createMMPPDemandArray();
         }
         if(SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPF")){
 //            numOfZipfPermutations = numberOfMobileDevices/SimSettings.getInstance().getNumOfEdgeHosts();
@@ -88,6 +87,14 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         int ioTaskID=0;
         double sumPoisson = 0;
         double dataSizeMean = 0;
+        Random random = new Random();
+        random.setSeed(ObjectGenerator.getSeed());
+        parityRandom = new Random();
+//        DynamicZipfRandom = new Random();
+        failRandom = new Random();
+        failRandom.setSeed(ObjectGenerator.getSeed());
+        parityRandom.setSeed(ObjectGenerator.getSeed());
+//        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
         taskList = new ArrayList<TaskProperty>();
         ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
 
@@ -198,7 +205,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 else if (SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPF")){
                     int permutationIntervalSize = (int)SimSettings.getInstance().getSimulationTime()/numOfZipfPermutations;
                     //Get object rank
-                    int intObjectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects","MULTIZIPF");
+                    int intObjectID = OG.getObjectIDForLoad(SimSettings.getInstance().getNumOfDataObjects(),"MULTIZIPF");
 //                    int permutation = i%numOfZipfPermutations;
                     int permutation = (int)virtualTime/permutationIntervalSize;
 
@@ -212,7 +219,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 else if (SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPFN")){ //divide load by 2
                     int permutationIntervalSize = nZIPF*((int)SimSettings.getInstance().getSimulationTime()/numOfZipfPermutations);
                     //Get object rank
-                    int intObjectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects","MULTIZIPF");
+                    int intObjectID = OG.getObjectIDForLoad(SimSettings.getInstance().getNumOfDataObjects(),"MULTIZIPF");
                     int permutation = (int)virtualTime/permutationIntervalSize;
 
                     if (virtualTime>SimSettings.getInstance().getSimulationTime())
@@ -282,6 +289,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         if(SimSettings.getInstance().isOrbitMode()) {
             try {
                 exportTaskList();
+                SimLogger.printLine("Task list generated");
+                System.exit(0);
             } catch (Exception e) {
                 SimLogger.printLine("Failed to generate task list");
                 System.exit(0);
@@ -560,7 +569,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     }
 
     //For each data object create array with number of requests in each interval
-    private void createMMPPDemandArray(){
+/*    private void createMMPPDemandArray(){
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         MMPP mmpp = new MMPP(random); //TODO: change random variable
         for(int i=0; i<numOfDataObjects;i++){
@@ -582,7 +591,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     //Output demand vector for each object
     private void logMMPPDemand() throws FileNotFoundException {
@@ -609,6 +618,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     //Creates n permutations of size numOfDataObjects
     private void createZipfPermutations(int n){
+        Random DynamicZipfRandom = new Random();
+        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         zipfPermutations = new int[n][numOfDataObjects];
         for (int i=0;i<n;i++){

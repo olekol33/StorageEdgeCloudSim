@@ -49,27 +49,6 @@ public class OrbitMain {
 		String outputFolder = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
-/*		if (args.length == 5){
-			configFile = args[0];
-			edgeDevicesFile = args[1];
-			applicationsFile = args[2];
-			outputFolder = args[3];
-			iterationNumber = Integer.parseInt(args[4]);
-		}
-		else if (args.length == 1){
-			configFile = args[0];
-			applicationsFile = "scripts/sample_app5/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
-		}
-		else{
-			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "scripts/sample_app5/config/default_config.properties";
-			applicationsFile = "scripts/sample_app5/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
-		}*/
-
 
 
 
