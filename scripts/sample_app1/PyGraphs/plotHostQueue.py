@@ -1,4 +1,4 @@
-from getConfiguration import getConfiguration
+from getConfiguration import *
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
@@ -128,7 +128,7 @@ def plotHostQueue():
             queue_size_frame = {}
             mobileDeviceNumber = startOfMobileDeviceLoop + stepOfMobileDeviceLoop * j
 
-            fig2, ax2 = plt.subplots(1, 1, figsize=(17, 12))
+            fig2, ax2 = plt.subplots(1, 1, figsize=(17, 14))
             for p, objectPlacement in enumerate(objectPlacements):
                 for i in range(len(scenarioType)):
                     for o, orchestratorPolicy in enumerate(orchestratorPolicies):
@@ -175,15 +175,29 @@ def plotHostQueue():
                         plt.close(fig)
 
             queue_size_df = pd.DataFrame(queue_size_frame).fillna(0)
-            queue_size_df.plot(kind="bar", use_index=True, ax=ax2)
-            ax2.legend()
-            ax2.set_xlabel("Host Number")
-            ax2.set_ylabel("Average Queue Size")
-            fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
+            colNames = []
+            for index, columns in queue_size_df.iteritems():
+                colNames.append(renamePolicy(index))
+            queue_size_df.columns = colNames
+
+            # queue_size_df.plot(kind="bar", use_index=True, ax=ax2)
+            ind_list = [4,5,6,7,8,9]
+            queue_size_df.iloc[ind_list].plot(kind="bar", use_index=True, ax=ax2)
+            ax2.legend(framealpha=0.6,prop={'size': 30},loc='upper center', bbox_to_anchor=(0.4, 0.5, 0.5, 0.5))
+            ax2.set_xlabel("Node Number", fontsize=38)
+            ax2.set_ylabel("Average Queue Size", fontsize=38)
+            ax2.tick_params(labelsize=30)
+
+            ax2.set_ylim([0, 50])
+            start, end = ax2.get_ylim()
+            ax2.yaxis.set_ticks(np.arange(start, end, 5))
+            ax2.xaxis.set_tick_params(rotation=0)
+            fig2.tight_layout()
+            # fig2.suptitle("Average Queue Size " + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
             fig2.savefig(folderPath + '\\fig\\Average_MAN_Queue_Size' + "_" + str(mobileDeviceNumber) + '.png',
                         bbox_inches='tight')
             plt.close(fig2)
 
 
 
-# plotHostQueue()
+plotHostQueue()

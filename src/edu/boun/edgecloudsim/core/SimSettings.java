@@ -57,6 +57,7 @@ public class SimSettings {
     private double INTERVAL_TO_GET_VM_LOCATION_LOG; //minutes unit in properties file
     private boolean FILE_LOG_ENABLED; //boolean to check file logging option
     private boolean DEEP_FILE_LOG_ENABLED; //boolean to check deep file logging option
+	private boolean STORAGE_LOG_ENABLED;
 	private boolean CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION; //boolean to check deep file logging option
 	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
 	private boolean OVERHEAD_SCAN;
@@ -203,6 +204,7 @@ public class SimSettings {
 			INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
 			FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("file_log_enabled"));
 			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
+			STORAGE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("storage_log_enabled"));
 			CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = Boolean.parseBoolean(prop.getProperty("terminate_failed_run"));
 			COUNT_FAILEDDUETOINACCESSIBILITY = Boolean.parseBoolean(prop.getProperty("count_failedDueToInaccessibility"));
 			OVERHEAD_SCAN = Boolean.parseBoolean(prop.getProperty("overhead_scan"));
@@ -378,6 +380,11 @@ public class SimSettings {
 	public boolean getDeepFileLoggingEnabled()
 	{
 		return DEEP_FILE_LOG_ENABLED; 
+	}
+
+
+	public boolean isStorageLogEnabled() {
+		return STORAGE_LOG_ENABLED;
 	}
 
 	/**

@@ -48,7 +48,8 @@ public class StaticRangeMobility extends MobilityModel {
             else
                 placedDevice = randomPlaceDevice(random);
             try {
-                logAccessLocation(i,placedDevice.getServingWlanId());
+                if (SimSettings.getInstance().isStorageLogEnabled())
+                    logAccessLocation(i,placedDevice.getServingWlanId());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

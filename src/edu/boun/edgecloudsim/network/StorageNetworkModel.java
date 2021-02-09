@@ -265,8 +265,10 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
         //Log queue in edge hosts
         try {
-            logHostQueue();
-            logManQueue();
+            if (SimSettings.getInstance().isStorageLogEnabled()) {
+                logHostQueue();
+                logManQueue();
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

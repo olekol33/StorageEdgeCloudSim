@@ -13,6 +13,10 @@ import re
 from os import listdir
 from os.path import isfile, join
 import matplotlib.patches as mpatches
+import matplotlib
+matplotlib.rcParams['ps.useafm'] = True
+matplotlib.rcParams['pdf.use14corefonts'] = True
+sns.set_style({'font.family':'serif', 'font.serif':'Times New Roman'})
 from matplotlib import ticker
 from collections import Counter
 
@@ -88,7 +92,7 @@ def extractConfiguration(filename):
 
 
 def paramScanGraph():
-    dataObjects = "Overhead Run, lambda=0.3, Zipf, seed30-44"
+    dataObjects = "Overhead lambda 0.4"
     folderPath = getConfiguration("folderPath")
     overhead_mode=False
 
@@ -111,7 +115,8 @@ def paramScanGraph():
     # fig,ax = plt.subplots(2,1,figsize=(10,8))
     fig,ax = plt.subplots(1,1,figsize=(10,8))
     yPos=0
-    c=["cyan","red"]
+    c=["green","red"]
+    policies=["CODING_READ","REPLICATION_CODING_READ","IMPROVED_REPLICATION","BASIC_REPLICATION"]
     patternPatch = []
     patterns = ["", "///", "|||", "xxx", "x", "o", "O", ".", "*"]
     ind=0
@@ -124,8 +129,8 @@ def paramScanGraph():
                 if runsUniqueConfigPD.empty:
                     if noFailExists:
                         noFailExists = False
-                        patternPatch.append(mpatches.Patch(facecolor='#DCDCDC', hatch=patterns[ind],
-                                                           label=policy + "," + placement))
+                    #     patternPatch.append(mpatches.Patch(facecolor='#DCDCDC', hatch=patterns[ind],
+                    #                                        label=policy + "," + placement))
                         ind += 1
                         yPos += 0.5
                     continue
@@ -141,21 +146,25 @@ def paramScanGraph():
                 ax.barh(y=yPos,height=0.5,width=runsUniqueConfigPD['value'].mean(),color = c[iFail],xerr=[[minErr],[maxErr]],
                         hatch=patterns[ind],error_kw=error_kw)
                 yPos += 0.5
-                if (iFail%2==1):
+                if (iFail%2==0):
                     patternPatch.append(mpatches.Patch(facecolor='#DCDCDC', hatch=patterns[ind],
-                                                       label=policy + "," + placement))
-                    ind += 1;
+                                                       label=policies[ind]))
+                    # ind += 1
+                if (iFail%2==1):
+                    # patternPatch.append(mpatches.Patch(facecolor='#DCDCDC', hatch=patterns[ind],
+                    #                                    label=policies[ind]))
+                                                       # label=policy + "," + placement))
+                    ind += 1
             if not runsUniqueConfigPD.empty:
                 yPos += 0.5
+    patternPatch.reverse()
+    # cyan_patch = mpatches.Patch(color='green', label=sorted(runsPD.fail.unique())[0])
+    # red_patch = mpatches.Patch(color='red', label=sorted(runsPD.fail.unique())[1])
 
-    cyan_patch = mpatches.Patch(color='cyan', label=sorted(runsPD.fail.unique())[0])
-    red_patch = mpatches.Patch(color='red', label=sorted(runsPD.fail.unique())[1])
 
-    # pattern0 = mpatches.Patch(facecolor='#DCDCDC',hatch=patterns[0], label=runsPD.fail.unique()[1])
-    # pattern1 = mpatches.Patch(facecolor='#DCDCDC',hatch=patterns[0], label=runsPD.fail.unique()[1])
-    leg = plt.legend(handles=[red_patch, cyan_patch],loc="upper right")
-    ax.add_artist(leg)
-    plt.legend(handles=patternPatch,loc="lower right")
+    # leg = plt.legend(handles=[red_patch, cyan_patch],loc="upper right",bbox_to_anchor=(0.99, 1),prop={'size': 15})
+    # ax.add_artist(leg)
+    plt.legend(handles=patternPatch,loc='center right', bbox_to_anchor=(0.99, 0.65),prop={'size': 15})
     plt.yticks([], [])
     # fig.show()
     # runsPD[runsPD["fail"]=="NOFAIL"].plot.barh(color = 'red',ax=ax[0])
@@ -184,16 +193,17 @@ def paramScanGraph():
     #         a.set_xlabel('lambda[mu]')
     #     a.legend().set_visible(False)
     if (overhead_mode):
-        ax.set_xlim([1, 2.5])
+        ax.set_xlim([1, 7])
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.arange(start, end, 0.5))
-        ax.set_xlabel('Overhead')
+        ax.set_xlabel('Overhead', fontsize=22)
+        ax.tick_params(labelsize=18)
     else:
         ax.set_xlim([0.1, 0.35])
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.arange(start, end, 0.05))
         ax.set_xlabel('lambda[mu]')
     plt.show()
-    fig.suptitle("" + dataObjects+ "",y=1.02)
+    # fig.suptitle("" + dataObjects+ "",y=1.02)
     fig.savefig(folderPath + '\\fig\\' + dataObjects+ '.png', bbox_inches='tight', format ='png')
 paramScanGraph()

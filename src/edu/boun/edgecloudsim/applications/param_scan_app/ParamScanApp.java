@@ -241,8 +241,9 @@ public class ParamScanApp {
 										SimLogger.printLine("----------------------------------------------------------------------");
 										File file2 = new File(SimLogger.getInstance().getOutputFolder(), SimLogger.getInstance().getFilePrefix() + "_TASK_FAILED.log");
 										if (file2.exists()) { //failed
-											if (SimSettings.getInstance().isVariabilityRun() &&
-													variabilityIteNum < SimSettings.getInstance().getVariabilityIterations()) { //rerun
+											if ((SimSettings.getInstance().isVariabilityRun() &&
+													variabilityIteNum < SimSettings.getInstance().getVariabilityIterations()) ||
+													SimSettings.getInstance().getVariabilityIterations()==1) { //rerun
 											file2.delete();
 
 //												variabilityIteNum++;
@@ -282,7 +283,8 @@ public class ParamScanApp {
 													lambda0 -= step0;
 												}
 											}
-											} else if (variabilityIteNum == SimSettings.getInstance().getVariabilityIterations()) { //break
+											} else if (variabilityIteNum == SimSettings.getInstance().getVariabilityIterations() &&
+												SimSettings.getInstance().getVariabilityIterations() != 1) { //break
 												variabilityIteNum = 1;
 												file2.delete();
 //												SimSettings.getInstance().setRandomSeed(seed);
@@ -319,7 +321,7 @@ public class ParamScanApp {
 											}
 										else { //completed
 											if (!SimSettings.getInstance().isOverheadScan())
-												variabilityIteNum = 1;
+
 											SimSettings.getInstance().setRandomSeed(seed);
 											SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
 											SimSettings.getInstance().setNumOfStripes(numOfStripes);
@@ -327,6 +329,7 @@ public class ParamScanApp {
 											RedisListHandler.updateNumOfStripes();
 											if (SimSettings.getInstance().isVariabilityRun() && SimSettings.getInstance().isOverheadScan()) {
 //												lambda0 = SS.getLambda0Min() - step0;
+												variabilityIteNum = 1;
 												SimSettings.getInstance().setNumOfDataObjects(numOfDataObjects);
 												SimSettings.getInstance().setNumOfStripes(numOfStripes);
 												RedisListHandler.updateNumOfDataObjects();
