@@ -60,7 +60,7 @@ public class ObjectGenerator {
         numOfStripes = SimSettings.getInstance().getNumOfStripes();
         numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
         numOfParityInStripe = SimSettings.getInstance().getNumOfParityInStripe();
-        if (!SimSettings.getInstance().isOrbitMode()) {
+        if (SimSettings.getInstance().isOrbitMode()) {
             objectSize = (int) SimSettings.getInstance().getTaskLookUpTable()[0][LoadGeneratorModel.DATA_DOWNLOAD]; //bytes
             numOfNodes=SimSettings.getInstance().getNumberOfEdgeNodes();
         }

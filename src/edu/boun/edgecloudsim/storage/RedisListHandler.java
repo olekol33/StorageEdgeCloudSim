@@ -14,6 +14,11 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.util.Slowlog;
 
+import javax.swing.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,15 +63,42 @@ public class RedisListHandler {
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
 
+    //Generate list of all object locations in the system for orchestration
+    private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
+        File objectFile = new File("/tmp/Object_Locations.txt");
+        FileWriter objectFW = new FileWriter(objectFile, true);
+        BufferedWriter objectBW = new BufferedWriter(objectFW);
+        objectBW.write("object,locations\n");
+        for (Map<String,String> KV : OG.getListOfObjects()) {
+            objectBW.write("object:" + KV.get("id")+","+KV.get("locations"));
+            objectBW.newLine();
+        }
+        objectBW.close();
+    }
+
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
     public static void orbitCreateList(String objectPlacementPolicy, int currentHost){
-        Jedis jedis = new Jedis(localhost, 6379);
+        //TEST
+        Jedis jedis;
+        if(currentHost==0)
+            jedis = new Jedis(localhost, 6379);
+        else
+            jedis = new Jedis(localhost, 6380);
+
         OG = new ObjectGenerator(objectPlacementPolicy);
-        for (Map<String,String> KV : OG.getObjectsInHosts().get(currentHost)) {
+        //Generate Redis objects for this host
+        for (Map<String,String> KV : OG.getListOfObjects()) {
             jedis.hmset("object:" + KV.get("id"), KV);
             jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
+        try {
+            listObjectInSystem(OG);
+        }
+        catch (Exception e){
+            System.out.println("Failed to generate object list");
+        }
+
         SimLogger.print("Created Redis KV on host: " + currentHost + " with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
@@ -83,6 +115,7 @@ public class RedisListHandler {
     public static void closeConnection(){
         Jedis jedis = new Jedis(localhost, 6379);
         jedis.flushAll();
+//        jedis.shutdown();
         jedis.quit();
     }
     //Get key list by pattern

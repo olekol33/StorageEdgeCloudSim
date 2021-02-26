@@ -52,10 +52,11 @@ public class OrbitMain {
 
 
 
-		if (args.length == 3){
+		if (args.length == 2){
 			runType = args[0];
 			currentHost = Integer.valueOf(args[1]);
-			currentTime = Long.valueOf(args[2]);
+//			currentTime = Long.valueOf(args[2]);
+			currentTime = Instant.now().toEpochMilli();
 		}
 		else {
 			runType = "client";
