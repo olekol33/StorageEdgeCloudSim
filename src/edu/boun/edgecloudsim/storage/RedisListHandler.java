@@ -92,12 +92,12 @@ public class RedisListHandler {
             jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
-        try {
+/*        try {
             listObjectInSystem(OG);
         }
         catch (Exception e){
             System.out.println("Failed to generate object list");
-        }
+        }*/
 
         SimLogger.print("Created Redis KV on host: " + currentHost + " with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");

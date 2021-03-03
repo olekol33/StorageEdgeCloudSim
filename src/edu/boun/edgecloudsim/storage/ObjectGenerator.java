@@ -9,6 +9,8 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
+import edu.boun.edgecloudsim.utils.SimLogger;
+import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -18,6 +20,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,13 +129,63 @@ public class ObjectGenerator {
             listOfObjects.addAll(metadataObjects);
         }
 
-        //TODO: if ORBIT
+
+        if(SimSettings.getInstance().isOrbitMode()) {
+            try {
+                exportObjectList();
+                SimLogger.printLine("Object list generated");
+                System.exit(0);
+            } catch (Exception e) {
+                SimLogger.printLine("Failed to generate object list");
+                System.exit(0);
+            }
+
         Map<Integer, ArrayList<Double>> timeToReadStripe = new HashMap<Integer, ArrayList<Double>>();
         objectsInHosts = new HashMap<Integer, List<Map>>(numOfNodes);
         populateObjectsInHosts();
+        }
 
 
 
+    }
+
+    private void exportObjectList() throws IOException {
+        File objectListFile = null;
+        FileWriter objectListFW = null;
+        BufferedWriter objectListBW = null;
+
+        objectListFile = new File(SimLogger.getInstance().getOutputFolder(), "/tmp/object_list.csv");
+        objectListFW = new FileWriter(objectListFile, false);
+        objectListBW = new BufferedWriter(objectListFW);
+        objectListBW.write("objectID,objectLocations");
+        objectListBW.newLine();
+        for(Map<String,String>  object:dataObjects){
+            objectListBW.write(object.get("id")+","+object.get("locations"));
+            objectListBW.newLine();
+        }
+        if (!objectPlacementPolicy.equalsIgnoreCase("REPLICATION_PLACE")) {
+            for (Map<String, String> object : dataObjects) {
+                objectListBW.write(object.get("id") + "," + object.get("locations"));
+                objectListBW.newLine();
+            }
+        }
+        objectListBW.close();
+        //metadata list
+        objectListFile = new File(SimLogger.getInstance().getOutputFolder(), "/tmp/stripe_list.csv");
+        objectListFW = new FileWriter(objectListFile, false);
+        objectListBW = new BufferedWriter(objectListFW);
+        objectListBW.write("dataObjects,parityObjects");
+        objectListBW.newLine();
+        if (!objectPlacementPolicy.equalsIgnoreCase("REPLICATION_PLACE")){
+
+
+            for (Map<String, String> object : metadataObjects) {
+                objectListBW.write(object.get("data") + "," + object.get("parity"));
+                objectListBW.newLine();
+            }
+
+        }
+        objectListBW.close();
     }
 
 
