@@ -134,7 +134,6 @@ public class ObjectGenerator {
             try {
                 exportObjectList();
                 SimLogger.printLine("Object list generated");
-                System.exit(0);
             } catch (Exception e) {
                 SimLogger.printLine("Failed to generate object list");
                 System.exit(0);

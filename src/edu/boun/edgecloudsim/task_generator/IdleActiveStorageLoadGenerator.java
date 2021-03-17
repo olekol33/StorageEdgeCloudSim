@@ -365,7 +365,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         FileWriter taskListFW = null;
         BufferedWriter taskListBW = null;
 
-        taskListFile = new File(SimLogger.getInstance().getOutputFolder(), "TASK_LIST.txt");
+//        taskListFile = new File(SimLogger.getInstance().getOutputFolder(), "TASK_LIST.txt");
+        taskListFile = new File("/tmp/TASK_LIST.txt");
         taskListFW = new FileWriter(taskListFile, false);
         taskListBW = new BufferedWriter(taskListFW);
         taskListBW.write("startTime,length,inputFileSize,outputFileSize,taskType,pesNumber,mobileDeviceId,objectRead,ioTaskID");
