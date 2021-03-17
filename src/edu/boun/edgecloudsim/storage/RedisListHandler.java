@@ -78,12 +78,8 @@ public class RedisListHandler {
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
     public static void orbitCreateList(String objectPlacementPolicy, int currentHost){
-        //TEST
         Jedis jedis;
-        if(currentHost==0)
-            jedis = new Jedis(localhost, 6379);
-        else
-            jedis = new Jedis(localhost, 6380);
+        jedis = new Jedis(localhost, 6379);
 
         OG = new ObjectGenerator(objectPlacementPolicy);
         //Generate Redis objects for this host
