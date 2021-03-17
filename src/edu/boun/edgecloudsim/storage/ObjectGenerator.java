@@ -154,7 +154,7 @@ public class ObjectGenerator {
         FileWriter objectListFW = null;
         BufferedWriter objectListBW = null;
 
-        objectListFile = new File(SimLogger.getInstance().getOutputFolder(), "/tmp/object_list.csv");
+        objectListFile = new File("/tmp/object_list.csv");
         objectListFW = new FileWriter(objectListFile, false);
         objectListBW = new BufferedWriter(objectListFW);
         objectListBW.write("objectID,objectLocations");
@@ -171,12 +171,13 @@ public class ObjectGenerator {
         }
         objectListBW.close();
         //metadata list
-        objectListFile = new File(SimLogger.getInstance().getOutputFolder(), "/tmp/stripe_list.csv");
+        if (!objectPlacementPolicy.equalsIgnoreCase("REPLICATION_PLACE")){
+        objectListFile = new File("/tmp/stripe_list.csv");
         objectListFW = new FileWriter(objectListFile, false);
         objectListBW = new BufferedWriter(objectListFW);
         objectListBW.write("dataObjects,parityObjects");
         objectListBW.newLine();
-        if (!objectPlacementPolicy.equalsIgnoreCase("REPLICATION_PLACE")){
+
 
 
             for (Map<String, String> object : metadataObjects) {
