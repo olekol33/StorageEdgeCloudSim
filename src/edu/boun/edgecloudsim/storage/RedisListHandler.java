@@ -66,7 +66,7 @@ public class RedisListHandler {
     //Generate list of all object locations in the system for orchestration
     private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
         File objectFile = new File("/tmp/Object_Locations.txt");
-        FileWriter objectFW = new FileWriter(objectFile, true);
+        FileWriter objectFW = new FileWriter(objectFile, false);
         BufferedWriter objectBW = new BufferedWriter(objectFW);
         objectBW.write("object,locations\n");
         for (Map<String,String> KV : OG.getListOfObjects()) {
@@ -88,12 +88,12 @@ public class RedisListHandler {
             jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
-/*        try {
+        try {
             listObjectInSystem(OG);
         }
         catch (Exception e){
             System.out.println("Failed to generate object list");
-        }*/
+        }
 
         SimLogger.print("Created Redis KV on host: " + currentHost + " with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
