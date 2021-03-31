@@ -120,7 +120,7 @@ public class OrbitMain {
 						// Storage: Generate Redis KV list on hosts
 						if (runType.equals("host")) {
 							RedisListHandler.closeConnection();
-							RedisListHandler.orbitCreateList(objectPlacementPolicy, currentHost);
+							RedisListHandler.orbitCreateList(objectPlacementPolicy, String.valueOf(currentHost));
 							System.out.println("Objects placed on host " + currentHost);
 							System.exit(0);
 						}

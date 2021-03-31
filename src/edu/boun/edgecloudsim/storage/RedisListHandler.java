@@ -19,10 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,15 +74,21 @@ public class RedisListHandler {
     }
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
-    public static void orbitCreateList(String objectPlacementPolicy, int currentHost){
+    public static void orbitCreateList(String objectPlacementPolicy, String currentHost){
         Jedis jedis;
         jedis = new Jedis(localhost, 6379);
 
         OG = new ObjectGenerator(objectPlacementPolicy);
         //Generate Redis objects for this host
         for (Map<String,String> KV : OG.getListOfObjects()) {
-            jedis.hmset("object:" + KV.get("id"), KV);
-            jedis.expire("object:" + KV.get("id"),100000);
+            String locations = KV.get("locations");
+            StringTokenizer st = new StringTokenizer(locations, " "); // Space as delimiter
+            Set<String> locationsSet = new HashSet<String>();
+            while (st.hasMoreTokens())
+                locationsSet.add(st.nextToken());
+            if (locationsSet.contains(currentHost))
+                jedis.hmset("object:" + KV.get("id"), KV);
+//            jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
         try {
