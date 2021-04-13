@@ -63,14 +63,31 @@ public class RedisListHandler {
     //Generate list of all object locations in the system for orchestration
     private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
         File objectFile = new File("/tmp/Object_Locations.txt");
-        FileWriter objectFW = new FileWriter(objectFile, false);
-        BufferedWriter objectBW = new BufferedWriter(objectFW);
+        File objectDistFile = new File("/tmp/OBJECT_DISTRIBUTION.txt");
+        FileWriter objectFW = new FileWriter(objectFile, false),
+                objectDistFW = new FileWriter(objectDistFile, false);
+        BufferedWriter objectBW = new BufferedWriter(objectFW),
+                objectDistBW = new BufferedWriter(objectDistFW);
+
+
         objectBW.write("object,locations\n");
+        objectDistBW.write("Object Name;Object Type;Occurrences");
+        objectDistBW.newLine();
         for (Map<String,String> KV : OG.getListOfObjects()) {
             objectBW.write("object:" + KV.get("id")+","+KV.get("locations"));
             objectBW.newLine();
+
+            //OBJECT_DISTRIBUTION
+            String locations = (String)KV.get("locations");
+            StringTokenizer st= new StringTokenizer(locations, " "); // Space as delimiter
+            Set<String> locationsSet = new HashSet<String>();
+            while (st.hasMoreTokens())
+                locationsSet.add(st.nextToken());
+            objectDistBW.write(KV.get("id")+","+KV.get("type")+","+locationsSet.size());
+            objectDistBW.newLine();
         }
         objectBW.close();
+        objectDistBW.close();
     }
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
