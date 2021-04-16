@@ -33,6 +33,7 @@ public class ParseStorageNodes {
                 writer.write(sb.toString());
                 mapIndex++;
             }
+            System.out.println("The nodes have been exported to Nodes_Hash.csv successfully!!!");
         }
         catch(FileNotFoundException e){
             System.out.println(e.getMessage());
@@ -160,6 +161,7 @@ public class ParseStorageNodes {
                 StorageNode sNode = new StorageNode(mapIndex-1,Double.parseDouble(objects[1]),Double.parseDouble(objects[2]),Integer.parseInt(objects[3]),Integer.parseInt(objects[4]),Integer.parseInt(objects[5]));
                 nodesVector.add(sNode);
             }
+            System.out.println("The nodes' vector successfully created!!!");
             /*
             System.out.println("Displaying HashMap:");
             for(Map.Entry m: map.entrySet()){
@@ -171,6 +173,7 @@ public class ParseStorageNodes {
 
             //write the edge_device.xml file
             xmlWrite(nodesVector);
+            System.out.println("The edge_devices.xml file has been overwrite successfully!!!");
         }
         catch (IOException e){
             e.printStackTrace();

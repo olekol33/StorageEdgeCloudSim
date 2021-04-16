@@ -86,6 +86,7 @@ public class ParseStorageRequests {
                 //StorageRequest sRequest = new StorageRequest(objects[0],Double.parseDouble(objects[1]),objects[2],Integer.parseInt(objects[3]),Integer.parseInt(objects[4]),Double.parseDouble(objects[5]));
                 requestsVector.add(sRequest);
             }
+            System.out.println("The requests' vector successfully created!!!");
         /*
         System.out.println("Displaying HashMap:");
         for(Map.Entry m: map.entrySet()){

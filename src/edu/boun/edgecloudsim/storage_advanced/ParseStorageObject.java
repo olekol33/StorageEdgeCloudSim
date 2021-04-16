@@ -28,6 +28,7 @@ public class ParseStorageObject {
                 sb.append("\n");
                 writer.write(sb.toString());
             }
+            System.out.println("The objects have been exported to Objects_Hash.csv successfully!!!");
         }
         catch(FileNotFoundException e){
             System.out.println(e.getMessage());
@@ -135,6 +136,7 @@ public class ParseStorageObject {
                 }
                 lineCounter++;
             }
+            System.out.println("The objects' list successfully created!!!");
             /*
             System.out.println("Displaying HashMap:");
             for(Map.Entry m: map.entrySet()){

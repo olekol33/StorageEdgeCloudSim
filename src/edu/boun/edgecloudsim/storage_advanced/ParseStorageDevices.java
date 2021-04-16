@@ -35,6 +35,7 @@ public class ParseStorageDevices {
                 writer.write(sb.toString());
                 mapIndex++;
             }
+            System.out.println("The devices have been exported to Devices_Hash.csv successfully!!!");
         }
         catch(FileNotFoundException e){
             System.out.println(e.getMessage());
@@ -118,6 +119,7 @@ public class ParseStorageDevices {
                 StorageDevice sDevice = new StorageDevice(newName,Double.parseDouble(objects[1]),Double.parseDouble(objects[2]),Double.parseDouble(objects[3]));
                 devicesVector.add(sDevice);
             }
+            System.out.println("The devices' vector successfully created!!!");
         /*
         System.out.println("Displaying HashMap:");
         for(Map.Entry m: map.entrySet()){
