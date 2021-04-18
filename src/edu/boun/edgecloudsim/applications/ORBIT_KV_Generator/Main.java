@@ -40,7 +40,7 @@ public class Main {
         }
         RedisListHandler.closeConnection();
 
-		RedisListHandler.orbitCreateList("CODING_PLACE",currentHost);
+		RedisListHandler.orbitCreateList("CODING_PLACE",String.valueOf(currentHost));
 
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date SimulationStartDate = Calendar.getInstance().getTime();

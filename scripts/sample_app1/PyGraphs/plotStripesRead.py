@@ -36,6 +36,16 @@ failedTaskDuetoLanBw = 4
 failedTaskDuetoManBw = 5
 failedTaskDuetoWanBw = 6
 
+def renamePolicy(string):
+    if "CODING" in string:
+        return "CODING_READ"
+    elif "NEAREST" in string:
+        return "BASIC_REPLICATION"
+    elif "DATA_PARITY" in string:
+        return "REPLICATION_CODING_READ"
+    else:
+        return "IMPROVED_REPLICATION"
+
 def plotStripesRead():
     print("Running " + plotStripesRead.__name__)
     folderPath = getConfiguration("folderPath")
@@ -64,8 +74,9 @@ def plotStripesRead():
     type_read_total = pd.DataFrame(index=numOfDevices)
     type_read_data = pd.DataFrame(index=numOfDevices)
     type_read_parity = pd.DataFrame(index=numOfDevices)
-    markers = ['s', 'x', 'o', '.', ',','^']
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd','#7f7f7f','#4F0041']
+    markers = ['s', 'x', 'o', '^', ',','^']
+    # colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd','#7f7f7f','#4F0041']
+
     for p, objectPlacement in enumerate(objectPlacements):
         for o, orchestratorPolicy in enumerate(orchestratorPolicies):
             all_results = np.zeros((numOfSimulations, len(scenarioType), numOfMobileDevices))
@@ -112,8 +123,10 @@ def plotStripesRead():
                 # type_read_parity[policy] = parity_col
                 # type_read_total[policy] = total_col
                 if policy in latencies:
-                    ax.scatter(numOfDevices, latencies[policy], marker=markers[o])
-                    ax.plot(numOfDevices, latencies[policy], marker=markers[o], label=policy)
+                    # ax.scatter(numOfDevices, latencies[policy], marker=markers[o],s=30)
+                    # ax.plot(numOfDevices, latencies[policy], marker=markers[o], label=policy)
+                    ax.scatter(numOfDevices, latencies[policy], s=30)
+                    ax.plot(numOfDevices, latencies[policy], label=policy)
                     # header = "configuration,devices,policy,latency\n"
                     # for col in latencies.columns:
                     #     for index, row in type_read_total.iterrows():
@@ -186,8 +199,10 @@ def plotStripesRead():
 
         for index, row in count_df.iterrows():
             x = row["Policy"].split(" | ")
-            plt.scatter(x=row["Latency"], y=row["Cost"], color=colors[orchestratorPolicies.index(x[1])],
-                        marker=markers[objectPlacements.index(x[0])],alpha=0.7)
+            # plt.scatter(x=row["Latency"], y=row["Cost"], color=colors[orchestratorPolicies.index(x[1])],
+            plt.scatter(x=row["Latency"], y=row["Cost"], marker=markers[orchestratorPolicies.index(x[1])],
+                        alpha=0.7, s=30)
+                        # marker=markers[objectPlacements.index(x[0])],alpha=0.7, s=30)
             min_value=min(min_value,row["Latency"],row["Cost"])
             max_value=max(max_value,row["Latency"],row["Cost"])
         ax.set_xlabel("Latency")
@@ -201,13 +216,14 @@ def plotStripesRead():
         # legend2 = ax.legend(*scatter.legend_elements(**kw),
         #                     loc="lower right", title="Price")
         # ax.legend(markers[0:len(objectPlacements)], objectPlacements)
-        f = lambda m, c: plt.plot([], [], marker=m, color=c, ls="none")[0]
-        handles = [f("s", colors[i]) for i in range(len(orchestratorPolicies))]
-        handles += [f(markers[i], "k") for i in range(len(objectPlacements))]
+        # f = lambda m, c: plt.plot([], [], marker=m, color=c, ls="none")[0]
+        # handles = [f("s", colors[i]) for i in range(len(orchestratorPolicies))]
+        # handles = [f("s", markers[i]) for i in range(len(orchestratorPolicies))]
+        # handles += [f(markers[i], "k") for i in range(len(objectPlacements))]
 
-        labels = orchestratorPolicies + objectPlacements
-
-        ax.legend(handles, labels, loc=0, framealpha=0.6,prop={'size': 8})
+        # labels = orchestratorPolicies + objectPlacements
+        policies = ["CODING_READ", "REPLICATION_CODING_READ", "IMPROVED_REPLICATION", "BASIC_REPLICATION"]
+        # ax.legend(handles, policies, loc=0, framealpha=0.6,prop={'size': 8})
         ax.set_title("Redundancy Cost vs Latency for " + str(count) + " Devices",y=1.05, fontsize=20)
         # fig.suptitle('test title', fontsize=20)
         fig.tight_layout()
@@ -218,16 +234,17 @@ def plotStripesRead():
     for count in latency_requests_df["Devices"].unique():
         fig, ax = plt.subplots(1, 1)
         count_df = latency_requests_df[latency_requests_df.Devices==count]
-        min_value=1000
-        max_value=0
         for index, row in count_df.iterrows():
             x = row["Policy"].split(" | ")
-            plt.scatter(x=row["Latency"], y=row["Requests"], color=colors[orchestratorPolicies.index(x[1])],
-                        marker=markers[objectPlacements.index(x[0])],alpha=0.7)
+            # plt.scatter(x=row["Latency"], y=row["Requests"], color=colors[orchestratorPolicies.index(x[1])],
+            # plt.scatter(x=row["Latency"], y=row["Requests"], marker=markers[orchestratorPolicies.index(x[1])],
+            plt.scatter(x=row["Latency"], y=row["Requests"], marker=markers[index],
+                        alpha=0.7,s=80,label=renamePolicy(row["Policy"]))
+                        # marker=markers[objectPlacements.index(x[0])],alpha=0.7,s=40)
             # min_value=min(min_value,row["Latency"],row["Requests"])
             # max_value=max(max_value,row["Latency"],row["Requests"])
-        ax.set_xlabel("Latency")
-        ax.set_ylabel("Completed Requests")
+        ax.set_xlabel("Latency [seconds]", fontsize=13)
+        ax.set_ylabel("Completed Requests", fontsize=13)
         ax.grid(True)
         # x = np.linspace(min_value, max_value, 100)
         # plt.plot(x, x, '-r',alpha=0.3,linewidth=0.5)
@@ -237,14 +254,18 @@ def plotStripesRead():
         # legend2 = ax.legend(*scatter.legend_elements(**kw),
         #                     loc="lower right", title="Price")
         # ax.legend(markers[0:len(objectPlacements)], objectPlacements)
-        f = lambda m, c: plt.plot([], [], marker=m, color=c, ls="none")[0]
-        handles = [f("s", colors[i]) for i in range(len(orchestratorPolicies))]
-        handles += [f(markers[i], "k") for i in range(len(objectPlacements))]
+        # f = lambda m, c: plt.plot([], [], marker=m, color=c, ls="none")[0]
+        # f = lambda m: plt.plot([], [], marker=m, ls="none")[0]
+        # handles = [f("s", colors[i]) for i in range(len(orchestratorPolicies))]
+        # handles = [f("s", markers[i]) for i in range(len(orchestratorPolicies))]
+        # handles += [f(markers[i], "k") for i in range(len(objectPlacements))]
 
         labels = orchestratorPolicies + objectPlacements
 
-        ax.legend(handles, labels, loc=0, framealpha=0.6,prop={'size': 8})
-        ax.set_title("Completed Requests vs Latency for " + str(count) + " Devices",y=1.05, fontsize=20)
+        # ax.legend(handles, policies, loc=0, framealpha=0.6,prop={'size': 14})
+        ax.legend(loc=0, framealpha=0.6,prop={'size': 11})
+        ax.tick_params(labelsize=11)
+        # ax.set_title("Completed Requests vs Latency for " + str(count) + " Devices",y=1.05, fontsize=20)
         # fig.suptitle('test title', fontsize=20)
         fig.tight_layout()
         fig.savefig(folderPath + '\\fig\\Completed Requests vs Latency ' + str(count) + ' Devices.png',
@@ -253,4 +274,4 @@ def plotStripesRead():
 
 
 
-# plotStripesRead()
+plotStripesRead()

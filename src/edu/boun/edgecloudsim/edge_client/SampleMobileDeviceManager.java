@@ -54,7 +54,6 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 	static final int REQUEST_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_NEIGHBOR = BASE + 5;
 	static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 6;
 	static final int RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE = BASE + 7;
-
 	protected static final double MM1_QUEUE_MODEL_UPDATE_INTEVAL = 5; //seconds
 	
 	private int taskIdCounter=0;
@@ -391,5 +390,9 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 		}
 		
 		return task;
+	}
+
+	public static double getMm1QueueModelUpdateInteval() {
+		return MM1_QUEUE_MODEL_UPDATE_INTEVAL;
 	}
 }

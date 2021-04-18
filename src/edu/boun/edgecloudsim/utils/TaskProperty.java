@@ -29,7 +29,8 @@ public class TaskProperty {
 	private int ioTaskID;
 	private int isParity;
 	private int accessHostID;
-    
+	private int hostID;
+
     public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {
     	startTime=_startTime;
     	mobileDeviceId=_mobileDeviceId;
@@ -86,8 +87,25 @@ public class TaskProperty {
 		length = _length;
 
 		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+	}
 
+	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
+						int _isParity, int _paritiesToRead, long _inputFileSize, long _outputFileSize, long _length,
+						int _hostID) {
+		mobileDeviceId=_mobileDeviceId;
+		startTime=_startTime;
+		taskType=_taskType;
+		objectRead = _objectID;
+		ioTaskID = _ioTaskID;
+		paritiesToRead = _paritiesToRead;
+		isParity = _isParity;
 
+		inputFileSize = _inputFileSize;
+		outputFileSize =_outputFileSize;
+		length = _length;
+		hostID = _hostID;
+
+		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
 	}
     
     public double getStartTime(){
@@ -136,6 +154,11 @@ public class TaskProperty {
 	}
 	public int getIsParity() {
 		return isParity;
+	}
+
+
+	public int getHostID() {
+		return hostID;
 	}
 
 	public void setAccessHostID(int accessHostID) {

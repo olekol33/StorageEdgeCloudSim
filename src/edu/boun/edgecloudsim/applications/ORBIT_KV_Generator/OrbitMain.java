@@ -49,34 +49,14 @@ public class OrbitMain {
 		String outputFolder = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
-/*		if (args.length == 5){
-			configFile = args[0];
-			edgeDevicesFile = args[1];
-			applicationsFile = args[2];
-			outputFolder = args[3];
-			iterationNumber = Integer.parseInt(args[4]);
-		}
-		else if (args.length == 1){
-			configFile = args[0];
-			applicationsFile = "scripts/sample_app5/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
-		}
-		else{
-			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "scripts/sample_app5/config/default_config.properties";
-			applicationsFile = "scripts/sample_app5/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
-		}*/
 
 
 
-
-		if (args.length == 3){
+		if (args.length == 2){
 			runType = args[0];
 			currentHost = Integer.valueOf(args[1]);
-			currentTime = Long.valueOf(args[2]);
+//			currentTime = Long.valueOf(args[2]);
+			currentTime = Instant.now().toEpochMilli();
 		}
 		else {
 			runType = "client";
@@ -140,7 +120,7 @@ public class OrbitMain {
 						// Storage: Generate Redis KV list on hosts
 						if (runType.equals("host")) {
 							RedisListHandler.closeConnection();
-							RedisListHandler.orbitCreateList(objectPlacementPolicy, currentHost);
+							RedisListHandler.orbitCreateList(objectPlacementPolicy, String.valueOf(currentHost));
 							System.out.println("Objects placed on host " + currentHost);
 							System.exit(0);
 						}

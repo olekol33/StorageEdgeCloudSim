@@ -57,7 +57,10 @@ public class SimSettings {
     private double INTERVAL_TO_GET_VM_LOCATION_LOG; //minutes unit in properties file
     private boolean FILE_LOG_ENABLED; //boolean to check file logging option
     private boolean DEEP_FILE_LOG_ENABLED; //boolean to check deep file logging option
+	private boolean STORAGE_LOG_ENABLED;
 	private boolean CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION; //boolean to check deep file logging option
+	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
+	private boolean OVERHEAD_SCAN;
 
     private int MIN_NUM_OF_MOBILE_DEVICES;
     private int MAX_NUM_OF_MOBILE_DEVICES;
@@ -91,6 +94,8 @@ public class SimSettings {
 
 	private String[] OBJECT_PLACEMENT;
 
+	private String[] FAIL_SCENARIOS;
+
     // mean waiting time (minute) is stored for each place types
     private double[] mobilityLookUpTable;
 
@@ -120,10 +125,12 @@ public class SimSettings {
 
 	//Host failure
 	private boolean HOST_FAILURE_SCENARIO;
+	private boolean DYNAMIC_FAILURE;
 	private String HOST_FAILURE_ID;
 	private double HOST_FAILURE_TIME;
 
 	private boolean VARIABILITY_RUN;
+	private boolean MMPP;
 	private int VARIABILITY_ITERATIONS;
 
 	//ORBIT
@@ -197,7 +204,10 @@ public class SimSettings {
 			INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
 			FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("file_log_enabled"));
 			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
+			STORAGE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("storage_log_enabled"));
 			CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = Boolean.parseBoolean(prop.getProperty("terminate_failed_run"));
+			COUNT_FAILEDDUETOINACCESSIBILITY = Boolean.parseBoolean(prop.getProperty("count_failedDueToInaccessibility"));
+			OVERHEAD_SCAN = Boolean.parseBoolean(prop.getProperty("overhead_scan"));
 
 			MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
 			MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
@@ -225,13 +235,16 @@ public class SimSettings {
 			
 			SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
 			OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
+			FAIL_SCENARIOS = prop.getProperty("fail_scenarios").split(",");
 
 			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
+			DYNAMIC_FAILURE = Boolean.parseBoolean(prop.getProperty("dynamic_failure"));
 			HOST_FAILURE_ID = prop.getProperty("host_failure_id");
 			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
 
 			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
 			VARIABILITY_RUN = Boolean.parseBoolean(prop.getProperty("variability_run"));
+			MMPP = Boolean.parseBoolean(prop.getProperty("mmpp"));
 			VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
@@ -367,6 +380,11 @@ public class SimSettings {
 	public boolean getDeepFileLoggingEnabled()
 	{
 		return DEEP_FILE_LOG_ENABLED; 
+	}
+
+
+	public boolean isStorageLogEnabled() {
+		return STORAGE_LOG_ENABLED;
 	}
 
 	/**
@@ -582,8 +600,17 @@ public class SimSettings {
 		return OBJECT_PLACEMENT;
 	}
 
+
+	public String[] getFailScenarios() {
+		return FAIL_SCENARIOS;
+	}
+
 	public boolean isHostFailureScenario() {
 		return HOST_FAILURE_SCENARIO;
+	}
+
+	public boolean isDynamicFailure() {
+		return DYNAMIC_FAILURE;
 	}
 
 	public void setHostFailureScenario(boolean HOST_FAILURE_SCENARIO) {
@@ -599,6 +626,15 @@ public class SimSettings {
 		return CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION;
 	}
 
+
+	public boolean isCountFailedduetoinaccessibility() {
+		return COUNT_FAILEDDUETOINACCESSIBILITY;
+	}
+
+	public boolean isOverheadScan() {
+		return OVERHEAD_SCAN;
+	}
+
 	public double getHostFailureTime() {
 		return HOST_FAILURE_TIME;
 	}
@@ -610,6 +646,10 @@ public class SimSettings {
 
 	public boolean isVariabilityRun() {
 		return VARIABILITY_RUN;
+	}
+
+	public boolean isMMPP() {
+		return MMPP;
 	}
 
 	public int getVariabilityIterations() {
@@ -795,6 +835,15 @@ public class SimSettings {
 
 	public int getNumOfDataObjects() {
 		return NUM_OF_DATA_OBJECTS;
+	}
+
+	public void setNumOfDataObjects(int NUM_OF_DATA_OBJECTS) {
+		this.NUM_OF_DATA_OBJECTS = NUM_OF_DATA_OBJECTS;
+	}
+
+
+	public void setNumOfStripes(int NUM_OF_STRIPES) {
+		this.NUM_OF_STRIPES = NUM_OF_STRIPES;
 	}
 
 	public boolean isNsfExperiment() {

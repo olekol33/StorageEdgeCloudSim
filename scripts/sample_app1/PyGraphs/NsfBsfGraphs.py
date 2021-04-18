@@ -73,6 +73,7 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
         fileName = Filter(files, ''.join(['SIMRESULT_',lambda0,'_',lambda1]))
         filePath = ''.join([folderPath, '\ite1\\',fileName[0]])
         data = pd.read_csv(filePath, delimiter=';')
+        # data.latency = data.latency.astype(float)
         latencies=latencies.append({'lambda0':lambda0, 'lambda1':lambda1, 'Latency':data.latency.mean(),
                                     "Tasks": data.latency.count()}, ignore_index=True)
 
