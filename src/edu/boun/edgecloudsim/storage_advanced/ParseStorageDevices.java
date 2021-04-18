@@ -7,9 +7,9 @@ import java.util.Vector;
 
 public class ParseStorageDevices {
 
+//TODO: check the device in range of nodes (for oleg)
+
 //changed
-
-
 
     public static void csvWrite(HashMap<Integer,String> h) throws Exception{
         try {
@@ -135,4 +135,5 @@ public class ParseStorageDevices {
         }
         return map;
     }
+
 }

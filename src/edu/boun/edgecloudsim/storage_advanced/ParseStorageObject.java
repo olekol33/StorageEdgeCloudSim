@@ -3,6 +3,7 @@ package edu.boun.edgecloudsim.storage_advanced;
 import java.io.*;
 import java.util.*;
 
+//changed
 
 public class ParseStorageObject {
 
@@ -41,6 +42,7 @@ public class ParseStorageObject {
         String splitVectorBy = " ";
         int lineCounter = 1;
 
+        //TODO: change to exception
         if(nodesHashVector.size() == 0){
             System.out.println("EMPTY!!!");
         }
@@ -128,6 +130,7 @@ public class ParseStorageObject {
                 objectsList.add(so);
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
+                //checks if the sum of the probabilities is less then or equal to 1
                 if(sum <= 1) {
                     //System.out.println("The sum is: " + sum);
                 }else{
