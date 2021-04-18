@@ -8,10 +8,26 @@ from pathlib import Path
 from os.path import isfile, join
 from os import listdir
 import re
+import matplotlib
+import seaborn as sns
+matplotlib.rcParams['ps.useafm'] = True
+matplotlib.rcParams['pdf.use14corefonts'] = True
+sns.set_style({'font.family':'serif', 'font.serif':'Times New Roman'})
 
 def Filter(list, subs):
     filter_data = [i for i in list if subs in i]
     return filter_data
+
+def renamePolicy(string):
+    if "CODING" in string:
+        return "CODING_READ"
+    elif "NEAREST" in string:
+        return "BASIC_REPLICATION"
+    elif "DATA_PARITY" in string:
+        return "REPLICATION_CODING_READ"
+    else:
+        return "IMPROVED_REPLICATION"
+
 
 def getConfiguration(argType):
     if (argType == "folderPath"): #1
@@ -32,7 +48,8 @@ def getConfiguration(argType):
         # return ['SINGLE_TIER','TWO_TIER']
         return ['SINGLE_TIER']
     elif (argType == "legends"):    #8
-        return ['1-tier','2-tier','2-tier with EO']
+        # return ['1-tier','2-tier','2-tier with EO']
+        return ['1-tier']
 #    elif (argType == 9):
 #        return [10 3 12 12] #position of figure
     elif (argType == "xLabel"):   #10
@@ -45,7 +62,8 @@ def getConfiguration(argType):
          # return ['NEAREST_WITH_PARITY']
          # return ['UNIFORM_HOST','NEAREST_HOST','IF_CONGESTED_READ_PARITY','IF_CONGESTED_READ_ONLY_PARITY',
          #         'CLOUD_OR_NEAREST_IF_CONGESTED']
-         return ['NEAREST_HOST',
+         return [
+             'NEAREST_HOST',
                  # 'CLOUD_OR_NEAREST_IF_CONGESTED',
                  'IF_CONGESTED_READ_PARITY']
                  # 'CLOUD_OR_NEAREST_IF_CONGESTED','SHORTEST_QUEUE']
@@ -53,8 +71,8 @@ def getConfiguration(argType):
          # return ['NEAREST_OR_PARITY']
     elif (argType == "objectPlacement"):  #14
          # return ['DATA_PARITY_PLACE','CODING_PLACE']
-         # return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
-         return ['REPLICATION_PLACE']
+         return ['CODING_PLACE','REPLICATION_PLACE','DATA_PARITY_PLACE']
+         # return ['REPLICATION_PLACE']
          # return ['NEAREST_OR_PARITY']
     elif (argType == "runType"):
         folderPath = ''.join([getConfiguration("folderPath"), '\ite1'])

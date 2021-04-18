@@ -14,10 +14,12 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.util.Slowlog;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import javax.swing.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,15 +60,61 @@ public class RedisListHandler {
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
 
+    //Generate list of all object locations in the system for orchestration
+    private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
+        File objectFile = new File("/tmp/Object_Locations.txt");
+        File objectDistFile = new File("/tmp/OBJECT_DISTRIBUTION.txt");
+        FileWriter objectFW = new FileWriter(objectFile, false),
+                objectDistFW = new FileWriter(objectDistFile, false);
+        BufferedWriter objectBW = new BufferedWriter(objectFW),
+                objectDistBW = new BufferedWriter(objectDistFW);
+
+
+        objectBW.write("object,locations\n");
+        objectDistBW.write("Object Name;Object Type;Occurrences");
+        objectDistBW.newLine();
+        for (Map<String,String> KV : OG.getListOfObjects()) {
+            objectBW.write("object:" + KV.get("id")+","+KV.get("locations"));
+            objectBW.newLine();
+
+            //OBJECT_DISTRIBUTION
+            String locations = (String)KV.get("locations");
+            StringTokenizer st= new StringTokenizer(locations, " "); // Space as delimiter
+            Set<String> locationsSet = new HashSet<String>();
+            while (st.hasMoreTokens())
+                locationsSet.add(st.nextToken());
+            objectDistBW.write(KV.get("id")+","+KV.get("type")+","+locationsSet.size());
+            objectDistBW.newLine();
+        }
+        objectBW.close();
+        objectDistBW.close();
+    }
+
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
-    public static void orbitCreateList(String objectPlacementPolicy, int currentHost){
-        Jedis jedis = new Jedis(localhost, 6379);
+    public static void orbitCreateList(String objectPlacementPolicy, String currentHost){
+        Jedis jedis;
+        jedis = new Jedis(localhost, 6379);
+
         OG = new ObjectGenerator(objectPlacementPolicy);
-        for (Map<String,String> KV : OG.getObjectsInHosts().get(currentHost)) {
-            jedis.hmset("object:" + KV.get("id"), KV);
-            jedis.expire("object:" + KV.get("id"),100000);
+        //Generate Redis objects for this host
+        for (Map<String,String> KV : OG.getListOfObjects()) {
+            String locations = KV.get("locations");
+            StringTokenizer st = new StringTokenizer(locations, " "); // Space as delimiter
+            Set<String> locationsSet = new HashSet<String>();
+            while (st.hasMoreTokens())
+                locationsSet.add(st.nextToken());
+            if (locationsSet.contains(currentHost))
+                jedis.hmset("object:" + KV.get("id"), KV);
+//            jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
+        try {
+            listObjectInSystem(OG);
+        }
+        catch (Exception e){
+            System.out.println("Failed to generate object list");
+        }
+
         SimLogger.print("Created Redis KV on host: " + currentHost + " with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
@@ -83,6 +131,7 @@ public class RedisListHandler {
     public static void closeConnection(){
         Jedis jedis = new Jedis(localhost, 6379);
         jedis.flushAll();
+//        jedis.shutdown();
         jedis.quit();
     }
     //Get key list by pattern
@@ -197,6 +246,15 @@ public class RedisListHandler {
 
     public static int getNumOfParityInStripe() {
         return numOfParityInStripe;
+    }
+
+
+    public static void updateNumOfDataObjects() {
+        RedisListHandler.numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+    }
+
+    public static void updateNumOfStripes() {
+        RedisListHandler.numOfStripes = SimSettings.getInstance().getNumOfStripes();
     }
 
 

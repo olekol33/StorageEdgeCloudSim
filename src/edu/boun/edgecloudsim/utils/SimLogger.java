@@ -23,10 +23,16 @@ import java.util.stream.IntStream;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.core.SimSettings.NETWORK_DELAY_TYPES;
+import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
+import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
+import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
+import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
+import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEntity;
 
@@ -201,6 +207,21 @@ public class SimLogger {
 	public void failedDueToBandwidth(int taskId, double time, NETWORK_DELAY_TYPES delayType) {
 		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
 	}
+	public void failedDueToBandwidth(int taskId, double time, NETWORK_DELAY_TYPES delayType, Task task) {
+		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
+		//Count if parity and to read or if not parity
+		if (task.getIsParity() == task.getParitiesToRead()) {
+			//Give the system time to warm up
+/*			if (CloudSim.clock() < SimSettings.getInstance().getWarmUpPeriod())
+				return;*/
+			MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
+			//increment by 1
+			((StorageMobileDeviceManager) mobileDeviceManager).incrementFailedDueToBW();
+			//Check if need to terminate
+			if (SimSettings.getInstance().isTerminateFailedRun())
+				((StorageMobileDeviceManager) mobileDeviceManager).terminateFailedRun();
+		}
+	}
 
 	public void failedDueToMobility(int taskId, double time) {
 		taskMap.get(taskId).taskFailedDueToMobility(time);
@@ -216,6 +237,23 @@ public class SimLogger {
 
 	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType) {
 		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
+
+	}
+
+	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType, Task task) {
+		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
+		//Count if parity and to read (1) or if not parity (0)
+		if (task.getIsParity() == task.getParitiesToRead()) {
+			//Give the system time to warm up
+/*			if (CloudSim.clock() < SimSettings.getInstance().getWarmUpPeriod())
+				return;*/
+			MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
+			//increment by 1
+			((StorageMobileDeviceManager) mobileDeviceManager).incrementFailedDueToInaccessibility();
+			if (SimSettings.getInstance().isTerminateFailedRun())
+				((StorageMobileDeviceManager) mobileDeviceManager).terminateFailedRun();
+		}
+
 	}
 
 	public void addVmUtilizationLog(double time, double loadOnEdge, double loadOnCloud, double loadOnMobile) {
@@ -235,9 +273,10 @@ public class SimLogger {
 		objectDistFile = new File(outputFolder, filePrefix + "_OBJECT_DISTRIBUTION.log");
 		objectDistFW = new FileWriter(objectDistFile, true);
 		objectDistBW = new BufferedWriter(objectDistFW);
-
-		appendToFile(objectBW, "host;numOfObjects;dataObjects;meanData;medianData;parityObjects;meanParity;medianParity");
-		appendToFile(objectDistBW, "Object Name;Object Type;Occurrences");
+		if (fileLogEnabled && SimSettings.getInstance().isStorageLogEnabled()) {
+			appendToFile(objectBW, "host;numOfObjects;dataObjects;meanData;medianData;parityObjects;meanParity;medianParity");
+			appendToFile(objectDistBW, "Object Name;Object Type;Occurrences");
+		}
 
 		ObjectGenerator OG = RedisListHandler.getOG();
 		//Each iteration gets all objects in selected host
@@ -278,38 +317,39 @@ public class SimLogger {
 					.mapToInt((x) -> x)
 					.summaryStatistics();
 			int dataMiddle;
-			if (dataObjectPriorities.size()==0)
+			if (dataObjectPriorities.size()<=1)
 				dataMiddle=0;
 			else
 				dataMiddle = (dataObjectPriorities.get(dataObjectPriorities.size()/2) +dataObjectPriorities.get((dataObjectPriorities.size()/2)-1) )/2;
-			if (parityObjectPriorities.size()==0) {
-				appendToFile(objectBW, Integer.toString(entry.getKey())+SimSettings.DELIMITER +Integer.toString(objectsSet.size())+
-						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
-						Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER+Integer.toString(dataMiddle) +SimSettings.DELIMITER+
-						Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + "" +
-						SimSettings.DELIMITER + "");
-			}
-			else if (parityObjectPriorities.size()==1) {
-				appendToFile(objectBW, Integer.toString(entry.getKey())+SimSettings.DELIMITER +Integer.toString(objectsSet.size())+
-						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
-						Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER+Integer.toString(dataMiddle) +SimSettings.DELIMITER+
-						Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + parityObjectPriorities.get(0) +
-						SimSettings.DELIMITER + parityObjectPriorities.get(0));
-			}
-			else {
-				IntSummaryStatistics parityStats = parityObjectPriorities.stream()
-						.mapToInt((x) -> x)
-						.summaryStatistics();
-				int parityMiddle = (parityObjectPriorities.get(parityObjectPriorities.size() / 2) + parityObjectPriorities.get((parityObjectPriorities.size() / 2) - 1)) / 2;
-				appendToFile(objectBW, Integer.toString(entry.getKey()) + SimSettings.DELIMITER + Integer.toString(objectsSet.size()) +
-						SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
-						Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER + Integer.toString(dataMiddle) + SimSettings.DELIMITER +
-						Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + Double.toString(parityStats.getAverage()) +
-						SimSettings.DELIMITER + Integer.toString(parityMiddle));
+			if (fileLogEnabled && SimSettings.getInstance().isStorageLogEnabled()) {
+				if (parityObjectPriorities.size() == 0) {
+					appendToFile(objectBW, Integer.toString(entry.getKey()) + SimSettings.DELIMITER + Integer.toString(objectsSet.size()) +
+							SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
+							Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER + Integer.toString(dataMiddle) + SimSettings.DELIMITER +
+							Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + "" +
+							SimSettings.DELIMITER + "");
+				} else if (parityObjectPriorities.size() == 1) {
+					appendToFile(objectBW, Integer.toString(entry.getKey()) + SimSettings.DELIMITER + Integer.toString(objectsSet.size()) +
+							SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
+							Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER + Integer.toString(dataMiddle) + SimSettings.DELIMITER +
+							Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + parityObjectPriorities.get(0) +
+							SimSettings.DELIMITER + parityObjectPriorities.get(0));
+				} else {
+					IntSummaryStatistics parityStats = parityObjectPriorities.stream()
+							.mapToInt((x) -> x)
+							.summaryStatistics();
+					int parityMiddle = (parityObjectPriorities.get(parityObjectPriorities.size() / 2) + parityObjectPriorities.get((parityObjectPriorities.size() / 2) - 1)) / 2;
+					appendToFile(objectBW, Integer.toString(entry.getKey()) + SimSettings.DELIMITER + Integer.toString(objectsSet.size()) +
+							SimSettings.DELIMITER + Integer.toString(dataObjectPriorities.size()) + SimSettings.DELIMITER +
+							Double.toString(dataStats.getAverage()) + SimSettings.DELIMITER + Integer.toString(dataMiddle) + SimSettings.DELIMITER +
+							Integer.toString(parityObjectPriorities.size()) + SimSettings.DELIMITER + Double.toString(parityStats.getAverage()) +
+							SimSettings.DELIMITER + Integer.toString(parityMiddle));
+				}
 			}
 		}
 		List<Map> listOfObjects = new ArrayList<Map>(OG.getDataObjects());
-		listOfObjects.addAll(OG.getParityObjects());
+		if(OG.getParityObjects()!=null)
+			listOfObjects.addAll(OG.getParityObjects());
 		for (Map<String,String> KV : listOfObjects) {
 
 			String locations = (String)KV.get("locations");
@@ -317,8 +357,8 @@ public class SimLogger {
 			Set<String> locationsSet = new HashSet<String>();
 			while (st.hasMoreTokens())
 				locationsSet.add(st.nextToken());
-
-			appendToFile(objectDistBW, KV.get("id") + SimSettings.DELIMITER + KV.get("type") + SimSettings.DELIMITER+ locationsSet.size());
+			if (fileLogEnabled && SimSettings.getInstance().isStorageLogEnabled())
+				appendToFile(objectDistBW, KV.get("id") + SimSettings.DELIMITER + KV.get("type") + SimSettings.DELIMITER+ locationsSet.size());
 		}
 		objectBW.close();
 		objectDistBW.close();
@@ -429,11 +469,11 @@ public class SimLogger {
 		if (fileLogEnabled) {
 			if (SimSettings.getInstance().getDeepFileLoggingEnabled()) {
 				successFile = new File(outputFolder, filePrefix + "_SUCCESS.log");
-				successFW = new FileWriter(successFile, true);
+				successFW = new FileWriter(successFile, false);
 				successBW = new BufferedWriter(successFW);
 
 				failFile = new File(outputFolder, filePrefix + "_FAIL.log");
-				failFW = new FileWriter(failFile, true);
+				failFW = new FileWriter(failFile, false);
 				failBW = new BufferedWriter(failFW);
 			}
 
@@ -442,25 +482,28 @@ public class SimLogger {
 			vmLoadBW = new BufferedWriter(vmLoadFW);*/
 
 			locationFile = new File(outputFolder, filePrefix + "_LOCATION.log");
-			locationFW = new FileWriter(locationFile, true);
+			locationFW = new FileWriter(locationFile, false);
 			locationBW = new BufferedWriter(locationFW);
 
 			gridLocationFile = new File(outputFolder, filePrefix + "_GRID_LOCATION.log");
-			gridLocationFW = new FileWriter(gridLocationFile, true);
+			gridLocationFW = new FileWriter(gridLocationFile, false);
 			gridLocationBW = new BufferedWriter(gridLocationFW);
 			
 			//Objects log
 			objectsFile = new File(outputFolder, filePrefix + "_OBJECTS.log");
-			objectsFW = new FileWriter(objectsFile, true);
+			objectsFW = new FileWriter(objectsFile, false);
 			objectsBW = new BufferedWriter(objectsFW);
+			if (fileLogEnabled && SimSettings.getInstance().isStorageLogEnabled()) {
 //			appendToFile(objectsBW, "ObjectID;HostID;AccessID;ReadSrc;Read Delay;Status");
-			appendToFile(objectsBW, "ioTaskID;ObjectID;isParity;isParityToRead;HostID;AccessID;ReadSrc;Read Delay");
+				appendToFile(objectsBW, "ioTaskID;ObjectID;isParity;isParityToRead;HostID;AccessID;ReadSrc;Read Delay");
+			}
 
 			//readObjects log
 			readObjectsFile = new File(outputFolder, filePrefix + "_READOBJECTS.log");
-			readObjectsFW = new FileWriter(readObjectsFile, true);
+			readObjectsFW = new FileWriter(readObjectsFile, false);
 			readObjectsBW = new BufferedWriter(readObjectsFW);
-			appendToFile(readObjectsBW, "ioID;latency;Read Cost;type;Objects Read");
+			if (fileLogEnabled && SimSettings.getInstance().isStorageLogEnabled())
+				appendToFile(readObjectsBW, "ioID;latency;Read Cost;type;Objects Read");
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
 				//print only summary for now
