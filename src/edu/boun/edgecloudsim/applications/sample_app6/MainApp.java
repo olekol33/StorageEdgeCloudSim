@@ -14,6 +14,7 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 //import edu.boun.edgecloudsim.storage_advanced.RedisListHandler;
+import edu.boun.edgecloudsim.storage_advanced.ParseStorageNodes;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
@@ -21,18 +22,20 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 public class MainApp {
 
 	/**
 	 * Creates main() to run this example
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception{
 		//disable console output of cloudsim library
 		Log.disable();
 		
@@ -47,6 +50,15 @@ public class MainApp {
 		String[] codingPolicies = {"IF_CONGESTED_READ_PARITY"};
 		String[] replicationPolicies = {"IF_CONGESTED_READ_PARITY","NEAREST_HOST","CLOUD_OR_NEAREST_IF_CONGESTED"};
 		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
+
+		//Import nodes from external file
+		try {
+			ParseStorageNodes p1 = new ParseStorageNodes();
+			HashMap<Integer, String> nodesHashVector = p1.prepareNodesHashVector();
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];

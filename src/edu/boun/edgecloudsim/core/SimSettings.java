@@ -138,6 +138,8 @@ public class SimSettings {
 	private boolean PARAM_SCAN_MODE;
 	private int NUMBER_OF_EDGE_NODES;
 
+	//Input properties
+	private boolean CAST_THE_NODES;
 
 	//SPECIAL EXPERIMENT
 	private boolean NSF_EXPERIMENT;
@@ -248,6 +250,7 @@ public class SimSettings {
 			VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
+			//CAST_THE_NODES = Boolean.parseBoolean(prop.getProperty("cast_the_nodes"));
 
 			PARAM_SCAN_MODE = false;
 			NSF_EXPERIMENT = false;
@@ -643,6 +646,9 @@ public class SimSettings {
 		return ORBIT_MODE;
 	}
 
+	public boolean isCastingRequired(){
+		return CAST_THE_NODES;
+	}
 
 	public boolean isVariabilityRun() {
 		return VARIABILITY_RUN;

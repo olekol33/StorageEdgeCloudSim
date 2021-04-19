@@ -6,8 +6,8 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>5</x_pos>
-			<y_pos>5</y_pos>
+			<x_pos>0.23848285000000402</x_pos>
+			<y_pos>0.19362488000000155</y_pos>
 			<wlan_id>0</wlan_id>
 			<attractiveness>1</attractiveness>
 		</location>
@@ -17,14 +17,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -36,8 +36,8 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>7</x_pos>
-			<y_pos>7</y_pos>
+			<x_pos>0.2576008500000029</x_pos>
+			<y_pos>0.19606987999999603</y_pos>
 			<wlan_id>1</wlan_id>
 			<attractiveness>1</attractiveness>
 		</location>
@@ -47,14 +47,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -66,8 +66,8 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>9</x_pos>
-			<y_pos>9</y_pos>
+			<x_pos>0.2576008500000029</x_pos>
+			<y_pos>0.19606987999999603</y_pos>
 			<wlan_id>2</wlan_id>
 			<attractiveness>1</attractiveness>
 		</location>
@@ -77,14 +77,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -96,8 +96,8 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>11</x_pos>
-			<y_pos>11</y_pos>
+			<x_pos>0.16514485000000434</x_pos>
+			<y_pos>0.27292688</y_pos>
 			<wlan_id>3</wlan_id>
 			<attractiveness>1</attractiveness>
 		</location>
@@ -107,14 +107,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -126,10 +126,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>13</x_pos>
-			<y_pos>13</y_pos>
+			<x_pos>0.12066085000000015</x_pos>
+			<y_pos>0.3689748799999961</y_pos>
 			<wlan_id>4</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -137,14 +137,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -156,10 +156,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>15</x_pos>
-			<y_pos>15</y_pos>
+			<x_pos>0.24501384999999942</x_pos>
+			<y_pos>0.224395880000003</y_pos>
 			<wlan_id>5</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -167,14 +167,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -186,10 +186,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>17</x_pos>
-			<y_pos>17</y_pos>
+			<x_pos>0.2271388500000029</x_pos>
+			<y_pos>0.2017178800000039</y_pos>
 			<wlan_id>6</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -197,14 +197,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -216,10 +216,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>19</x_pos>
-			<y_pos>19</y_pos>
+			<x_pos>0.08936985000000419</x_pos>
+			<y_pos>0.2356838799999963</y_pos>
 			<wlan_id>7</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -227,14 +227,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -246,10 +246,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>21</x_pos>
-			<y_pos>21</y_pos>
+			<x_pos>0.24615084999999937</x_pos>
+			<y_pos>0.199176879999996</y_pos>
 			<wlan_id>8</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -257,14 +257,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -276,10 +276,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>23</x_pos>
-			<y_pos>23</y_pos>
+			<x_pos>0.14371985000000365</x_pos>
+			<y_pos>0.1405538799999988</y_pos>
 			<wlan_id>9</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -287,14 +287,14 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>
@@ -306,10 +306,10 @@
 		<costPerMem>0.05</costPerMem>
 		<costPerStorage>0.1</costPerStorage>
 		<location>
-			<x_pos>25</x_pos>
-			<y_pos>25</y_pos>
+			<x_pos>0.3102968500000003</x_pos>
+			<y_pos>0.25980887999999425</y_pos>
 			<wlan_id>10</wlan_id>
-			<attractiveness>2</attractiveness>
+			<attractiveness>1</attractiveness>
 		</location>
 		<hosts>
 			<host>
@@ -317,14 +317,3014 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>100</readRate>
+				<readRate>12</readRate>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>100</readRate>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12066085000000015</x_pos>
+			<y_pos>0.3689748799999961</y_pos>
+			<wlan_id>11</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.24501384999999942</x_pos>
+			<y_pos>0.224395880000003</y_pos>
+			<wlan_id>12</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.10588285000000042</x_pos>
+			<y_pos>0.13423088000000405</y_pos>
+			<wlan_id>13</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.204911850000002</x_pos>
+			<y_pos>0.15042488000000276</y_pos>
+			<wlan_id>14</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.14371985000000365</x_pos>
+			<y_pos>0.1405538799999988</y_pos>
+			<wlan_id>15</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12066085000000015</x_pos>
+			<y_pos>0.3689748799999961</y_pos>
+			<wlan_id>16</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16303385000000503</x_pos>
+			<y_pos>0.1330718800000028</y_pos>
+			<wlan_id>17</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2780598499999982</x_pos>
+			<y_pos>0.2787338799999901</y_pos>
+			<wlan_id>18</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.3100108500000047</x_pos>
+			<y_pos>0.26008387999999627</y_pos>
+			<wlan_id>19</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16303385000000503</x_pos>
+			<y_pos>0.1330718800000028</y_pos>
+			<wlan_id>20</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.24615084999999937</x_pos>
+			<y_pos>0.199176879999996</y_pos>
+			<wlan_id>21</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.23848285000000402</x_pos>
+			<y_pos>0.19362488000000155</y_pos>
+			<wlan_id>22</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16514485000000434</x_pos>
+			<y_pos>0.27292688</y_pos>
+			<wlan_id>23</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.10722185000000195</x_pos>
+			<y_pos>0.20364187999999217</y_pos>
+			<wlan_id>24</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12338985000000235</x_pos>
+			<y_pos>0.19206387999999208</y_pos>
+			<wlan_id>25</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1817398499999996</x_pos>
+			<y_pos>0.13646588000000293</y_pos>
+			<wlan_id>26</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.08956985000000373</x_pos>
+			<y_pos>0.2360338799999937</y_pos>
+			<wlan_id>27</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.15342985000000198</x_pos>
+			<y_pos>0.15705588000000148</y_pos>
+			<wlan_id>28</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.20707567000000182</x_pos>
+			<y_pos>0.18212980999999218</y_pos>
+			<wlan_id>29</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.19127328000000432</x_pos>
+			<y_pos>0.1992245799999921</y_pos>
+			<wlan_id>30</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.020469810000001587</x_pos>
+			<y_pos>0.18310551999999802</y_pos>
+			<wlan_id>31</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2777625200000031</x_pos>
+			<y_pos>0.310643970000001</y_pos>
+			<wlan_id>32</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.0497779900000026</x_pos>
+			<y_pos>0.1265453599999944</y_pos>
+			<wlan_id>33</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1815945499999998</x_pos>
+			<y_pos>0.1554707800000017</y_pos>
+			<wlan_id>34</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.11528005000000263</x_pos>
+			<y_pos>0.18242536999999004</y_pos>
+			<wlan_id>35</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2600369299999983</x_pos>
+			<y_pos>0.2025942899999933</y_pos>
+			<wlan_id>36</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.0</x_pos>
+			<y_pos>0.0</y_pos>
+			<wlan_id>37</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12795954999999992</x_pos>
+			<y_pos>0.16080124999999157</y_pos>
+			<wlan_id>38</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12509294000000182</x_pos>
+			<y_pos>0.18725037999999472</y_pos>
+			<wlan_id>39</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2672061499999998</x_pos>
+			<y_pos>0.28017865999999003</y_pos>
+			<wlan_id>40</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.30784966000000225</x_pos>
+			<y_pos>0.2601495299999925</y_pos>
+			<wlan_id>41</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.15363828000000268</x_pos>
+			<y_pos>0.3762297699999948</y_pos>
+			<wlan_id>42</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.06610684000000333</x_pos>
+			<y_pos>0.21854899999999589</y_pos>
+			<wlan_id>43</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.17155697000000458</x_pos>
+			<y_pos>0.1564849899999956</y_pos>
+			<wlan_id>44</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.22938984000000318</x_pos>
+			<y_pos>0.17068535999999312</y_pos>
+			<wlan_id>45</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.02386118999999809</x_pos>
+			<y_pos>0.037396590000000174</y_pos>
+			<wlan_id>46</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.06921112999999934</x_pos>
+			<y_pos>0.19091385000000116</y_pos>
+			<wlan_id>47</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.039160190000004036</x_pos>
+			<y_pos>0.1523022499999911</y_pos>
+			<wlan_id>48</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1063450500000016</x_pos>
+			<y_pos>0.36794365999999457</y_pos>
+			<wlan_id>49</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.193595430000002</x_pos>
+			<y_pos>0.37017190000000255</y_pos>
+			<wlan_id>50</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.08210655999999972</x_pos>
+			<y_pos>0.20815996000000325</y_pos>
+			<wlan_id>51</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16046521999999896</x_pos>
+			<y_pos>0.2454293199999995</y_pos>
+			<wlan_id>52</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.3223647499999984</x_pos>
+			<y_pos>0.29769675000000007</y_pos>
+			<wlan_id>53</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.012860719999999048</x_pos>
+			<y_pos>0.3007982799999951</y_pos>
+			<wlan_id>54</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.22768546000000356</x_pos>
+			<y_pos>0.19508279999999445</y_pos>
+			<wlan_id>55</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.053338270000004684</x_pos>
+			<y_pos>0.22151266999999564</y_pos>
+			<wlan_id>56</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1927149799999981</x_pos>
+			<y_pos>0.4067071999999996</y_pos>
+			<wlan_id>57</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12901000000000096</x_pos>
+			<y_pos>0.3483064899999988</y_pos>
+			<wlan_id>58</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.02870671000000158</x_pos>
+			<y_pos>0.17793451000000005</y_pos>
+			<wlan_id>59</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.024826900000000762</x_pos>
+			<y_pos>0.2145692099999934</y_pos>
+			<wlan_id>60</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16239075000000014</x_pos>
+			<y_pos>0.15075014999999325</y_pos>
+			<wlan_id>61</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.19589197999999897</x_pos>
+			<y_pos>0.26466725000000224</y_pos>
+			<wlan_id>62</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.13943194000000148</x_pos>
+			<y_pos>0.34412634999999625</y_pos>
+			<wlan_id>63</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.17744055000000003</x_pos>
+			<y_pos>0.14665100999999936</y_pos>
+			<wlan_id>64</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.26675517000000326</x_pos>
+			<y_pos>0.19344228999999302</y_pos>
+			<wlan_id>65</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.26281123000000406</x_pos>
+			<y_pos>0.19088680999999497</y_pos>
+			<wlan_id>66</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1979257400000023</x_pos>
+			<y_pos>0.14671428999999137</y_pos>
+			<wlan_id>67</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2122645000000034</x_pos>
+			<y_pos>0.1784182100000038</y_pos>
+			<wlan_id>68</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.18244085999999982</x_pos>
+			<y_pos>0.26804518000000144</y_pos>
+			<wlan_id>69</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1422497000000007</x_pos>
+			<y_pos>0.17935131000000126</y_pos>
+			<wlan_id>70</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.17055785000000157</x_pos>
+			<y_pos>0.15716598000000204</y_pos>
+			<wlan_id>71</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.18610634000000204</x_pos>
+			<y_pos>0.16381665000000112</y_pos>
+			<wlan_id>72</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.21599793000000034</x_pos>
+			<y_pos>0.15794758999999203</y_pos>
+			<wlan_id>73</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.0049068699999992305</x_pos>
+			<y_pos>0.029574459999992087</y_pos>
+			<wlan_id>74</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1926913400000032</x_pos>
+			<y_pos>0.15034670999999378</y_pos>
+			<wlan_id>75</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1537150099999991</x_pos>
+			<y_pos>0.2938895799999983</y_pos>
+			<wlan_id>76</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2470645900000008</x_pos>
+			<y_pos>0.20813359999999648</y_pos>
+			<wlan_id>77</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.18198285000000425</x_pos>
+			<y_pos>0.1652148799999935</y_pos>
+			<wlan_id>78</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.11200984999999974</x_pos>
+			<y_pos>0.1748038799999989</y_pos>
+			<wlan_id>79</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12761018999999862</x_pos>
+			<y_pos>0.28796471999999085</y_pos>
+			<wlan_id>80</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.15095196000000044</x_pos>
+			<y_pos>0.13701449999999227</y_pos>
+			<wlan_id>81</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.2675478499999997</x_pos>
+			<y_pos>0.19761488000000327</y_pos>
+			<wlan_id>82</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.19985597000000155</x_pos>
+			<y_pos>0.2180745900000005</y_pos>
+			<wlan_id>83</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1994812699999997</x_pos>
+			<y_pos>0.15498626999999487</y_pos>
+			<wlan_id>84</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.24436633999999913</x_pos>
+			<y_pos>0.2170997099999994</y_pos>
+			<wlan_id>85</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1341046800000001</x_pos>
+			<y_pos>0.3114370099999917</y_pos>
+			<wlan_id>86</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.19019416000000433</x_pos>
+			<y_pos>0.22415078000000221</y_pos>
+			<wlan_id>87</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16159585000000476</x_pos>
+			<y_pos>0.15345087999999407</y_pos>
+			<wlan_id>88</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.0822028500000016</x_pos>
+			<y_pos>0.18611987999999258</y_pos>
+			<wlan_id>89</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.02392296000000016</x_pos>
+			<y_pos>0.037611929999997074</y_pos>
+			<wlan_id>90</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.08718096000000486</x_pos>
+			<y_pos>0.13327568999999073</y_pos>
+			<wlan_id>91</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1818196000000043</x_pos>
+			<y_pos>0.26201120000000344</y_pos>
+			<wlan_id>92</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.274025850000001</x_pos>
+			<y_pos>0.19840087999999412</y_pos>
+			<wlan_id>93</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.3067138500000013</x_pos>
+			<y_pos>0.251395880000004</y_pos>
+			<wlan_id>94</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.24121484999999865</x_pos>
+			<y_pos>0.19303187999999238</y_pos>
+			<wlan_id>95</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1396218500000046</x_pos>
+			<y_pos>0.20538687999999183</y_pos>
+			<wlan_id>96</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.18313884999999885</x_pos>
+			<y_pos>0.2400808799999936</y_pos>
+			<wlan_id>97</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.1332838500000051</x_pos>
+			<y_pos>0.22694787999999733</y_pos>
+			<wlan_id>98</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.285164850000001</x_pos>
+			<y_pos>0.20056488000000172</y_pos>
+			<wlan_id>99</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.26398784999999947</x_pos>
+			<y_pos>0.19701987999999915</y_pos>
+			<wlan_id>100</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.19034884999999946</x_pos>
+			<y_pos>0.2177938800000021</y_pos>
+			<wlan_id>101</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16920585000000443</x_pos>
+			<y_pos>0.147965880000001</y_pos>
+			<wlan_id>102</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.17955084999999826</x_pos>
+			<y_pos>0.15645787999999072</y_pos>
+			<wlan_id>103</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.16631885000000324</x_pos>
+			<y_pos>0.1524118800000025</y_pos>
+			<wlan_id>104</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.148947849999999</x_pos>
+			<y_pos>0.12926788000000045</y_pos>
+			<wlan_id>105</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.12171585000000107</x_pos>
+			<y_pos>0.15804187999999897</y_pos>
+			<wlan_id>106</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.26002085000000363</x_pos>
+			<y_pos>0.1881738799999937</y_pos>
+			<wlan_id>107</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.23848285000000402</x_pos>
+			<y_pos>0.19362488000000155</y_pos>
+			<wlan_id>108</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.23848285000000402</x_pos>
+			<y_pos>0.19362488000000155</y_pos>
+			<wlan_id>109</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
+					</VM>
+				</VMs>
+			</host>
+		</hosts>
+	</datacenter>
+	<datacenter arch="x86" os="Linux" vmm="Xen">
+		<costPerBw>0.1</costPerBw>
+		<costPerSec>3.0</costPerSec>
+		<costPerMem>0.05</costPerMem>
+		<costPerStorage>0.1</costPerStorage>
+		<location>
+			<x_pos>0.23848285000000402</x_pos>
+			<y_pos>0.19362488000000155</y_pos>
+			<wlan_id>110</wlan_id>
+			<attractiveness>1</attractiveness>
+		</location>
+		<hosts>
+			<host>
+				<core>16</core>
+				<mips>80000</mips>
+				<ram>16000</ram>
+				<storage>10000</storage>
+				<readRate>12</readRate>
+				<VMs>
+					<VM vmm="Xen">
+						<core>16</core>
+						<mips>80000</mips>
+						<ram>16000</ram>
+						<storage>10000</storage>
+						<readRate>12</readRate>
 					</VM>
 				</VMs>
 			</host>

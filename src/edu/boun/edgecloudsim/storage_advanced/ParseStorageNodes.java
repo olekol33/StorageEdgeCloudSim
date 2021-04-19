@@ -1,5 +1,7 @@
 package edu.boun.edgecloudsim.storage_advanced;
 
+import edu.boun.edgecloudsim.core.SimSettings;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,7 +25,7 @@ public class ParseStorageNodes {
         catch (Exception e){
             e.printStackTrace();
         }
-        try(PrintWriter writer = new PrintWriter(new File("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Nodes_Hash.csv"))){
+        try(PrintWriter writer = new PrintWriter(new File("scripts/sample_app6/Nodes_Hash.csv"))){
             StringBuilder sbTitle = new StringBuilder();
             sbTitle.append("number");
             sbTitle.append(",");
@@ -49,7 +51,7 @@ public class ParseStorageNodes {
 
     public static void xmlWrite(Vector<StorageNode> nodesVector){
         try{
-            FileWriter writer = new FileWriter("C:\\Users\\ka\\Desktop\\csvs\\csvs\\edge_devices.xml");
+            FileWriter writer = new FileWriter("scripts/sample_app6/config/edge_devices.xml");
             writer.write("<?xml version=\"1.0\"?>\n");
             writer.write("<edge_devices>\n");
             int vecIndex = 0;
@@ -187,8 +189,6 @@ public class ParseStorageNodes {
                 minX = Math.min(minX, x);
                 minY = Math.min(minY, y);
             }
-            maxX -= minX;
-            maxY -= minY;
             System.out.println("The nodes' vector successfully created!!!");
             /*
             System.out.println("Displaying HashMap:");
@@ -197,12 +197,26 @@ public class ParseStorageNodes {
             }*/
 
             //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
+            /*
+            if(SimSettings.getInstance().isCastingRequired()) { //check the cast flag
+                Iterator<StorageNode> itr = nodesVector.iterator();
+                while (itr.hasNext()) {
+                    StorageNode temp = itr.next();
+                    temp.setxPos(temp.getxPos() - minX);
+                    temp.setyPos(temp.getyPos() - minY);
+                }
+                maxX -= minX;
+                maxY -= minY;
+            }
+            */
             Iterator<StorageNode> itr = nodesVector.iterator();
-            while(itr.hasNext()){
+            while (itr.hasNext()) {
                 StorageNode temp = itr.next();
                 temp.setxPos(temp.getxPos() - minX);
                 temp.setyPos(temp.getyPos() - minY);
             }
+            maxX -= minX;
+            maxY -= minY;
 
             //write the HashMap to a csv file
             csvWrite(map);
