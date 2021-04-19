@@ -22,7 +22,7 @@ public class ParseStorageDevices {
         catch (Exception e){
             e.printStackTrace();
         }
-        try(PrintWriter writer = new PrintWriter(new File("C:\\Users\\h3k\\Desktop\\csvs\\Devices_Hash.csv"))){
+        try(PrintWriter writer = new PrintWriter(new File("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Devices_Hash.csv"))){
             StringBuilder sbTitle = new StringBuilder();
             sbTitle.append("number");
             sbTitle.append(",");
@@ -61,7 +61,7 @@ public class ParseStorageDevices {
         HashMap<Integer,String> map = new HashMap<Integer,String>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Devices.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Devices.csv"));
             line = br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

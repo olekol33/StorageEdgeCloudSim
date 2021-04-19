@@ -2,6 +2,7 @@ package edu.boun.edgecloudsim.storage_advanced;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -22,7 +23,7 @@ public class ParseStorageNodes {
         catch (Exception e){
             e.printStackTrace();
         }
-        try(PrintWriter writer = new PrintWriter(new File("C:\\Users\\h3k\\Desktop\\csvs\\Nodes_Hash.csv"))){
+        try(PrintWriter writer = new PrintWriter(new File("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Nodes_Hash.csv"))){
             StringBuilder sbTitle = new StringBuilder();
             sbTitle.append("number");
             sbTitle.append(",");
@@ -48,7 +49,7 @@ public class ParseStorageNodes {
 
     public static void xmlWrite(Vector<StorageNode> nodesVector){
         try{
-            FileWriter writer = new FileWriter("C:\\Users\\h3k\\Desktop\\csvs\\edge_devices.xml");
+            FileWriter writer = new FileWriter("C:\\Users\\ka\\Desktop\\csvs\\csvs\\edge_devices.xml");
             writer.write("<?xml version=\"1.0\"?>\n");
             writer.write("<edge_devices>\n");
             int vecIndex = 0;
@@ -133,6 +134,8 @@ public class ParseStorageNodes {
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
+        double maxX = 0, maxY = 0, minX = 0, minY = 0;
+        boolean checkFirst = true;
 
         //create nodes vector
         Vector<StorageNode> nodesVector = new Vector<StorageNode>();
@@ -141,7 +144,7 @@ public class ParseStorageNodes {
         HashMap<Integer,String> map = new HashMap<Integer,String>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Nodes.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Nodes.csv"));
             line = br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
@@ -168,13 +171,38 @@ public class ParseStorageNodes {
                         Double.parseDouble(objects[NODE_Y_POSE]),Integer.parseInt(objects[NODE_SERVICE_CLASS]),
                         Integer.parseInt(objects[NODE_CAPACITY]),Integer.parseInt(objects[NODE_SERVICE_RATE]));
                 nodesVector.add(sNode);
+
+                double x = Double.parseDouble(objects[NODE_X_POSE]);
+                double y = Double.parseDouble(objects[NODE_Y_POSE]);
+                //find the max (x,y) and min (x,y)
+                if(checkFirst){
+                    minX = x;
+                    minY = y;
+                    maxX = minX;
+                    maxY = minY;
+                    checkFirst = false;
+                }
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
             }
+            maxX -= minX;
+            maxY -= minY;
             System.out.println("The nodes' vector successfully created!!!");
             /*
             System.out.println("Displaying HashMap:");
             for(Map.Entry m: map.entrySet()){
                 System.out.println(m.getKey() +" "+m.getValue());
             }*/
+
+            //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
+            Iterator<StorageNode> itr = nodesVector.iterator();
+            while(itr.hasNext()){
+                StorageNode temp = itr.next();
+                temp.setxPos(temp.getxPos() - minX);
+                temp.setyPos(temp.getyPos() - minY);
+            }
 
             //write the HashMap to a csv file
             csvWrite(map);
