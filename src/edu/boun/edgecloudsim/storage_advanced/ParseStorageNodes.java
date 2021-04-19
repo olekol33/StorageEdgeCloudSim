@@ -8,6 +8,12 @@ import java.util.Vector;
 //changed
 
 public class ParseStorageNodes {
+    private final int NODE_NAME = 0; // object[0]
+    private final int NODE_X_POSE = 1; // object[1]
+    private final int NODE_Y_POSE = 2; // object[2]
+    private final int NODE_SERVICE_CLASS = 3; // object[3]
+    private final int NODE_CAPACITY = 4; // object[4]
+    private final int NODE_SERVICE_RATE = 5; // object[5]
 
     public static void csvWrite(HashMap<Integer,String> h) throws Exception{
         try {
@@ -143,14 +149,14 @@ public class ParseStorageNodes {
 
                 //checks if the current object's name is unique
                 for(Map.Entry m: map.entrySet()){
-                    if(objects[0].equals(m.getValue())){
+                    if(objects[NODE_NAME].equals(m.getValue())){
                         //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
-                        throw new Exception("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
+                        throw new Exception("The node name " + objects[NODE_NAME] + " is not unique!! error in line " + lineCounter);
                     }
                 }
 
                 //mapping the objects and renaming them to the convention.
-                map.put(mapIndex,objects[0]);
+                map.put(mapIndex,objects[NODE_NAME]);
                 mapIndex++;
 
 
@@ -158,7 +164,9 @@ public class ParseStorageNodes {
                 lineCounter++;
 
                 //creat new storageNode and add it to the nodes vector
-                StorageNode sNode = new StorageNode(mapIndex-1,Double.parseDouble(objects[1]),Double.parseDouble(objects[2]),Integer.parseInt(objects[3]),Integer.parseInt(objects[4]),Integer.parseInt(objects[5]));
+                StorageNode sNode = new StorageNode(mapIndex-1,Double.parseDouble(objects[NODE_X_POSE]),
+                        Double.parseDouble(objects[NODE_Y_POSE]),Integer.parseInt(objects[NODE_SERVICE_CLASS]),
+                        Integer.parseInt(objects[NODE_CAPACITY]),Integer.parseInt(objects[NODE_SERVICE_RATE]));
                 nodesVector.add(sNode);
             }
             System.out.println("The nodes' vector successfully created!!!");

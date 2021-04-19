@@ -6,6 +6,11 @@ import java.util.*;
 //changed
 
 public class ParseStorageObject {
+    private final int OBJECT_NAME = 0; // object[0]
+    private final int OBJECT_SIZE = 1; // object[1]
+    private final int OBJECT_LOCATION_VECTOR = 2; // object[2]
+    private final int OBJECT_LOCATION_PROB_VECTOR = 3; // object[3]
+    private final int OBJECT_CLASS = 4; // object[4]
 
     public static void csvWrite(HashMap<String,String> h) throws Exception{
         try {
@@ -65,27 +70,30 @@ public class ParseStorageObject {
             lineCounter++;
             while((line = br.readLine()) != null){
                 String[] objects = line.split(splitLineBy);
-                String[] locations = objects[2].split(splitVectorBy);
-                String[] locProbVec = objects[3].split(splitVectorBy);
+                String[] locations = objects[OBJECT_LOCATION_VECTOR].split(splitVectorBy);
+                String[] locProbVec = objects[OBJECT_LOCATION_PROB_VECTOR].split(splitVectorBy);
 
                 //check if the locationVector has the same amount of object as the locationProbVector
                 if(locations.length != locProbVec.length ||
-                        ((objects[3].equals("") && !objects[2].equals("")) || !objects[3].equals("") && objects[2].equals(""))){
+                        ((objects[OBJECT_LOCATION_PROB_VECTOR].equals("") &&
+                                !objects[OBJECT_LOCATION_VECTOR].equals("")) ||
+                                !objects[OBJECT_LOCATION_PROB_VECTOR].equals("") &&
+                                        objects[OBJECT_LOCATION_VECTOR].equals(""))){
                     //System.out.println("The number of locations does not match the number of probs!! error in line " + lineCounter);
                     throw new Exception("The number of locations does not match the number of probs!! error in line " + lineCounter);
                 }
 
                 //checks if the current object's name is unique
                 for(Map.Entry m: map.entrySet()){
-                    if(objects[0].equals(m.getValue())){
+                    if(objects[OBJECT_NAME].equals(m.getValue())){
                         //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
-                        throw new Exception("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
+                        throw new Exception("The object name " + objects[OBJECT_NAME] + " is not unique!! error in line " + lineCounter);
                     }
                 }
 
                 //CHECKS THAT THE LOCATIONS IN THE location LIST MATCH A NODES IN THE NODES FILE!
                 boolean checkIfNodeExists = false;
-                for(int i = 0; i < locations.length && !objects[3].equals(""); i++){
+                for(int i = 0; i < locations.length && !objects[OBJECT_LOCATION_PROB_VECTOR].equals(""); i++){
                     checkIfNodeExists = false;
                     for(Map.Entry m: nodesHashVector.entrySet()){
                         if(m.getValue().equals(locations[i])){
@@ -93,7 +101,9 @@ public class ParseStorageObject {
                         }
                     }
                     if(!checkIfNodeExists){
-                        throw new Exception("The object " + objects[0] + " is trying to access a non-existing Node!! error in line " + lineCounter + "\n" + "The node " + locations[i] + " does not exist!!");
+                        throw new Exception("The object " + objects[OBJECT_NAME] +
+                                " is trying to access a non-existing Node!! error in line " +
+                                lineCounter + "\n" + "The node " + locations[i] + " does not exist!!");
                     }
                 }
 
@@ -102,16 +112,16 @@ public class ParseStorageObject {
                 String objectPrefix = "d";
                 String objectNewName = objectPrefix + mapIndex;
                 //System.out.println(objectNewName);
-                map.put(objectNewName,objects[0]);
+                map.put(objectNewName,objects[OBJECT_NAME]);
                 mapIndex++;
 
-                objects[0] = objectNewName; //The actually name changing of the object
+                objects[OBJECT_NAME] = objectNewName; //The actually name changing of the object
 
                 double[] lpb = new double[locProbVec.length];
                 double sum = 0;
 
                 //check if the locationProvVector is empty
-                if(!objects[3].equals("")) {
+                if(!objects[OBJECT_LOCATION_PROB_VECTOR].equals("")) {
                     for (int i = 0; i < lpb.length; i++) {
                         lpb[i] = Double.parseDouble(locProbVec[i]);
                         sum += lpb[i];
@@ -126,7 +136,8 @@ public class ParseStorageObject {
 
                 //create new storage object and add it to the objects list
                 List<String> locationsList = Arrays.asList(locations);
-                StorageObject so = new StorageObject(objects[0],objects[1],locationsList,lpv,Integer.parseInt(objects[4]));
+                StorageObject so = new StorageObject(objects[OBJECT_NAME],
+                        objects[OBJECT_SIZE],locationsList,lpv,Integer.parseInt(objects[OBJECT_CLASS]));
                 objectsList.add(so);
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);

@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Vector;
 
 public class ParseStorageDevices {
+    private final int DEVICE_NAME = 0; // object[0]
+    private final int DEVICE_X_POSE = 1; // object[1]
+    private final int DEVICE_Y_POSE = 2; // object[2]
+    private final int DEVICE_TIME = 3; // object[3]
 
 //TODO: check the device in range of nodes (for oleg)
 
@@ -64,29 +68,30 @@ public class ParseStorageDevices {
                 String[] objects = line.split(splitLineBy);
 
                 if(!ftdFlag){
-                    firstTimeDeclared = Double.parseDouble(objects[3]);
+                    firstTimeDeclared = Double.parseDouble(objects[DEVICE_TIME]);
                     ftdFlag = true;
                 }
 
                 //pointless check if device moved before its declaration time
-                if(firstTimeDeclared > Double.parseDouble(objects[3])){
-                    throw new Exception("The time of " + objects[0] +" cannot be below the " + firstTimeDeclared + " sec threshold!! error in line " + lineCounter);
+                if(firstTimeDeclared > Double.parseDouble(objects[DEVICE_TIME])){
+                    throw new Exception("The time of " + objects[DEVICE_NAME] +" cannot be below the " +
+                            firstTimeDeclared + " sec threshold!! error in line " + lineCounter);
                 }
 
                 declared = false;
                 for(Map.Entry m: map.entrySet()){
 
                     //check if this is a declaration
-                    if(firstTimeDeclared == Double.parseDouble(objects[3])){
+                    if(firstTimeDeclared == Double.parseDouble(objects[DEVICE_TIME])){
                         //checks if the current object's name is unique
-                        if(objects[0].equals(m.getValue())){
+                        if(objects[DEVICE_NAME].equals(m.getValue())){
                             //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
-                            throw new Exception("The device name " + objects[0] + " is not unique!! error in line " + lineCounter);
+                            throw new Exception("The device name " + objects[DEVICE_NAME] + " is not unique!! error in line " + lineCounter);
                         }
                         //declared = true;
                     } else {//it is not a declaration
                         //checks if the current device exists
-                        if(objects[0].equals(m.getValue())){
+                        if(objects[DEVICE_NAME].equals(m.getValue())){
                             declared = true;
                             oldName = (int)m.getKey();
                             break;
@@ -94,13 +99,13 @@ public class ParseStorageDevices {
                     }
                 }
                 //checks if declaration was found to the device
-                if((!declared) && (firstTimeDeclared != Double.parseDouble(objects[3]))){
-                    throw new Exception("The device name " + objects[0] + " was not declared!! error in line " + lineCounter);
+                if((!declared) && (firstTimeDeclared != Double.parseDouble(objects[DEVICE_TIME]))){
+                    throw new Exception("The device name " + objects[DEVICE_NAME] + " was not declared!! error in line " + lineCounter);
                 }
 
-                if((!declared) && (firstTimeDeclared == Double.parseDouble(objects[3]))) {
+                if((!declared) && (firstTimeDeclared == Double.parseDouble(objects[DEVICE_TIME]))) {
                     //mapping the objects and renaming them to the convention.
-                    map.put(mapIndex, objects[0]);
+                    map.put(mapIndex, objects[DEVICE_NAME]);
                     mapIndex++;
                     oldName = -1;
                 }
@@ -116,7 +121,8 @@ public class ParseStorageDevices {
                 }
 
                 //creat new StorageDevice and add it to the nodes vector
-                StorageDevice sDevice = new StorageDevice(newName,Double.parseDouble(objects[1]),Double.parseDouble(objects[2]),Double.parseDouble(objects[3]));
+                StorageDevice sDevice = new StorageDevice(newName,Double.parseDouble(objects[DEVICE_X_POSE]),
+                        Double.parseDouble(objects[DEVICE_Y_POSE]),Double.parseDouble(objects[DEVICE_TIME]));
                 devicesVector.add(sDevice);
             }
             System.out.println("The devices' vector successfully created!!!");
