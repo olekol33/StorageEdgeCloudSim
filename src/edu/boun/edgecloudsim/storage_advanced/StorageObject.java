@@ -8,6 +8,7 @@ public class StorageObject {
     private List<String> objLocations; //contains a Nodes List
     private List<Double> objLocationsProb; //contains the probability of each Node
     private int objClass;
+    private String type;
 
     public StorageObject(String _objName, String _objSize, List<String> _objLocations, List<Double> _objLocationsProb, int _objClass) {
         this.objName = _objName;
@@ -15,6 +16,7 @@ public class StorageObject {
         this.objLocations = _objLocations;
         this.objLocationsProb = _objLocationsProb;
         this.objClass = _objClass;
+        this.type = "DATA";
     }
 
     public String getObjName() {
