@@ -146,7 +146,7 @@ public class ParseStorageNodes {
         HashMap<Integer,String> map = new HashMap<Integer,String>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Nodes.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Nodes.csv"));
             line = br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

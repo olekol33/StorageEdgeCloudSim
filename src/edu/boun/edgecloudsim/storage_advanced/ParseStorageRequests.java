@@ -30,7 +30,7 @@ public class ParseStorageRequests {
         //HashMap<Integer,String> map = new HashMap<Integer,String>();
         //int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Requests.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Requests.csv"));
             line = br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

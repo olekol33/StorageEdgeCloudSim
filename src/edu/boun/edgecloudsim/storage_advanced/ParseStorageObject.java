@@ -19,7 +19,7 @@ public class ParseStorageObject {
         catch (Exception e){
             e.printStackTrace();
         }
-        try(PrintWriter writer = new PrintWriter(new File("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Objects_Hash.csv"))){
+        try(PrintWriter writer = new PrintWriter(new File("scripts/sample_app6/Objects_Hash.csv"))){
             StringBuilder sbTitle = new StringBuilder();
             sbTitle.append("conventional name");
             sbTitle.append(",");
@@ -65,7 +65,7 @@ public class ParseStorageObject {
             if(nodesHashVector.isEmpty()){
                 throw new Exception("There are no nodes in the system (nodesHashVector is empty)");
             }
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\ka\\Desktop\\csvs\\csvs\\Objects.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Objects.csv"));
             line = br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
