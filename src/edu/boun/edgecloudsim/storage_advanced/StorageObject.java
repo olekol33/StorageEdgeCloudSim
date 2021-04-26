@@ -16,7 +16,7 @@ public class StorageObject {
         this.objLocations = _objLocations;
         this.objLocationsProb = _objLocationsProb;
         this.objClass = _objClass;
-        this.type = "DATA";
+        this.type = "data";
     }
 
     public String getObjName() {
@@ -33,6 +33,10 @@ public class StorageObject {
 
     public void setObjSize(String objSize) {
         this.objSize = objSize;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public List<String> getObjLocations() {

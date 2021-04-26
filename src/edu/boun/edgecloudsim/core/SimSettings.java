@@ -25,9 +25,7 @@ import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import edu.boun.edgecloudsim.storage_advanced.ParseStorageDevices;
-import edu.boun.edgecloudsim.storage_advanced.ParseStorageNodes;
-import edu.boun.edgecloudsim.storage_advanced.StorageDevice;
+import edu.boun.edgecloudsim.storage_advanced.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -167,6 +165,7 @@ public class SimSettings {
 	private HashMap<Integer,String> devicesHashVector;
 	private HashMap<String,String> objectsHashVector;
 	private Vector<StorageDevice> devicesVector;
+	private Vector<StorageObject> objectsVector;
 	private double minXpos;
 	private double minYpos;
 
@@ -184,6 +183,10 @@ public class SimSettings {
 
 	public Vector<StorageDevice> getDevicesVector() {
 		return devicesVector;
+	}
+
+	public Vector<StorageObject> getObjectsVector() {
+		return objectsVector;
 	}
 
 	public double getMinXpos() {
@@ -406,6 +409,15 @@ public class SimSettings {
 			}catch (Exception e){
 				e.printStackTrace();
 			}
+		}
+
+		//checks if we are in external objects mode
+		//updates the number of objects accordingly
+		if(SimSettings.getInstance().isExternalObjects()){
+			ParseStorageObject objectParser = new ParseStorageObject();
+			objectsHashVector = objectParser.parser(nodesHashVector);
+			NUM_OF_DATA_OBJECTS = objectsHashVector.size();
+			objectsVector = objectParser.getObjectsVector();
 		}
 
 		return result;

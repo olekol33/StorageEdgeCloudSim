@@ -5,12 +5,10 @@ package edu.boun.edgecloudsim.storage;
 
 
 
-import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
+import edu.boun.edgecloudsim.storage_advanced.StorageObject;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
-import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -93,7 +91,11 @@ public class ObjectGenerator {
         //Get host capacities
         setHostStorageCapacity();
         //Create data objects
-        dataObjects = createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
+        if(SimSettings.getInstance().isExternalObjects() == false) {
+            dataObjects = createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
+        }else{//import objects from file
+            dataObjects = importObjectsFromFile(numOfDataObjects);//TODO: complete
+        }
         //Initial data object placement
         if(SimSettings.getInstance().isNsfExperiment()) {
             //RAID 4 or 5
@@ -415,6 +417,25 @@ public class ObjectGenerator {
         }
         return listOfDataObjects;
     }
+
+    //Creates list of data objects that was given as external file
+    private List<Map> importObjectsFromFile(int numOfDataObjects){
+        List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);
+        for (int i=0; i<numOfDataObjects; i++){
+            StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
+            Map<String, String> map = new HashMap<String,String>();
+            map.put("id", sObject.getObjName());
+            map.put("size", sObject.getObjSize());
+            map.put("type", sObject.getType());
+            if (SimSettings.getInstance().isOrbitMode()){
+                map.put("data", getBinaryString(Integer.valueOf(objectSize)));
+            }
+//            map.put("location", "");
+            listOfDataObjects.add(map);
+        }
+        return listOfDataObjects;
+    }
+
     //Creates list of parity objects with the naming convention: "object:ID0_ID1_..._<0...numOfParityInStripe>"
     private List<Map> createParityObjects(int numOfParityInStripe, List<Map> listOfDataObjects){
         String parityName = "p";
@@ -783,6 +804,7 @@ public class ObjectGenerator {
         int currentHost=0;
         int objectID=0;
         int deadlockCount=0;
+        int count = 1;// TODO: was added
 
 
         String dist = SimSettings.getInstance().getObjectDistPlace();
@@ -793,7 +815,7 @@ public class ObjectGenerator {
 
 
         while(1==1) {
-            if(SimSettings.getInstance().isNsfExperiment()) {
+            if(SimSettings.getInstance().isNsfExperiment()) {//TODO: delete this if
                 if (hostsContents.size()==3) { //if 3 hosts, one will contain replicas
                     currentHost = 2;
                     if (objectID % 2 != 0) {
@@ -817,13 +839,14 @@ public class ObjectGenerator {
             String objects = (String) hostsContents.get(currentHost).get("objects");
             StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
             Set<String> objectsSet = new HashSet<String>();
-            while (st.hasMoreTokens())
+            while (st.hasMoreTokens()) {
                 objectsSet.add(st.nextToken());
+            }
 
             //run until vacant host is found or return
             while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
             {
-                if(i==numOfNodes) {
+                if(i==numOfNodes || count == numOfDataObjects) {
                     //check if hosts are full
                     for(int j=0;j<numOfNodes ; j++) {
                         Node datacenterNode = datacenterList.item(j);
@@ -898,6 +921,8 @@ public class ObjectGenerator {
                 }
                 i=1;
                 objectID = getObjectID(numOfDataObjects,"objects",dist);
+                count++; //TODO: was added
+                if(count == numOfDataObjects) return; //TODO: was added
             }
         }
     }

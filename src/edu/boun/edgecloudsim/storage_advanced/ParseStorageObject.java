@@ -11,8 +11,10 @@ public class ParseStorageObject {
     private final int OBJECT_LOCATION_VECTOR = 2; // object[2]
     private final int OBJECT_LOCATION_PROB_VECTOR = 3; // object[3]
     private final int OBJECT_CLASS = 4; // object[4]
+    //private List<StorageObject> objectList;
+    private Vector<StorageObject> objectsVector;
 
-    public static void csvWrite(HashMap<String,String> h) throws Exception{
+    public static void csvWrite(HashMap<String,String> h){
         try {
             if (h == null) throw new Exception("The HashMag you are trying to export is null!!");
         }
@@ -41,7 +43,7 @@ public class ParseStorageObject {
         }
     }
 
-    public HashMap<String,String> parser(HashMap<Integer,String> nodesHashVector) throws Exception{
+    public HashMap<String,String> parser(HashMap<Integer,String> nodesHashVector){
         String line;
         String splitLineBy = ",";
         String splitVectorBy = " ";
@@ -53,7 +55,8 @@ public class ParseStorageObject {
         }
 
         //create objects list
-        List<StorageObject> objectsList = new ArrayList<StorageObject>();
+        //List<StorageObject> objectsList = new ArrayList<StorageObject>();
+        objectsVector = new Vector<StorageObject>();
 
         //maps between the conventional name ant the original provided one
         HashMap<String,String> map = new HashMap<String,String>();
@@ -138,7 +141,8 @@ public class ParseStorageObject {
                 List<String> locationsList = Arrays.asList(locations);
                 StorageObject so = new StorageObject(objects[OBJECT_NAME],
                         objects[OBJECT_SIZE],locationsList,lpv,Integer.parseInt(objects[OBJECT_CLASS]));
-                objectsList.add(so);
+                //objectsList.add(so);
+                objectsVector.add(so);
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
                 //checks if the sum of the probabilities is less then or equal to 1
@@ -160,7 +164,7 @@ public class ParseStorageObject {
             //write the HashMap to a csv file
             csvWrite(map);
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
 /*
@@ -178,4 +182,7 @@ public class ParseStorageObject {
         return map;
     }
 
+    public Vector<StorageObject> getObjectsVector() {
+        return objectsVector;
+    }
 }
