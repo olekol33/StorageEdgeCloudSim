@@ -17,6 +17,8 @@ public class ParseStorageNodes {
     private final int NODE_SERVICE_CLASS = 3; // object[3]
     private final int NODE_CAPACITY = 4; // object[4]
     private final int NODE_SERVICE_RATE = 5; // object[5]
+    private double xMin;
+    private double yMin;
 
     public static void csvWrite(HashMap<Integer,String> h){
         try {
@@ -234,6 +236,8 @@ public class ParseStorageNodes {
                 maxY -= minY;
             }
 
+            xMin = minX;
+            yMin = minY;
             //write the HashMap to a csv file
             csvWrite(map);
 
@@ -244,7 +248,15 @@ public class ParseStorageNodes {
         catch (Exception e){
             e.printStackTrace();
         }
+
         return map;
     }
 
+    public double getxMin() {
+        return xMin;
+    }
+
+    public double getyMin() {
+        return yMin;
+    }
 }

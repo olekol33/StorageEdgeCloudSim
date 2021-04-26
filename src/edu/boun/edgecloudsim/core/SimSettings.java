@@ -167,6 +167,8 @@ public class SimSettings {
 	private HashMap<Integer,String> devicesHashVector;
 	private HashMap<String,String> objectsHashVector;
 	private Vector<StorageDevice> devicesVector;
+	private double minXpos;
+	private double minYpos;
 
 	public HashMap<Integer, String> getNodesHashVector() {
 		return nodesHashVector;
@@ -182,6 +184,14 @@ public class SimSettings {
 
 	public Vector<StorageDevice> getDevicesVector() {
 		return devicesVector;
+	}
+
+	public double getMinXpos() {
+		return minXpos;
+	}
+
+	public double getMinYpos() {
+		return minYpos;
 	}
 
 	public void setPoissonInTaskLookUpTable(int task, double poisson_interarrival) {
@@ -375,6 +385,8 @@ public class SimSettings {
 			try{
 				ParseStorageNodes nodeParser = new ParseStorageNodes();
 				nodesHashVector = nodeParser.prepareNodesHashVector();
+				minXpos = nodeParser.getxMin();
+				minYpos = nodeParser.getyMin();
 			}catch (Exception e){
 				e.printStackTrace();
 			}
