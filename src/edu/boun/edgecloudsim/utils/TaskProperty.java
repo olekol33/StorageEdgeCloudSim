@@ -53,6 +53,7 @@ public class TaskProperty {
 	}
 
 	//Storage
+	//TODO: create new constructor
 	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
 						int _isParity, ExponentialDistribution[][] expRngList) {
 		mobileDeviceId=_mobileDeviceId;

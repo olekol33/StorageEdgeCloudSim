@@ -18,7 +18,7 @@ public class ParseStorageNodes {
     private final int NODE_CAPACITY = 4; // object[4]
     private final int NODE_SERVICE_RATE = 5; // object[5]
 
-    public static void csvWrite(HashMap<Integer,String> h) throws Exception{
+    public static void csvWrite(HashMap<Integer,String> h){
         try {
             if (h == null) throw new Exception("The HashMag you are trying to export is null!!");
         }
@@ -93,19 +93,35 @@ public class ParseStorageNodes {
 
 
 
-                writer.write("\t<datacenter arch=\"x86\" os=\"Linux\" vmm=\"Xen\">\n"+
-                                "\t\t<costPerBw>0.1</costPerBw>\n"+
-                                "\t\t<costPerSec>3.0</costPerSec>\n"+
-                                "\t\t<costPerMem>0.05</costPerMem>\n"+
-                                "\t\t<costPerStorage>0.1</costPerStorage>\n"+
-                                "\t\t<location>\n"+
-                                "\t\t\t<x_pos>" +String.valueOf(s.getxPos())+ "</x_pos>\n"+
-                                "\t\t\t<y_pos>" +String.valueOf(s.getyPos())+ "</y_pos>\n"+
-                                "\t\t\t<wlan_id>" +String.valueOf(s.getNodeName())+ "</wlan_id>\n"+
-                                "\t\t\t<attractiveness>1</attractiveness>\n"+
-                                "\t\t</location>\n"+
-                                "\t\t<hosts>\n"+
-                                "\t\t\t<host>\n");
+                if(SimSettings.getInstance().isItIntTest() == false) {
+                    writer.write("\t<datacenter arch=\"x86\" os=\"Linux\" vmm=\"Xen\">\n" +
+                            "\t\t<costPerBw>0.1</costPerBw>\n" +
+                            "\t\t<costPerSec>3.0</costPerSec>\n" +
+                            "\t\t<costPerMem>0.05</costPerMem>\n" +
+                            "\t\t<costPerStorage>0.1</costPerStorage>\n" +
+                            "\t\t<location>\n" +
+                            "\t\t\t<x_pos>" + String.valueOf(s.getxPos()) + "</x_pos>\n" +
+                            "\t\t\t<y_pos>" + String.valueOf(s.getyPos()) + "</y_pos>\n" +
+                            "\t\t\t<wlan_id>" + String.valueOf(s.getNodeName()) + "</wlan_id>\n" +
+                            "\t\t\t<attractiveness>1</attractiveness>\n" +
+                            "\t\t</location>\n" +
+                            "\t\t<hosts>\n" +
+                            "\t\t\t<host>\n");
+                }else{//TODO: delete this section - for testing purposes only
+                    writer.write("\t<datacenter arch=\"x86\" os=\"Linux\" vmm=\"Xen\">\n" +
+                            "\t\t<costPerBw>0.1</costPerBw>\n" +
+                            "\t\t<costPerSec>3.0</costPerSec>\n" +
+                            "\t\t<costPerMem>0.05</costPerMem>\n" +
+                            "\t\t<costPerStorage>0.1</costPerStorage>\n" +
+                            "\t\t<location>\n" +
+                            "\t\t\t<x_pos>" + String.valueOf((int)s.getxPos()) + "</x_pos>\n" +
+                            "\t\t\t<y_pos>" + String.valueOf((int)s.getyPos()) + "</y_pos>\n" +
+                            "\t\t\t<wlan_id>" + String.valueOf(s.getNodeName()) + "</wlan_id>\n" +
+                            "\t\t\t<attractiveness>1</attractiveness>\n" +
+                            "\t\t</location>\n" +
+                            "\t\t<hosts>\n" +
+                            "\t\t\t<host>\n");
+                }
                 writer.write("\t\t\t\t<core>16</core>\n"+
                                 "\t\t\t\t<mips>80000</mips>\n"+
                                 "\t\t\t\t<ram>16000</ram>\n"+
@@ -127,12 +143,12 @@ public class ParseStorageNodes {
             writer.write("</edge_devices>\n");
             writer.close();
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public HashMap<Integer,String> prepareNodesHashVector() throws Exception{
+    public HashMap<Integer,String> prepareNodesHashVector(){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
@@ -156,6 +172,7 @@ public class ParseStorageNodes {
                 for(Map.Entry m: map.entrySet()){
                     if(objects[NODE_NAME].equals(m.getValue())){
                         //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
+                        //System.exit(-1);
                         throw new Exception("The node name " + objects[NODE_NAME] + " is not unique!! error in line " + lineCounter);
                     }
                 }
@@ -176,6 +193,8 @@ public class ParseStorageNodes {
 
                 double x = Double.parseDouble(objects[NODE_X_POSE]);
                 double y = Double.parseDouble(objects[NODE_Y_POSE]);
+
+
                 //find the max (x,y) and min (x,y)
                 if(checkFirst){
                     minX = x;
@@ -197,26 +216,23 @@ public class ParseStorageNodes {
             }*/
 
             //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
-            /*
-            if(SimSettings.getInstance().isCastingRequired()) { //check the cast flag
+
+            if(SimSettings.getInstance().isGpsConversionRequired()) { //check the cast flag
                 Iterator<StorageNode> itr = nodesVector.iterator();
                 while (itr.hasNext()) {
                     StorageNode temp = itr.next();
-                    temp.setxPos(temp.getxPos() - minX);
-                    temp.setyPos(temp.getyPos() - minY);
+                    //TODO: delete this section - for testing purposes only
+                    if(SimSettings.getInstance().isItIntTest()){
+                        temp.setxPos((int)((temp.getxPos() - minX) * 100));
+                        temp.setyPos((int)((temp.getyPos() - minY) * 100));
+                    }else {
+                        temp.setxPos(temp.getxPos() - minX);
+                        temp.setyPos(temp.getyPos() - minY);
+                    }
                 }
                 maxX -= minX;
                 maxY -= minY;
             }
-            */
-            Iterator<StorageNode> itr = nodesVector.iterator();
-            while (itr.hasNext()) {
-                StorageNode temp = itr.next();
-                temp.setxPos(temp.getxPos() - minX);
-                temp.setyPos(temp.getyPos() - minY);
-            }
-            maxX -= minX;
-            maxY -= minY;
 
             //write the HashMap to a csv file
             csvWrite(map);
@@ -225,7 +241,7 @@ public class ParseStorageNodes {
             xmlWrite(nodesVector);
             System.out.println("The edge_devices.xml file has been overwrite successfully!!!");
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
         return map;

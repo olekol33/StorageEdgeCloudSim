@@ -99,6 +99,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
 
         //exponential number generator for file input size, file output size and task length
+        //TODO: copy
         ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][ACTIVE_PERIOD];
 
         //create random number generator for each place
@@ -233,7 +234,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 else
                     objectID = OG.getDataObjectID();
 
-                taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
+                //TODO: randomTaskType = 0
+                taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList)); //TODO: this line is important
                 ioTaskID++;
 /*                if(randomTaskType%2==0)
                     numOfAIOTasks++;

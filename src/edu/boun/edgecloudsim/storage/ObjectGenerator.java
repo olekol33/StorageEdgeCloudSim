@@ -400,7 +400,7 @@ public class ObjectGenerator {
 
 
     //Creates list of data objects with the naming convention: "object:ID"
-    private List<Map> createDataObjects(int numOfDataObjects, String objectSize){
+    private List<Map> createDataObjects(int numOfDataObjects, String objectSize){//TODO:replace
         List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);
         for (int i=0; i<numOfDataObjects; i++){
             Map<String, String> map = new HashMap<String,String>();

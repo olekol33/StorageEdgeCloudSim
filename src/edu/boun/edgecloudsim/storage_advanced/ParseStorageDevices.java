@@ -10,7 +10,7 @@ public class ParseStorageDevices {
     private final int DEVICE_X_POSE = 1; // object[1]
     private final int DEVICE_Y_POSE = 2; // object[2]
     private final int DEVICE_TIME = 3; // object[3]
-
+    private Vector<StorageDevice> devicesVector;
 //TODO: check the device in range of nodes (for oleg)
 
 //changed
@@ -55,7 +55,7 @@ public class ParseStorageDevices {
         int oldName = -1, newName;
 
         //create nodes vector
-        Vector<StorageDevice> devicesVector = new Vector<StorageDevice>();
+        devicesVector = new Vector<StorageDevice>();
 
         //maps between the conventional name ant the original provided one
         HashMap<Integer,String> map = new HashMap<Integer,String>();
@@ -142,4 +142,7 @@ public class ParseStorageDevices {
         return map;
     }
 
+    public Vector<StorageDevice> getDevicesVector() {
+        return devicesVector;
+    }
 }

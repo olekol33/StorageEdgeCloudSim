@@ -18,11 +18,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import edu.boun.edgecloudsim.storage_advanced.ParseStorageDevices;
+import edu.boun.edgecloudsim.storage_advanced.ParseStorageNodes;
+import edu.boun.edgecloudsim.storage_advanced.StorageDevice;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -139,7 +144,12 @@ public class SimSettings {
 	private int NUMBER_OF_EDGE_NODES;
 
 	//Input properties
-	private boolean CAST_THE_NODES;
+	private boolean GPS_COORDINATES_CONVERSION;
+	private boolean EXTERNAL_NODES_INPUT;
+	private boolean EXTERNAL_DEVICES_INPUT;
+	private boolean EXTERNAL_OBJECTS_INPUT;
+	private boolean EXTERNAL_REQUESTS_INPUT;
+	private boolean TEST_USING_INT;
 
 	//SPECIAL EXPERIMENT
 	private boolean NSF_EXPERIMENT;
@@ -151,6 +161,28 @@ public class SimSettings {
 	private double LAMBDA0_STEP;
 	private double LAMBDA1_STEP;
 
+
+	//EXTERNAL INPUT
+	private HashMap<Integer,String> nodesHashVector;
+	private HashMap<Integer,String> devicesHashVector;
+	private HashMap<String,String> objectsHashVector;
+	private Vector<StorageDevice> devicesVector;
+
+	public HashMap<Integer, String> getNodesHashVector() {
+		return nodesHashVector;
+	}
+
+	public HashMap<Integer, String> getDevicesHashVector() {
+		return devicesHashVector;
+	}
+
+	public HashMap<String, String> getObjectsHashVector() {
+		return objectsHashVector;
+	}
+
+	public Vector<StorageDevice> getDevicesVector() {
+		return devicesVector;
+	}
 
 	public void setPoissonInTaskLookUpTable(int task, double poisson_interarrival) {
 		taskLookUpTable[task][2] = poisson_interarrival;
@@ -250,7 +282,12 @@ public class SimSettings {
 			VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
-			//CAST_THE_NODES = Boolean.parseBoolean(prop.getProperty("cast_the_nodes"));
+			GPS_COORDINATES_CONVERSION = Boolean.parseBoolean(prop.getProperty("gps_coordinates_conversion"));
+			EXTERNAL_NODES_INPUT = Boolean.parseBoolean(prop.getProperty("external_nodes_input"));
+			EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
+			EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
+			EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
+			TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
 
 			PARAM_SCAN_MODE = false;
 			NSF_EXPERIMENT = false;
@@ -332,8 +369,33 @@ public class SimSettings {
 			}
 		}
 		parseApplicatinosXML(applicationsFile);
+
+		//checks if we are in external nodes mode
+		if(SimSettings.instance.isExternalNodes()){
+			try{
+				ParseStorageNodes nodeParser = new ParseStorageNodes();
+				nodesHashVector = nodeParser.prepareNodesHashVector();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
 		parseEdgeDevicesXML(edgeDevicesFile);
-		
+
+		//checks if we are in external devices mode
+		//update the min/max number of mobile devices accordingly
+		if(SimSettings.instance.isExternalDevices()){
+			try{
+				ParseStorageDevices deviceParser = new ParseStorageDevices();
+				devicesHashVector = deviceParser.prepareDevicesVector();
+				devicesVector = deviceParser.getDevicesVector();
+
+				MIN_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
+				MAX_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+
 		return result;
 	}
 	
@@ -646,8 +708,28 @@ public class SimSettings {
 		return ORBIT_MODE;
 	}
 
-	public boolean isCastingRequired(){
-		return CAST_THE_NODES;
+	public boolean isGpsConversionRequired(){
+		return GPS_COORDINATES_CONVERSION;
+	}
+
+	public boolean isExternalNodes(){
+		return EXTERNAL_NODES_INPUT;
+	}
+
+	public boolean isExternalDevices(){
+		return EXTERNAL_DEVICES_INPUT;
+	}
+
+	public boolean isExternalObjects(){
+		return EXTERNAL_OBJECTS_INPUT;
+	}
+
+	public boolean isExternalRequests(){
+		return EXTERNAL_REQUESTS_INPUT;
+	}
+
+	public boolean isItIntTest(){
+		return TEST_USING_INT;
 	}
 
 	public boolean isVariabilityRun() {

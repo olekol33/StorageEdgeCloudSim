@@ -2,6 +2,7 @@ package edu.boun.edgecloudsim.mobility;
 
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
+import edu.boun.edgecloudsim.storage_advanced.StorageDevice;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
@@ -26,7 +27,7 @@ public class StaticRangeMobility extends MobilityModel {
     }
 
     @Override
-    public void initialize() {
+    public void initialize() {//TODO:add switch here
         treeMapArray = new ArrayList<TreeMap<Double, Location>>();
 
 //        ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
@@ -38,23 +39,40 @@ public class StaticRangeMobility extends MobilityModel {
         //create list of DC locations
 //        createDCLocationList();
 
-        //initialize tree maps and position of mobile devices
-        //places each mobile device at a location of a DC
-        for(int i=0; i<numberOfMobileDevices; i++) {
-            treeMapArray.add(i, new TreeMap<Double, Location>());
-            Location placedDevice;
-            if (SimSettings.getInstance().isOrbitMode())
-                placedDevice = orbitPlaceDevice(random);
-            else
-                placedDevice = randomPlaceDevice(random);
-            try {
-                if (SimSettings.getInstance().isStorageLogEnabled())
-                    logAccessLocation(i,placedDevice.getServingWlanId());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
+        if(SimSettings.getInstance().isExternalDevices() == false) {
+            //initialize tree maps and position of mobile devices
+            //places each mobile device at a location of a DC
+            for (int i = 0; i < numberOfMobileDevices; i++) {
+                treeMapArray.add(i, new TreeMap<Double, Location>());
+                Location placedDevice;
+                if (SimSettings.getInstance().isOrbitMode())
+                    placedDevice = orbitPlaceDevice(random);
+                else
+                    placedDevice = randomPlaceDevice(random);
+                try {
+                    if (SimSettings.getInstance().isStorageLogEnabled())
+                        logAccessLocation(i, placedDevice.getServingWlanId());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
 //            System.out.println(placedDevice.getServingWlanId());
+
+            }
+        }else{// we have external file for the devices list
+            for(int i = 0; i < numberOfMobileDevices; i++){
+                treeMapArray.add(i, new TreeMap<Double, Location>());
+                Location placedDevice;
+                placedDevice = realPlaceDevice(i);
+                try {
+                    if (SimSettings.getInstance().isStorageLogEnabled())
+                        logAccessLocation(i, placedDevice.getServingWlanId());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
+//            System.out.println(placedDevice.getServingWlanId());
+            }
 
         }
 
@@ -267,7 +285,7 @@ public class StaticRangeMobility extends MobilityModel {
     }
 
     //Randomly places device on grid within range of at least one host
-    private Location randomPlaceDevice(Random random){
+    private Location randomPlaceDevice(Random random){//TODO:edit
         //get grid size
         int xRange = SimSettings.getInstance().getXRange();
         int yRange = SimSettings.getInstance().getYRange();
@@ -281,7 +299,7 @@ public class StaticRangeMobility extends MobilityModel {
             yPos = random.nextInt(yRange)+1;
             deviceLocation = new Location(0,0,xPos,yPos);
             //Returns list of hosts for which device is in range
-            hosts = checkLegalPlacement(deviceLocation);
+            hosts = checkLegalPlacement(deviceLocation);//TODO:review
         }
         //When one host in range it's the only element in the list
         if (hosts.size()==1) {
@@ -294,6 +312,36 @@ public class StaticRangeMobility extends MobilityModel {
             Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
 //            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
             return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
+//            return host;
+        }
+    }
+
+    //places device on grid within range of at least one host
+    private Location realPlaceDevice(int index){//TODO:edit
+        StorageDevice s1 = SimSettings.getInstance().getDevicesVector().get(index);
+        List<Integer> hosts = new ArrayList<Integer>();
+        Location deviceLocation;
+        //Initialize list of hosts in proximity of device
+        deviceLocation = new Location(0,0,(int)s1.getxPos(),(int)s1.getyPos()); //TODO: remove casting
+        hosts = checkLegalPlacement(deviceLocation);
+        try {
+            if (hosts.size() == 0) {
+                throw new Exception("Error! device number " + index + " is not in range of any node");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        //When one host in range it's the only element in the list
+        if (hosts.size()==1) {
+            Location host = getDCLocation(hosts.get(0));
+//            Location host = dcLocations.get(hosts.get(0));
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), (int)s1.getxPos(), (int)s1.getyPos(),hosts); //TODO: remove casting
+        }
+        //When several hosts in range, take nearest
+        else {
+            Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,(int)s1.getxPos(),(int)s1.getyPos()))); //TODO: remove casting
+//            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
+            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), (int)s1.getxPos(), (int)s1.getyPos(),hosts); //TODO: remove casting
 //            return host;
         }
     }

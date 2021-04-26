@@ -51,14 +51,6 @@ public class MainApp {
 		String[] replicationPolicies = {"IF_CONGESTED_READ_PARITY","NEAREST_HOST","CLOUD_OR_NEAREST_IF_CONGESTED"};
 		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
 
-		//Import nodes from external file
-		try {
-			ParseStorageNodes p1 = new ParseStorageNodes();
-			HashMap<Integer, String> nodesHashVector = p1.prepareNodesHashVector();
-		}catch (IOException e){
-			e.printStackTrace();
-		}
-
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -68,8 +60,8 @@ public class MainApp {
 		}
 		else if (args.length == 1){
 			configFile = args[0];
-			applicationsFile = "scripts/sample_app5/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
+			applicationsFile = "scripts/sample_app6/config/applications.xml";
+			edgeDevicesFile = "scripts/sample_app6/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
 		else if (args.length == 3){
@@ -80,9 +72,9 @@ public class MainApp {
 		}
 		else{
 			SimLogger.printLine("Simulation setting file, output folder and iteration number are not provided! Using default ones...");
-			configFile = "scripts/sample_app5/config/default_config.properties";
-			applicationsFile = "scripts/sample_app5/config/applications.xml";
-			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
+			configFile = "scripts/sample_app6/config/default_config.properties";
+			applicationsFile = "scripts/sample_app6/config/applications.xml";
+			edgeDevicesFile = "scripts/sample_app6/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
 
@@ -155,8 +147,8 @@ public class MainApp {
 							now = df.format(ScenarioStartDate);
 //						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
 							// Storage: Generate Redis KV list
-							RedisListHandler.closeConnection();
-							RedisListHandler.createList(objectPlacementPolicy);
+							RedisListHandler.closeConnection();//TODO: add flag or delete
+							RedisListHandler.createList(objectPlacementPolicy);//TODO: add flag or delete
 
 							String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
 
@@ -186,6 +178,7 @@ public class MainApp {
 
 
 								// Generate EdgeCloudSim Simulation Manager
+								//TODO: look into
 								SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy, objectPlacementPolicy);
 
 								// Start simulation
