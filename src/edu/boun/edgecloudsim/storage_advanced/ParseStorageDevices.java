@@ -53,18 +53,18 @@ public class ParseStorageDevices {
         String splitLineBy = ",";
         int lineCounter = 1;
         double firstTimeDeclared = -1;
-        boolean ftdFlag = false, declared = false;
+        boolean ftdFlag = false, declared;
         int oldName = -1, newName;
 
         //create nodes vector
-        devicesVector = new Vector<StorageDevice>();
+        devicesVector = new Vector<>();
 
         //maps between the conventional name ant the original provided one
-        HashMap<Integer,String> map = new HashMap<Integer,String>();
+        HashMap<Integer,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
             BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Devices.csv"));
-            line = br.readLine();
+            br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
                 String[] objects = line.split(splitLineBy);
@@ -81,7 +81,7 @@ public class ParseStorageDevices {
                 }
 
                 declared = false;
-                for(Map.Entry m: map.entrySet()){
+                for(Map.Entry<Integer,String> m: map.entrySet()){
 
                     //check if this is a declaration
                     if(firstTimeDeclared == Double.parseDouble(objects[DEVICE_TIME])){
@@ -95,7 +95,7 @@ public class ParseStorageDevices {
                         //checks if the current device exists
                         if(objects[DEVICE_NAME].equals(m.getValue())){
                             declared = true;
-                            oldName = (int)m.getKey();
+                            oldName = m.getKey();
                             break;
                         }
                     }

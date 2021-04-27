@@ -169,6 +169,8 @@ public class SimSettings {
 	private Vector<StorageRequest> storageRequests;
 	private double minXpos;
 	private double minYpos;
+	private double xRange;
+	private double yRange;
 	private int numOfExternalTasks;
 
 	public HashMap<Integer, String> getNodesHashVector() {
@@ -400,6 +402,8 @@ public class SimSettings {
 				nodesHashVector = nodeParser.prepareNodesHashVector();
 				minXpos = nodeParser.getxMin();
 				minYpos = nodeParser.getyMin();
+				xRange = nodeParser.getxRange();
+				yRange = nodeParser.getyRange();
 			}catch (Exception e){
 				e.printStackTrace();
 			}

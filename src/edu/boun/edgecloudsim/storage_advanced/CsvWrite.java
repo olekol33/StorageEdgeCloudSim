@@ -55,7 +55,7 @@ public class CsvWrite {
                     "original name" +
                     "\n";
             writer.write(sbTitle);
-            for(Map.Entry m : map.entrySet()) {
+            for(Map.Entry<String,String> m : map.entrySet()) {
                 String sb = m.getKey() +
                         "," +
                         m.getValue() +

@@ -56,20 +56,17 @@ public class ParseStorageObject {
         }
 
         //create objects vector
-        objectsVector = new Vector<StorageObject>();
+        objectsVector = new Vector<>();
 
         //maps between the conventional name ant the original provided one
-        HashMap<String,String> map = new HashMap<String,String>();
+        HashMap<String,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
-            if(nodesHashVector == null){
-                throw new Exception("The nodesHashVector is null!!!");
-            }
             if(nodesHashVector.isEmpty()){
                 throw new Exception("There are no nodes in the system (nodesHashVector is empty)");
             }
             BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Objects.csv"));
-            line = br.readLine();
+            br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
                 String[] objects = line.split(splitLineBy);
@@ -87,7 +84,7 @@ public class ParseStorageObject {
                 }
 
                 //checks if the current object's name is unique
-                for(Map.Entry m: map.entrySet()){
+                for(Map.Entry<String,String> m: map.entrySet()){
                     if(objects[OBJECT_NAME].equals(m.getValue())){
                         //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
                         throw new Exception("The object name " + objects[OBJECT_NAME] + " is not unique!! error in line " + lineCounter);
@@ -95,12 +92,13 @@ public class ParseStorageObject {
                 }
 
                 //CHECKS THAT THE LOCATIONS IN THE location LIST MATCH A NODES IN THE NODES FILE!
-                boolean checkIfNodeExists = false;
+                boolean checkIfNodeExists;
                 for(int i = 0; i < locations.length && !objects[OBJECT_LOCATION_PROB_VECTOR].equals(""); i++){
                     checkIfNodeExists = false;
-                    for(Map.Entry m: nodesHashVector.entrySet()){
-                        if(m.getValue().equals(locations[i])){
+                    for(Map.Entry<Integer,String> m: nodesHashVector.entrySet()){
+                        if (m.getValue().equals(locations[i])) {
                             checkIfNodeExists = true;
+                            break;
                         }
                     }
                     if(!checkIfNodeExists){
@@ -132,9 +130,9 @@ public class ParseStorageObject {
                 }
 
                 //convert the array in to a List
-                List<Double> lpv = new ArrayList<Double>();
-                for(int i = 0; i < lpb.length; i++){
-                    lpv.add(lpb[i]);
+                List<Double> lpv = new ArrayList<>();
+                for (double v : lpb) {
+                    lpv.add(v);
                 }
 
                 //create new storage object and add it to the objects list
@@ -146,9 +144,7 @@ public class ParseStorageObject {
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
                 //checks if the sum of the probabilities is less then or equal to 1
-                if(sum <= 1) {
-                    //System.out.println("The sum is: " + sum);
-                }else{
+                if(sum > 1){
                     //System.out.println("The prob sum is more then 1!");
                     throw new Exception("The prob sum is more then 1!! error in line " + lineCounter);
                 }

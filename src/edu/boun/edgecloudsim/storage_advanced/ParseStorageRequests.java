@@ -2,7 +2,6 @@ package edu.boun.edgecloudsim.storage_advanced;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -20,26 +19,22 @@ public class ParseStorageRequests {
         String splitLineBy = ",";
         int lineCounter = 1;
         double prevRequestTime = 0;
-        //boolean ftdFlag = false, declared = false;
-        //int oldName = -1, newName;
 
         //create nodes vector
-        Vector<StorageRequest> requestsVector = new Vector<StorageRequest>();
+        Vector<StorageRequest> requestsVector = new Vector<>();
 
         //maps between the conventional name ant the original provided one
-        //HashMap<Integer,String> map = new HashMap<Integer,String>();
-        //int mapIndex = 0;
         try{
             BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Requests.csv"));
-            line = br.readLine();
+            br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
                 String[] objects = line.split(splitLineBy,-1);
 
                 //check if the deviceName is in the Devices file
-                boolean checkIfDeviceExists = false;
+                boolean checkIfDeviceExists;
                 checkIfDeviceExists = false;
-                for(Map.Entry m: nodesHashVector.entrySet()){
+                for(Map.Entry<Integer,String> m: nodesHashVector.entrySet()){
                     if(m.getValue().equals(objects[REQUEST_DEVICE_NAME])){
                         checkIfDeviceExists = true;
                         break;
@@ -51,9 +46,9 @@ public class ParseStorageRequests {
 
 
                 //TODO: check if the objectID is in the Objects file
-                boolean checkIfObjectExists = false;
+                boolean checkIfObjectExists;
                 checkIfObjectExists = false;
-                for(Map.Entry m: objectsHashVector.entrySet()){
+                for(Map.Entry<String,String> m: objectsHashVector.entrySet()){
                     if(m.getValue().equals(objects[REQUEST_OBJECT_ID])){
                         checkIfObjectExists = true;
                         break;
@@ -69,8 +64,6 @@ public class ParseStorageRequests {
                 if(Double.parseDouble(objects[REQUEST_TIME]) < prevRequestTime){
                     throw new Exception("The requests' time must be in ascending order!! error in line " + lineCounter);
                 }
-
-                //System.out.println("The length of the objects array is: " + objects.length);
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
                 lineCounter++;
