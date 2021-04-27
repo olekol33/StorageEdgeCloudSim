@@ -20,9 +20,10 @@ public class ParseStorageNodes {
     private double xMin;
     private double yMin;
 
+    /*
     public static void csvWrite(HashMap<Integer,String> h){
         try {
-            if (h == null) throw new Exception("The HashMag you are trying to export is null!!");
+            if (h == null) throw new Exception("The HashMap you are trying to export is null!!");
         }
         catch (Exception e){
             e.printStackTrace();
@@ -50,6 +51,7 @@ public class ParseStorageNodes {
             System.out.println(e.getMessage());
         }
     }
+     */
 
     public static void xmlWrite(Vector<StorageNode> nodesVector){
         try{
@@ -239,7 +241,8 @@ public class ParseStorageNodes {
             xMin = minX;
             yMin = minY;
             //write the HashMap to a csv file
-            csvWrite(map);
+            //csvWrite(map);
+            CsvWrite.csvWriteIS(map, "scripts/sample_app6/Nodes_Hash.csv");
 
             //write the edge_device.xml file
             xmlWrite(nodesVector);

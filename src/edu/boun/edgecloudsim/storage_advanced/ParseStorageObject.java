@@ -11,12 +11,12 @@ public class ParseStorageObject {
     private final int OBJECT_LOCATION_VECTOR = 2; // object[2]
     private final int OBJECT_LOCATION_PROB_VECTOR = 3; // object[3]
     private final int OBJECT_CLASS = 4; // object[4]
-    //private List<StorageObject> objectList;
     private Vector<StorageObject> objectsVector;
 
+    /*
     public static void csvWrite(HashMap<String,String> h){
         try {
-            if (h == null) throw new Exception("The HashMag you are trying to export is null!!");
+            if (h == null) throw new Exception("The HashMap you are trying to export is null!!");
         }
         catch (Exception e){
             e.printStackTrace();
@@ -42,6 +42,7 @@ public class ParseStorageObject {
             System.out.println(e.getMessage());
         }
     }
+    */
 
     public HashMap<String,String> parser(HashMap<Integer,String> nodesHashVector){
         String line;
@@ -54,8 +55,7 @@ public class ParseStorageObject {
             System.out.println("EMPTY!!!");
         }
 
-        //create objects list
-        //List<StorageObject> objectsList = new ArrayList<StorageObject>();
+        //create objects vector
         objectsVector = new Vector<StorageObject>();
 
         //maps between the conventional name ant the original provided one
@@ -162,7 +162,8 @@ public class ParseStorageObject {
             }*/
 
             //write the HashMap to a csv file
-            csvWrite(map);
+            //csvWrite(map);
+            CsvWrite.csvWriteSS(map,"scripts/sample_app6/Objects_Hash.csv" );
         }
         catch (Exception e){
             e.printStackTrace();

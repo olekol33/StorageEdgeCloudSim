@@ -15,7 +15,8 @@ public class ParseStorageDevices {
 
 //changed
 
-    public static void csvWrite(HashMap<Integer,String> h) throws Exception{
+    /*
+    public static void csvWrite(HashMap<Integer,String> h){
         try {
             if (h == null) throw new Exception("The HashMap you are trying to export is null!!");
         }
@@ -45,6 +46,7 @@ public class ParseStorageDevices {
             System.out.println(e.getMessage());
         }
     }
+    */
 
     public HashMap<Integer,String> prepareDevicesVector() throws Exception{
         String line;
@@ -133,7 +135,8 @@ public class ParseStorageDevices {
         }*/
 
             //write the HashMap to a csv file
-            csvWrite(map);
+            //csvWrite(map);
+            CsvWrite.csvWriteIS(map, "scripts/sample_app6/Devices_Hash.csv");
 
         }
         catch (IOException e){
