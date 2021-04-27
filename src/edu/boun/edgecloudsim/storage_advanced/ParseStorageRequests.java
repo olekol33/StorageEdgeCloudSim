@@ -15,7 +15,7 @@ public class ParseStorageRequests {
     private final int REQUEST_TASK_PRIORITY = 4; // object[4]
     private final int REQUEST_TASK_DEADLINE = 5; // object[5]
 
-    public Vector<StorageRequest> prepareRequests(HashMap<Integer,String> nodesHashVector, HashMap<String,String> objectsHashVector) throws Exception{
+    public Vector<StorageRequest> prepareRequests(HashMap<Integer,String> nodesHashVector, HashMap<String,String> objectsHashVector){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
@@ -100,7 +100,7 @@ public class ParseStorageRequests {
         }*/
 
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
         return requestsVector;

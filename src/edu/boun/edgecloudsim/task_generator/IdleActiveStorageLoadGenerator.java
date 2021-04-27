@@ -8,6 +8,7 @@ import edu.boun.edgecloudsim.network.StorageNetworkModel;
 import edu.boun.edgecloudsim.storage.MMPP;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.storage_advanced.StorageRequest;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
@@ -246,6 +247,55 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         }
         numOfIOTasks = ioTaskID;
 
+        checkModeAfterInit(dataSizeMean, OG.getOverhead());
+    }
+
+    public void initializeModelWithRequestsFromInput() {
+        //int ioTaskID=0;
+        //double sumPoisson = 0;
+        double dataSizeMean = 0;
+        Random random = new Random();
+        random.setSeed(ObjectGenerator.getSeed());
+        //parityRandom = new Random();
+//        DynamicZipfRandom = new Random();
+        //failRandom = new Random();
+        //failRandom.setSeed(ObjectGenerator.getSeed());
+        //parityRandom.setSeed(ObjectGenerator.getSeed());
+//        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
+        taskList = new ArrayList<TaskProperty>();
+        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+        int numOfExternalTasks = SimSettings.getInstance().getNumOfExternalTasks();
+
+        //exponential number generator for file input size, file output size and task length
+        //TODO: copy
+        ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][ACTIVE_PERIOD];
+
+        //create random number generator for each place
+        for(int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
+            if(SimSettings.getInstance().getTaskLookUpTable()[i][USAGE_PERCENTAGE] ==0)
+                continue;
+            expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
+            expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
+            expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
+            dataSizeMean+=SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD];
+        }
+        dataSizeMean /= SimSettings.getInstance().getTaskLookUpTable().length;
+
+        //Each mobile device utilizes an app type (task type)
+        //taskTypeOfDevices = new int[numberOfMobileDevices];
+        //Calculate lambdas for NSF experiment
+
+        for(int i = 0; i < numOfExternalTasks; i++) {
+            StorageRequest sRequest = SimSettings.getInstance().getStorageRequests().elementAt(i);
+            taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), 0, expRngList)); //TODO: this line is important
+        }
+
+        //numOfIOTasks = ioTaskID;
+
+        checkModeAfterInit(dataSizeMean, OG.getOverhead());
+    }
+
+    private void checkModeAfterInit(double dataSizeMean, double overhead){
         if(SimSettings.getInstance().isNsfExperiment()) {
             for(int i=0; i<2; i++) {
                 int randomTaskType = i % 2;
@@ -323,7 +373,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //Calculation from actual number of tasks
             double meanRate = numOfIOTasks/SimSettings.getInstance().getSimulationTime(); //Tasks per second
             singleLambda = meanRate / muTotal;
-            double overhead = OG.getOverhead();
+            //double overhead = OG.getOverhead();
             String dist = "";
             if(SimSettings.getInstance().isMMPP())
                 dist = "MMPP";
@@ -361,7 +411,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         parityReadStarted = new boolean[numOfIOTasks];
         parityReadFinished = new boolean[numOfIOTasks];
     }
-
     public void exportTaskList() throws IOException {
         File taskListFile = null;
         FileWriter taskListFW = null;

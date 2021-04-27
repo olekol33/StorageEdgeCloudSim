@@ -166,8 +166,10 @@ public class SimSettings {
 	private HashMap<String,String> objectsHashVector;
 	private Vector<StorageDevice> devicesVector;
 	private Vector<StorageObject> objectsVector;
+	private Vector<StorageRequest> storageRequests;
 	private double minXpos;
 	private double minYpos;
+	private int numOfExternalTasks;
 
 	public HashMap<Integer, String> getNodesHashVector() {
 		return nodesHashVector;
@@ -195,6 +197,14 @@ public class SimSettings {
 
 	public double getMinYpos() {
 		return minYpos;
+	}
+
+	public int getNumOfExternalTasks() {
+		return numOfExternalTasks;
+	}
+
+	public Vector<StorageRequest> getStorageRequests() {
+		return storageRequests;
 	}
 
 	public void setPoissonInTaskLookUpTable(int task, double poisson_interarrival) {
@@ -420,6 +430,11 @@ public class SimSettings {
 			objectsVector = objectParser.getObjectsVector();
 		}
 
+		if(SimSettings.getInstance().isExternalRequests()){
+			ParseStorageRequests requestsParser = new ParseStorageRequests();
+			storageRequests = requestsParser.prepareRequests(devicesHashVector, objectsHashVector);
+			numOfExternalTasks = storageRequests.size();
+		}
 		return result;
 	}
 	

@@ -804,7 +804,6 @@ public class ObjectGenerator {
         int currentHost=0;
         int objectID=0;
         int deadlockCount=0;
-        int count = 1;// TODO: was added
 
 
         String dist = SimSettings.getInstance().getObjectDistPlace();
@@ -846,7 +845,7 @@ public class ObjectGenerator {
             //run until vacant host is found or return
             while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
             {
-                if(i==numOfNodes || count == numOfDataObjects) {
+                if(i==numOfNodes) {
                     //check if hosts are full
                     for(int j=0;j<numOfNodes ; j++) {
                         Node datacenterNode = datacenterList.item(j);
@@ -921,8 +920,7 @@ public class ObjectGenerator {
                 }
                 i=1;
                 objectID = getObjectID(numOfDataObjects,"objects",dist);
-                count++; //TODO: was added
-                if(count == numOfDataObjects) return; //TODO: was added
+
             }
         }
     }
