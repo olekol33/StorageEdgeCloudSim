@@ -63,7 +63,7 @@ public class ParseStorageDevices {
         HashMap<Integer,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Devices.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Devices.csv"));
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
@@ -136,7 +136,7 @@ public class ParseStorageDevices {
 
             //write the HashMap to a csv file
             //csvWrite(map);
-            CsvWrite.csvWriteIS(map, "scripts/sample_app6/Devices_Hash.csv");
+            CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Devices_Hash.csv");
 
         }
         catch (Exception e){

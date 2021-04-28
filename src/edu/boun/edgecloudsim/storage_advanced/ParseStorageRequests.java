@@ -25,7 +25,7 @@ public class ParseStorageRequests {
 
         //maps between the conventional name ant the original provided one
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Requests.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Requests.csv"));
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

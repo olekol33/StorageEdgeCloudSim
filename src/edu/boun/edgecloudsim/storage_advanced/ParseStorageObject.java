@@ -65,7 +65,7 @@ public class ParseStorageObject {
             if(nodesHashVector.isEmpty()){
                 throw new Exception("There are no nodes in the system (nodesHashVector is empty)");
             }
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Objects.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Objects.csv"));
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
@@ -159,7 +159,7 @@ public class ParseStorageObject {
 
             //write the HashMap to a csv file
             //csvWrite(map);
-            CsvWrite.csvWriteSS(map,"scripts/sample_app6/Objects_Hash.csv" );
+            CsvWrite.csvWriteSS(map,"scripts/sample_app6/hash_tables/Objects_Hash.csv" );
         }
         catch (Exception e){
             e.printStackTrace();

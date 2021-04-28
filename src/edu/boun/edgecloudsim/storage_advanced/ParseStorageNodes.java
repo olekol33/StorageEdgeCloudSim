@@ -131,7 +131,7 @@ public class ParseStorageNodes {
         HashMap<Integer,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\h3k\\Desktop\\csvs\\Nodes.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Nodes.csv"));
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
@@ -206,7 +206,7 @@ public class ParseStorageNodes {
             yRange = maxY;
             //write the HashMap to a csv file
             //csvWrite(map);
-            CsvWrite.csvWriteIS(map, "scripts/sample_app6/Nodes_Hash.csv");
+            CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Nodes_Hash.csv");
 
             //write the edge_device.xml file
             xmlWrite(nodesVector);
