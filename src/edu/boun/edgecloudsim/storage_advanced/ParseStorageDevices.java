@@ -48,7 +48,7 @@ public class ParseStorageDevices {
     }
     */
 
-    public HashMap<Integer,String> prepareDevicesVector() throws Exception{
+    public HashMap<Integer,String> prepareDevicesVector(){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
@@ -139,7 +139,7 @@ public class ParseStorageDevices {
             CsvWrite.csvWriteIS(map, "scripts/sample_app6/Devices_Hash.csv");
 
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
         return map;
