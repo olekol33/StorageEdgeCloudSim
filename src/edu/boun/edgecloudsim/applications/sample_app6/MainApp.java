@@ -13,8 +13,6 @@ import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
-//import edu.boun.edgecloudsim.storage_advanced.RedisListHandler;
-import edu.boun.edgecloudsim.storage_advanced.ParseStorageNodes;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
@@ -22,13 +20,11 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 
 public class MainApp {
 
@@ -80,7 +76,7 @@ public class MainApp {
 
 		//load settings from configuration file
 		SimSettings SS = SimSettings.getInstance();
-		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile) == false){
+		if(!SS.initialize(configFile, edgeDevicesFile, applicationsFile)){
 			SimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}

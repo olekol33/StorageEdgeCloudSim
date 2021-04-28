@@ -91,7 +91,7 @@ public class ObjectGenerator {
         //Get host capacities
         setHostStorageCapacity();
         //Create data objects
-        if(SimSettings.getInstance().isExternalObjects() == false) {
+        if(!SimSettings.getInstance().isExternalObjects()) {
             dataObjects = createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
         }else{//import objects from file
             dataObjects = importObjectsFromFile(numOfDataObjects);//TODO: complete
@@ -234,8 +234,7 @@ public class ObjectGenerator {
         return set;
     }
 
-    private void addObjectLocationsToMetadata()
-    {
+    private void addObjectLocationsToMetadata(){
         for (Map<String,String> KV : metadataObjects) {
             Set<String> dataObjects = tokenizeList(KV.get("data"));
             Set<String> parityObjects = tokenizeList(KV.get("parity"));
@@ -361,8 +360,7 @@ public class ObjectGenerator {
         return (String)dataObjects.get(objectID).get("id");
     }
 
-    private String getAlphaNumericString(int n)
-    {
+    private String getAlphaNumericString(int n) {
         // chose a Character random from this String
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 + "0123456789"
@@ -386,8 +384,7 @@ public class ObjectGenerator {
         return sb.toString();
     }
 
-    private String getBinaryString(int n)
-    {
+    private String getBinaryString(int n) {
         // create StringBuffer size of AlphaNumericString
         StringBuilder sb = new StringBuilder(n);
 
@@ -814,7 +811,7 @@ public class ObjectGenerator {
 
 
         while(1==1) {
-            if(SimSettings.getInstance().isNsfExperiment()) {//TODO: delete this if
+            if(SimSettings.getInstance().isNsfExperiment()) {
                 if (hostsContents.size()==3) { //if 3 hosts, one will contain replicas
                     currentHost = 2;
                     if (objectID % 2 != 0) {

@@ -123,6 +123,21 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         return minQueueHost;
     }
 
+    //TODO: was added by Harel!
+    private String findHashedName(String objectName){
+        int hashSize = SimSettings.getInstance().getObjectsHashVector().size();
+        for(int i = 0; i < hashSize; i++){
+            if(SimSettings.getInstance().getObjectsHashVector().get("d" + i).equals(objectName)){
+                return "d" + i;
+            }
+        }
+        try {
+            throw new Exception("ERROR: The task name " + objectName + " does not much any object in the hash vector!");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 
     @Override
@@ -131,9 +146,15 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
         List<String> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
-        String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
+        //String locations = RedisListHandler.getObjectLocations(task.getObjectRead()); //TODO: this comes back null for some reason
+
+        //TODO: 2 lines was added!!!
+        String hashedName = findHashedName(task.getObjectRead());
+        assert hashedName != null;
+        String locations = RedisListHandler.getObjectLocations(hashedName); //TODO: this comes back null for some reason
+
         String operativeHosts = "";
-        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));//TODO: trying to access null ptr
         for (String host : nonOperateHosts){
             objectLocations.remove(host);
         }

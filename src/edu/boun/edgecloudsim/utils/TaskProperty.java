@@ -11,10 +11,14 @@
 package edu.boun.edgecloudsim.utils;
 
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.storage_advanced.StorageObject;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import edu.boun.edgecloudsim.core.SimSettings;
+
+import java.util.HashMap;
+import java.util.Vector;
 
 public class TaskProperty {
     private double startTime;
@@ -30,6 +34,10 @@ public class TaskProperty {
 	private int isParity;
 	private int accessHostID;
 	private int hostID;
+
+	private int taskPriority;
+	private double taskDeadline;
+	private String hashedName; // prefix d + number
 
     public TaskProperty(double _startTime, int _mobileDeviceId, int _taskType, int _pesNumber, long _length, long _inputFileSize, long _outputFileSize) {
     	startTime=_startTime;
@@ -89,6 +97,65 @@ public class TaskProperty {
 
 		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
 	}
+
+	//Storage - Harel
+	//TODO: check!
+	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
+						int _taskPriority, double _taskDeadline, int _isParity) {
+
+		startTime=_startTime;
+		mobileDeviceId=_mobileDeviceId;
+		taskType=_taskType;
+		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+		inputFileSize = -1;
+
+		objectRead = _objectID;
+		ioTaskID = _ioTaskID;
+		taskPriority = _taskPriority;
+		taskDeadline = _taskDeadline;
+		isParity = _isParity;
+
+		//finding the object original name (from the hash map)
+		String originName = "";
+		int hashSize = SimSettings.getInstance().getObjectsHashVector().size();
+		for(int i = 0; i < hashSize; i++){
+			if(SimSettings.getInstance().getObjectsHashVector().get("d" + i).equals(objectRead)){
+				originName = "d" + i;
+				hashedName = originName;
+				break;
+			}
+		}
+		try {
+			if (originName.equals("")) {
+				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the hash vector!");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		//finding the size of the object
+		int size = SimSettings.getInstance().getObjectsVector().size();
+		//for testing purposes - delete!
+		//Vector<StorageObject> temp = SimSettings.getInstance().getObjectsVector();
+		for(int i = 0; i < size; i++){
+			StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
+			if(sObject.getObjName().equals(originName)){
+				inputFileSize = Long.parseLong(sObject.getObjSize());
+				break;
+			}
+		}
+		try {
+			if (inputFileSize == -1) {
+				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the objects input!");
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		length = inputFileSize;
+		outputFileSize = inputFileSize;
+
+	}
+
 
 	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
 						int _isParity, int _paritiesToRead, long _inputFileSize, long _outputFileSize, long _length,
@@ -164,5 +231,17 @@ public class TaskProperty {
 
 	public void setAccessHostID(int accessHostID) {
 		this.accessHostID = accessHostID;
+	}
+
+	public int getTaskPriority() {
+		return taskPriority;
+	}
+
+	public double getTaskDeadline() {
+		return taskDeadline;
+	}
+
+	public String getHashedName() {
+		return hashedName;
 	}
 }

@@ -85,6 +85,10 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     @Override
     public void initializeModel() {
+        if(SimSettings.getInstance().isExternalRequests()){
+            initializeModelWithRequestsFromInput();
+            return;
+        }
         int ioTaskID=0;
         double sumPoisson = 0;
         double dataSizeMean = 0;
@@ -247,7 +251,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         }
         numOfIOTasks = ioTaskID;
 
-        checkModeAfterInit(dataSizeMean, OG.getOverhead());
+        checkModeAfterInit(dataSizeMean, OG.getOverhead());// TODO: mark as changed - Harel
     }
 
     public void initializeModelWithRequestsFromInput() {
@@ -287,10 +291,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         for(int i = 0; i < numOfExternalTasks; i++) {
             StorageRequest sRequest = SimSettings.getInstance().getStorageRequests().elementAt(i);
-            taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), 0, expRngList)); //TODO: this line is important
+            //taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), 0, expRngList)); //TODO: this line is important
+            taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), sRequest.getTaskPriority(), sRequest.getTaskDeadline(), 0)); //TODO: this line is important
+
         }
 
         //numOfIOTasks = ioTaskID;
+        numOfIOTasks = SimSettings.getInstance().getNumOfExternalTasks();//TODO: check if make sense with oleg!!
 
         checkModeAfterInit(dataSizeMean, OG.getOverhead());
     }
