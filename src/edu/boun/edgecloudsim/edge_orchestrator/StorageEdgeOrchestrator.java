@@ -146,13 +146,14 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
         List<String> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
-        //String locations = RedisListHandler.getObjectLocations(task.getObjectRead()); //TODO: this comes back null for some reason
+        String locations = RedisListHandler.getObjectLocations(task.getObjectRead()); //TODO: this comes back null for some reason
 
-        //TODO: 2 lines was added!!!
-        String hashedName = findHashedName(task.getObjectRead());
-        assert hashedName != null;
-        String locations = RedisListHandler.getObjectLocations(hashedName); //TODO: this comes back null for some reason
-
+        //TODO: 3 lines were added!!!
+        if(SimSettings.getInstance().isExternalRequests()) {
+            String hashedName = findHashedName(task.getObjectRead());
+            assert hashedName != null;
+            locations = RedisListHandler.getObjectLocations(hashedName);
+        }
         String operativeHosts = "";
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));//TODO: trying to access null ptr
         for (String host : nonOperateHosts){
