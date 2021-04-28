@@ -48,7 +48,7 @@ public class ParseStorageDevices {
     }
     */
 
-    public HashMap<Integer,String> prepareDevicesVector(){
+    public HashMap<Integer,String> prepareDevicesVector(String filePath){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
@@ -63,7 +63,12 @@ public class ParseStorageDevices {
         HashMap<Integer,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Devices.csv"));
+            BufferedReader br;
+            if(filePath.equals("")) {
+                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Devices.csv"));
+            }else{
+                br = new BufferedReader(new FileReader(filePath));
+            }
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

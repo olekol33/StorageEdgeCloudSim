@@ -14,7 +14,7 @@ public class ParseStorageRequests {
     private final int REQUEST_TASK_PRIORITY = 4; // object[4]
     private final int REQUEST_TASK_DEADLINE = 5; // object[5]
 
-    public Vector<StorageRequest> prepareRequests(HashMap<Integer,String> nodesHashVector, HashMap<String,String> objectsHashVector){
+    public Vector<StorageRequest> prepareRequests(HashMap<Integer,String> nodesHashVector, HashMap<String,String> objectsHashVector, String file_path){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
@@ -25,7 +25,12 @@ public class ParseStorageRequests {
 
         //maps between the conventional name ant the original provided one
         try{
-            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Requests.csv"));
+            BufferedReader br;
+            if(file_path.equals("")) {
+                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Requests.csv"));
+            }else{
+                br = new BufferedReader(new FileReader(file_path));
+            }
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

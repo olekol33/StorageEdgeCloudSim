@@ -117,7 +117,7 @@ public class ParseStorageNodes {
         }
     }
 
-    public HashMap<Integer,String> prepareNodesHashVector(){
+    public HashMap<Integer,String> prepareNodesHashVector(String file_path){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
@@ -131,7 +131,12 @@ public class ParseStorageNodes {
         HashMap<Integer,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
-            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Nodes.csv"));
+            BufferedReader br;
+            if(file_path.equals("")) {
+                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Nodes.csv"));
+            }else{
+                br = new BufferedReader(new FileReader(file_path));
+            }
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){

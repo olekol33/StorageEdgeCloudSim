@@ -148,6 +148,10 @@ public class SimSettings {
 	private boolean EXTERNAL_OBJECTS_INPUT;
 	private boolean EXTERNAL_REQUESTS_INPUT;
 	private boolean TEST_USING_INT;
+	private String NODES_DIRECT_PATH;
+	private String DEVICES_DIRECT_PATH;
+	private String OBJECTS_DIRECT_PATH;
+	private String REQUESTS_DIRECT_PATH;
 
 	//SPECIAL EXPERIMENT
 	private boolean NSF_EXPERIMENT;
@@ -313,6 +317,10 @@ public class SimSettings {
 			EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
 			EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
 			TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
+			NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
+			DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
+			OBJECTS_DIRECT_PATH = prop.getProperty("objects_direct_path");
+			REQUESTS_DIRECT_PATH = prop.getProperty("requests_direct_path");
 
 			PARAM_SCAN_MODE = false;
 			NSF_EXPERIMENT = false;
@@ -399,7 +407,7 @@ public class SimSettings {
 		if(SimSettings.instance.isExternalNodes()){
 			try{
 				ParseStorageNodes nodeParser = new ParseStorageNodes();
-				nodesHashVector = nodeParser.prepareNodesHashVector();
+				nodesHashVector = nodeParser.prepareNodesHashVector(getPathOfNodesFile());
 				minXpos = nodeParser.getxMin();
 				minYpos = nodeParser.getyMin();
 				xRange = nodeParser.getxRange();
@@ -415,7 +423,7 @@ public class SimSettings {
 		if(SimSettings.instance.isExternalDevices()){
 			try{
 				ParseStorageDevices deviceParser = new ParseStorageDevices();
-				devicesHashVector = deviceParser.prepareDevicesVector();
+				devicesHashVector = deviceParser.prepareDevicesVector(getPathOfDevicesFile());
 				devicesVector = deviceParser.getDevicesVector();
 
 				MIN_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
@@ -429,14 +437,14 @@ public class SimSettings {
 		//updates the number of objects accordingly
 		if(SimSettings.getInstance().isExternalObjects()){
 			ParseStorageObject objectParser = new ParseStorageObject();
-			objectsHashVector = objectParser.parser(nodesHashVector);
+			objectsHashVector = objectParser.parser(nodesHashVector, getPathOfObjectsFile());
 			NUM_OF_DATA_OBJECTS = objectsHashVector.size();
 			objectsVector = objectParser.getObjectsVector();
 		}
 
 		if(SimSettings.getInstance().isExternalRequests()){
 			ParseStorageRequests requestsParser = new ParseStorageRequests();
-			storageRequests = requestsParser.prepareRequests(devicesHashVector, objectsHashVector);
+			storageRequests = requestsParser.prepareRequests(devicesHashVector, objectsHashVector,getPathOfRequestsFile());
 			numOfExternalTasks = storageRequests.size();
 		}
 		return result;
@@ -773,6 +781,22 @@ public class SimSettings {
 
 	public boolean isItIntTest(){
 		return TEST_USING_INT;
+	}
+
+	public String getPathOfNodesFile(){
+		return NODES_DIRECT_PATH;
+	}
+
+	public String getPathOfDevicesFile(){
+		return DEVICES_DIRECT_PATH;
+	}
+
+	public String getPathOfObjectsFile(){
+		return OBJECTS_DIRECT_PATH;
+	}
+
+	public String getPathOfRequestsFile(){
+		return REQUESTS_DIRECT_PATH;
 	}
 
 	public boolean isVariabilityRun() {

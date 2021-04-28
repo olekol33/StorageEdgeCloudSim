@@ -1,5 +1,7 @@
 package edu.boun.edgecloudsim.storage_advanced;
 
+import edu.boun.edgecloudsim.core.SimSettings;
+
 import java.io.*;
 import java.util.*;
 
@@ -44,7 +46,7 @@ public class ParseStorageObject {
     }
     */
 
-    public HashMap<String,String> parser(HashMap<Integer,String> nodesHashVector){
+    public HashMap<String,String> parser(HashMap<Integer,String> nodesHashVector, String file_path){
         String line;
         String splitLineBy = ",";
         String splitVectorBy = " ";
@@ -65,7 +67,12 @@ public class ParseStorageObject {
             if(nodesHashVector.isEmpty()){
                 throw new Exception("There are no nodes in the system (nodesHashVector is empty)");
             }
-            BufferedReader br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Objects.csv"));
+            BufferedReader br;
+            if(file_path.equals("")) {
+                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Objects.csv"));
+            }else{
+                br = new BufferedReader(new FileReader(file_path));
+            }
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
