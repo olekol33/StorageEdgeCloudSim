@@ -1,5 +1,6 @@
 package edu.boun.edgecloudsim.storage_advanced;
 
+
 public class StorageRequest {
     private String deviceName;
     private Double time;
@@ -7,8 +8,10 @@ public class StorageRequest {
     private int ioTaskID;
     private int taskPriority;
     private Double taskDeadline;
+    private final int defaultTaskPriority = -1;
+    private final double defaultTaskDeadline = -1.0;
 
-
+//constructors
     public StorageRequest( String _deviceName, Double _time, String _objectID, int _ioTaskID, int _taskPriority, Double _taskDeadline) {
         deviceName = _deviceName;
         time = _time;
@@ -24,7 +27,7 @@ public class StorageRequest {
         time = _time;
         objectID = _objectID;
         ioTaskID = _ioTaskID;
-        taskPriority = -1;
+        taskPriority = defaultTaskPriority;
         taskDeadline = _taskDeadline;
     }
 
@@ -35,7 +38,7 @@ public class StorageRequest {
         objectID = _objectID;
         ioTaskID = _ioTaskID;
         taskPriority = _taskPriority;
-        taskDeadline = -1.0;
+        taskDeadline = defaultTaskDeadline;
     }
 
     //if the fields "taskDeadline" and "taskPriority" are empty
@@ -44,16 +47,12 @@ public class StorageRequest {
         time = _time;
         objectID = _objectID;
         ioTaskID = _ioTaskID;
-        taskPriority = -1;
-        taskDeadline = -1.0;
+        taskPriority = defaultTaskPriority;
+        taskDeadline = defaultTaskDeadline;
     }
 
     public String getDeviceName() {
         return deviceName;
-    }
-
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
     }
 
     public Double getTime() {
@@ -68,31 +67,15 @@ public class StorageRequest {
         return objectID;
     }
 
-    public void setObjectID(String objectID) {
-        this.objectID = objectID;
-    }
-
     public int getTaskPriority() {
         return taskPriority;
-    }
-
-    public void setTaskPriority(int taskPriority) {
-        this.taskPriority = taskPriority;
     }
 
     public Double getTaskDeadline() {
         return taskDeadline;
     }
 
-    public void setTaskDeadline(Double taskDeadline) {
-        this.taskDeadline = taskDeadline;
-    }
-
     public int getIoTaskID() {
         return ioTaskID;
-    }
-
-    public void setIoTaskID(int ioTaskID) {
-        this.ioTaskID = ioTaskID;
     }
 }

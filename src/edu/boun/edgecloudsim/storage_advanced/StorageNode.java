@@ -1,5 +1,6 @@
 package edu.boun.edgecloudsim.storage_advanced;
 
+
 public class StorageNode {
     private int nodeName;
     private double xPos;
@@ -17,13 +18,8 @@ public class StorageNode {
         serviceRate = _serviceRate;
     }
 
-
     public int getNodeName() {
         return nodeName;
-    }
-
-    public void setNodeName(int nodeName) {
-        this.nodeName = nodeName;
     }
 
     public double getxPos() {
@@ -42,27 +38,15 @@ public class StorageNode {
         this.yPos = yPos;
     }
 
-    public int getServiceClass() {
-        return serviceClass;
-    }
-
-    public void setServiceClass(int serviceClass) {
-        this.serviceClass = serviceClass;
-    }
-
     public int getCapacity() {
         return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
     }
 
     public int getServiceRate() {
         return serviceRate;
     }
 
-    public void setServiceRate(int serviceRate) {
-        this.serviceRate = serviceRate;
+    public int getServiceClass() {
+        return serviceClass;
     }
 }

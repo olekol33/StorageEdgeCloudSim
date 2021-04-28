@@ -1,5 +1,6 @@
 package edu.boun.edgecloudsim.storage_advanced;
 
+
 public class StorageDevice {
 
     private int deviceName;
@@ -17,10 +18,6 @@ public class StorageDevice {
 
     public int getDeviceName() {
         return deviceName;
-    }
-
-    public void setDeviceName(int deviceName) {
-        this.deviceName = deviceName;
     }
 
     public double getxPos() {

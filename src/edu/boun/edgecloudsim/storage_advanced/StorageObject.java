@@ -2,6 +2,7 @@ package edu.boun.edgecloudsim.storage_advanced;
 
 import java.util.List;
 
+
 public class StorageObject {
     private String objName;
     private String objSize;
@@ -23,10 +24,6 @@ public class StorageObject {
         return objName;
     }
 
-    public void setObjName(String objName) {
-        this.objName = objName;
-    }
-
     public String getObjSize() {
         return objSize;
     }
@@ -43,23 +40,11 @@ public class StorageObject {
         return objLocations;
     }
 
-    public void setObjLocations(List<String> objLocations) {
-        this.objLocations = objLocations;
-    }
-
     public List<Double> getObjLocationsProb() {
         return objLocationsProb;
     }
 
-    public void setObjLocationsProb(List<Double> objLocationsProb) {
-        this.objLocationsProb = objLocationsProb;
-    }
-
     public int getObjClass() {
         return objClass;
-    }
-
-    public void setObjClass(int objClass) {
-        this.objClass = objClass;
     }
 }
