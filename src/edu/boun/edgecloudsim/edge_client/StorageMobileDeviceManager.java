@@ -57,6 +57,11 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         task.setIoTaskID(edgeTask.getIoTaskID());
         task.setIsParity(edgeTask.getIsParity());
 
+        //added by - Harel
+        task.setTaskPriority(edgeTask.getTaskPriority());
+        task.setTaskDeadline(edgeTask.getTaskDeadline());
+        task.setStart_time(edgeTask.getStartTime());
+
         //add related task to log list
         SimLogger.getInstance().addLog(task.getCloudletId(),
                 task.getTaskType(),

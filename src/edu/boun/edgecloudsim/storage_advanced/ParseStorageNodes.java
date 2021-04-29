@@ -188,8 +188,12 @@ public class ParseStorageNodes {
                 System.out.println(m.getKey() +" "+m.getValue());
             }*/
 
-            //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
+            //expand the limits of the grid by host radius
+            minX -= SimSettings.getInstance().getHostRadius();
+            minY -= SimSettings.getInstance().getHostRadius();
 
+
+            //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
             if(SimSettings.getInstance().isGpsConversionRequired()) { //check the cast flag
                 for (StorageNode temp : nodesVector) {
                     //TODO: delete this section - for testing purposes only
@@ -201,10 +205,11 @@ public class ParseStorageNodes {
                         temp.setyPos(temp.getyPos() - minY);
                     }
                 }
-                maxX -= minX;
-                maxY -= minY;
+                maxX = maxX - minX + 2 * SimSettings.getInstance().getHostRadius();
+                maxY = maxY - minY + 2 * SimSettings.getInstance().getHostRadius();
             }
 
+            //host_radius was added to take care of some cases
             xMin = minX;
             yMin = minY;
             xRange = maxX;

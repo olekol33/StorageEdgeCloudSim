@@ -116,6 +116,7 @@ public class TaskProperty {
 		isParity = _isParity;
 
 		//finding the object original name (from the hash map)
+		/*
 		String originName = "";
 		int hashSize = SimSettings.getInstance().getObjectsHashVector().size();
 		for(int i = 0; i < hashSize; i++){
@@ -140,6 +141,25 @@ public class TaskProperty {
 		for(int i = 0; i < size; i++){
 			StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
 			if(sObject.getObjName().equals(originName)){
+				inputFileSize = Long.parseLong(sObject.getObjSize());
+				break;
+			}
+		}
+		try {
+			if (inputFileSize == -1) {
+				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the objects input!");
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}*/
+
+		//finding the size of the object
+		int size = SimSettings.getInstance().getObjectsVector().size();
+		//for testing purposes - delete!
+		//Vector<StorageObject> temp = SimSettings.getInstance().getObjectsVector();
+		for(int i = 0; i < size; i++){
+			StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
+			if(sObject.getObjName().equals(objectRead)){
 				inputFileSize = Long.parseLong(sObject.getObjSize());
 				break;
 			}

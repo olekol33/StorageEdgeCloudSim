@@ -17,10 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -168,6 +165,7 @@ public class SimSettings {
 	private HashMap<Integer,String> nodesHashVector;
 	private HashMap<Integer,String> devicesHashVector;
 	private HashMap<String,String> objectsHashVector;
+	private HashMap<String,String> reversedHashVector;
 	private Vector<StorageDevice> devicesVector;
 	private Vector<StorageObject> objectsVector;
 	private Vector<StorageRequest> storageRequests;
@@ -425,7 +423,6 @@ public class SimSettings {
 				ParseStorageDevices deviceParser = new ParseStorageDevices();
 				devicesHashVector = deviceParser.prepareDevicesVector(getPathOfDevicesFile());
 				devicesVector = deviceParser.getDevicesVector();
-
 				MIN_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
 				MAX_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
 			}catch (Exception e){
@@ -438,6 +435,7 @@ public class SimSettings {
 		if(SimSettings.getInstance().isExternalObjects()){
 			ParseStorageObject objectParser = new ParseStorageObject();
 			objectsHashVector = objectParser.parser(nodesHashVector, getPathOfObjectsFile());
+			reversedHashVector = reverseHash(objectsHashVector);
 			NUM_OF_DATA_OBJECTS = objectsHashVector.size();
 			objectsVector = objectParser.getObjectsVector();
 		}
@@ -449,7 +447,15 @@ public class SimSettings {
 		}
 		return result;
 	}
-	
+
+	//was added by Harel - for convenience
+	private HashMap<String, String> reverseHash(HashMap<String,String> map){
+		HashMap<String,String> reversedHash = new HashMap<>();
+		for(Map.Entry<String,String> m : map.entrySet()){
+			reversedHash.put(m.getValue(),m.getKey());
+		}
+		return reversedHash;
+	}
 	/**
 	 * returns the parsed XML document for edge_devices.xml
 	 */
@@ -757,6 +763,10 @@ public class SimSettings {
 
 	public boolean isOrbitMode() {
 		return ORBIT_MODE;
+	}
+
+	public HashMap<String, String> getReversedHashVector() {
+		return reversedHashVector;
 	}
 
 	public boolean isGpsConversionRequired(){

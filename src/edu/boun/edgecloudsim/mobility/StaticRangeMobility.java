@@ -39,7 +39,7 @@ public class StaticRangeMobility extends MobilityModel {
         //create list of DC locations
 //        createDCLocationList();
 
-        if(SimSettings.getInstance().isExternalDevices() == false) {
+        if(!SimSettings.getInstance().isExternalDevices()) {
             //initialize tree maps and position of mobile devices
             //places each mobile device at a location of a DC
             for (int i = 0; i < numberOfMobileDevices; i++) {

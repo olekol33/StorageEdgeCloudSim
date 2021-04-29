@@ -123,7 +123,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         return minQueueHost;
     }
 
-    //TODO: was added by Harel!
+    //TODO: was added by Harel! - delete
     private String findHashedName(String objectName){
         int hashSize = SimSettings.getInstance().getObjectsHashVector().size();
         for(int i = 0; i < hashSize; i++){
@@ -149,11 +149,12 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         String locations = RedisListHandler.getObjectLocations(task.getObjectRead()); //TODO: this comes back null for some reason
 
         //TODO: 3 lines were added!!!
+        /*
         if(SimSettings.getInstance().isExternalRequests()) {
             String hashedName = findHashedName(task.getObjectRead());
             assert hashedName != null;
             locations = RedisListHandler.getObjectLocations(hashedName);
-        }
+        }*/
         String operativeHosts = "";
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));//TODO: trying to access null ptr
         for (String host : nonOperateHosts){

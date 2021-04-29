@@ -292,7 +292,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         for(int i = 0; i < numOfExternalTasks; i++) {
             StorageRequest sRequest = SimSettings.getInstance().getStorageRequests().elementAt(i);
             //taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), 0, expRngList)); //TODO: this line is important
-            taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), sRequest.getTaskPriority(), sRequest.getTaskDeadline(), 0)); //TODO: this line is important
+            taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getDeviceName(), sRequest.getIoTaskID(), sRequest.getTaskPriority(), sRequest.getTaskDeadline(), 0)); //TODO: this line is important
 
         }
 
@@ -479,10 +479,15 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             }*/
             //if there are replicas of the object
             //If dataParity, check that replica queue is less than threshold
+            //TODO: add my line here
             else if(objectLocations.size()>= 2 && ((checkReplicaQueue(task.getObjectRead()) && dataParity)||replication)) {
-                taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
-                        task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength(),
-                        task.getHostID()));
+                if(!SimSettings.getInstance().isExternalRequests()) {
+                    taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
+                            task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength(),
+                            task.getHostID()));
+                }else{
+                    taskList.add(new TaskProperty(task.getMobileDeviceId(), 0, task.getStart_time(), task.getObjectRead(), task.getIoTaskID(), task.getTaskPriority(), task.getTaskDeadline(), 0)); //TODO: this line is important
+                }
                 SimManager.getInstance().createNewTask();
                 return true;
             }
@@ -537,14 +542,24 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 continue;
             //if not data, than data of parity
             //TODO: add delay for queue query
-            taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                    objectID, task.getIoTaskID(), isParity,0,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            //TODO: add my line here
+            if(!SimSettings.getInstance().isExternalRequests()) {
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(),
+                        objectID, task.getIoTaskID(), isParity, 0, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            }else{
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), 0, task.getStart_time(), task.getObjectRead(), task.getIoTaskID(), task.getTaskPriority(), task.getTaskDeadline(), 0)); //TODO: this line is important
+            }
             SimManager.getInstance().createNewTask();
         }
         for (String objectID:parityObjects){
             i++;
-            taskList.add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
-                objectID, task.getIoTaskID(), isParity,paritiesToRead,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            if(!SimSettings.getInstance().isExternalRequests()) {
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(),
+                        objectID, task.getIoTaskID(), isParity, paritiesToRead, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            }else{
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), 0, task.getStart_time(), task.getObjectRead(), task.getIoTaskID(), task.getTaskPriority(), task.getTaskDeadline(), 0)); //TODO: this line is important
+
+            }
             SimManager.getInstance().createNewTask();
             //count just one read for queue
             paritiesToRead=0;
