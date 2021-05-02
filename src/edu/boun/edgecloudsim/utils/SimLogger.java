@@ -814,6 +814,10 @@ public class SimLogger {
 				if (time < SimSettings.getInstance().getWarmUpPeriod())
 					continue;
 
+				//TODO: added by Harel! - oleg needs to check!!!
+				if(time < 10)
+					continue;
+
 				for (int i = 0; i < SimManager.getInstance().getNumOfMobileDevice(); i++) {
 
 					Location loc = SimManager.getInstance().getMobilityModel().getLocation(i, time);
@@ -840,6 +844,10 @@ public class SimLogger {
 				}
 			}
 			for (int i = 0; i < SimManager.getInstance().getNumOfMobileDevice(); i++) {
+
+				//TODO: added by Harel! - oleg needs to check!!!
+				if(SimSettings.getInstance().getWarmUpPeriod() < 10)
+					continue;
 
 				Location loc = SimManager.getInstance().getMobilityModel().getLocation(i, SimSettings.getInstance().getWarmUpPeriod());
 
