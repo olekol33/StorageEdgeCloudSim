@@ -287,8 +287,14 @@ public class StaticRangeMobility extends MobilityModel {
     //Randomly places device on grid within range of at least one host
     private Location randomPlaceDevice(Random random){//TODO:edit
         //get grid size
-        int xRange = SimSettings.getInstance().getXRange();
-        int yRange = SimSettings.getInstance().getYRange();
+        int xRange, yRange;
+        if(!SimSettings.getInstance().isExternalNodes()) {
+            xRange = SimSettings.getInstance().getXRange();
+            yRange = SimSettings.getInstance().getYRange();
+        }else{
+            xRange = (int) SimSettings.getInstance().getxRange();
+            yRange = (int) SimSettings.getInstance().getyRange();
+        }
         int xPos = 0;
         int yPos = 0;
         List<Integer> hosts = new ArrayList<Integer>();
@@ -323,7 +329,7 @@ public class StaticRangeMobility extends MobilityModel {
         Location deviceLocation;
         //Initialize list of hosts in proximity of device
         //TODO: delete this section - for testing purposes only
-        if(SimSettings.getInstance().isItIntTest()){
+        if(SimSettings.getInstance().isItIntTest() && SimSettings.getInstance().isExternalDevices()){
             deviceLocation = new Location(0,0,(int)((s1.getxPos() - SimSettings.getInstance().getMinXpos())*100)
                     ,(int)((s1.getyPos() - SimSettings.getInstance().getMinYpos())*100)); //TODO: remove casting
         }else {
@@ -342,7 +348,7 @@ public class StaticRangeMobility extends MobilityModel {
             Location host = getDCLocation(hosts.get(0));
 //            Location host = dcLocations.get(hosts.get(0));
             //TODO: delete this section - for testing purposes only
-            if(SimSettings.getInstance().isItIntTest()){
+            if(SimSettings.getInstance().isItIntTest() && SimSettings.getInstance().isExternalDevices()){
                 return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(),
                         (int)((s1.getxPos() - SimSettings.getInstance().getMinXpos())*100)
                         ,(int)((s1.getyPos() - SimSettings.getInstance().getMinYpos())*100),hosts); //TODO: remove casting
@@ -354,7 +360,7 @@ public class StaticRangeMobility extends MobilityModel {
             Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,(int)s1.getxPos(),(int)s1.getyPos()))); //TODO: remove casting
 //            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
             //TODO: delete this section - for testing purposes only
-            if(SimSettings.getInstance().isItIntTest()){
+            if(SimSettings.getInstance().isItIntTest() && SimSettings.getInstance().isExternalDevices()){
                 return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(),
                         (int)((s1.getxPos() - SimSettings.getInstance().getMinXpos())*100)
                         ,(int)((s1.getyPos() - SimSettings.getInstance().getMinYpos())*100),hosts); //TODO: remove casting

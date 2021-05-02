@@ -205,8 +205,14 @@ public class ParseStorageNodes {
                         temp.setyPos(temp.getyPos() - minY);
                     }
                 }
-                maxX = maxX - minX + 2 * SimSettings.getInstance().getHostRadius();
-                maxY = maxY - minY + 2 * SimSettings.getInstance().getHostRadius();
+                //maxX = maxX - minX + 2 * SimSettings.getInstance().getHostRadius();
+                //maxY = maxY - minY + 2 * SimSettings.getInstance().getHostRadius();
+                if(SimSettings.getInstance().isExternalNodes()){
+                    for(StorageNode temp : nodesVector){
+                        maxX = Math.max(maxX, temp.getxPos());
+                        maxY = Math.max(maxY, temp.getyPos());
+                    }
+                }
             }
 
             //host_radius was added to take care of some cases

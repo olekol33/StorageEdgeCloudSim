@@ -203,6 +203,14 @@ public class SimSettings {
 		return minYpos;
 	}
 
+	public double getxRange() {
+		return xRange;
+	}
+
+	public double getyRange() {
+		return yRange;
+	}
+
 	public int getNumOfExternalTasks() {
 		return numOfExternalTasks;
 	}
