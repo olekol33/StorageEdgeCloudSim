@@ -177,7 +177,17 @@ public class StaticRangeMobility extends MobilityModel {
     public static List<Integer> checkLegalPlacement(Location deviceLocation) {
         int x_pos = deviceLocation.getXPos();
         int y_pos = deviceLocation.getYPos();
-        int hostRadius = SimSettings.getInstance().getHostRadius();
+        //int hostRadius = SimSettings.getInstance().getHostRadius(); - TODO: this is the original line!
+
+        //TODO: delete this line - for testing purposes only!!
+        //TODO: the correct line is the line commented-out above.
+        int hostRadius;
+        if(SimSettings.getInstance().isExternalNodes() && !SimSettings.getInstance().isExternalDevices()) {
+            hostRadius = 100;
+        }else{
+            hostRadius = SimSettings.getInstance().getHostRadius();
+        }
+
         List<Integer> hosts = new ArrayList<Integer>();
         for (int i = 0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
             Location DCLocation = getDCLocation(i);
