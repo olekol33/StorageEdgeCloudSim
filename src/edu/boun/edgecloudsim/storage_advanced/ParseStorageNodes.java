@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-//changed
-
 /**
  * This class parses the nodes input file.
  */
@@ -234,3 +232,5 @@ public class ParseStorageNodes {
     }
 
 }// end of class ParseStorageNodes
+
+//This section has been written by Harel

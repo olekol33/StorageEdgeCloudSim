@@ -21,7 +21,7 @@ public class StorageRequest {
         taskDeadline = _taskDeadline;
     }
 
-    //if the field "taskPriority" is empty
+    //if the field "taskPriority" is empty, a default value would be inserted to that attribute
     public StorageRequest(String _deviceName, Double _time, String _objectID, int _ioTaskID, Double _taskDeadline) {
         deviceName = _deviceName;
         time = _time;
@@ -31,7 +31,7 @@ public class StorageRequest {
         taskDeadline = _taskDeadline;
     }
 
-    //if the field "taskDeadline" is empty
+    //if the field "taskDeadline" is empty, a default value would be inserted to that attribute
     public StorageRequest(String _deviceName, Double _time, String _objectID, int _ioTaskID, int _taskPriority) {
         deviceName = _deviceName;
         time = _time;
@@ -41,7 +41,7 @@ public class StorageRequest {
         taskDeadline = defaultTaskDeadline;
     }
 
-    //if the fields "taskDeadline" and "taskPriority" are empty
+    //if the fields "taskDeadline" and "taskPriority" are empty, a default values would be inserted to that attributes
     public StorageRequest(String _deviceName, Double _time, String _objectID, int _ioTaskID) {
         deviceName = _deviceName;
         time = _time;
@@ -79,3 +79,4 @@ public class StorageRequest {
         return ioTaskID;
     }
 }
+//This section has been written by Harel

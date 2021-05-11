@@ -442,7 +442,7 @@ public class SimSettings {
 		//updates the number of objects accordingly
 		if(SimSettings.getInstance().isExternalObjects()){
 			ParseStorageObject objectParser = new ParseStorageObject();
-			objectsHashVector = objectParser.parser(nodesHashVector, getPathOfObjectsFile());
+			objectsHashVector = objectParser.prepareObjectsHashVector(nodesHashVector, getPathOfObjectsFile());
 			reversedHashVector = reverseHash(objectsHashVector);
 			NUM_OF_DATA_OBJECTS = objectsHashVector.size();
 			objectsVector = objectParser.getObjectsVector();
@@ -450,7 +450,7 @@ public class SimSettings {
 
 		if(SimSettings.getInstance().isExternalRequests()){
 			ParseStorageRequests requestsParser = new ParseStorageRequests();
-			storageRequests = requestsParser.prepareRequests(devicesHashVector, objectsHashVector,getPathOfRequestsFile());
+			storageRequests = requestsParser.prepareRequestsVector(devicesHashVector, objectsHashVector,getPathOfRequestsFile());
 			numOfExternalTasks = storageRequests.size();
 		}
 		return result;

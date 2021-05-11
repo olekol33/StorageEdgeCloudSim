@@ -5,49 +5,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+/**
+ * This class parses the devices input file.
+ */
 public class ParseStorageDevices {
     private final int DEVICE_NAME = 0; // object[0]
     private final int DEVICE_X_POSE = 1; // object[1]
     private final int DEVICE_Y_POSE = 2; // object[2]
     private final int DEVICE_TIME = 3; // object[3]
     private Vector<StorageDevice> devicesVector;
+
 //TODO: check the device in range of nodes (for oleg)
 
 //changed
 
-    /*
-    public static void csvWrite(HashMap<Integer,String> h){
-        try {
-            if (h == null) throw new Exception("The HashMap you are trying to export is null!!");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        try(PrintWriter writer = new PrintWriter(new File("scripts/sample_app6/Devices_Hash.csv"))){
-            StringBuilder sbTitle = new StringBuilder();
-            sbTitle.append("number");
-            sbTitle.append(",");
-            sbTitle.append("original name");
-            sbTitle.append("\n");
-            writer.write(sbTitle.toString());
-            int mapIndex = 0;
-            while(mapIndex < h.size()){
-                StringBuilder sb = new StringBuilder();
-                sb.append(mapIndex);
-                sb.append(",");
-                sb.append(h.get(mapIndex));
-                sb.append("\n");
-                writer.write(sb.toString());
-                mapIndex++;
-            }
-            System.out.println("The devices have been exported to Devices_Hash.csv successfully!!!");
-        }
-        catch(FileNotFoundException e){
-            System.out.println(e.getMessage());
-        }
-    }
-    */
-
+    /**
+     * gets a path to a file and parse the devices from it into a vector.
+     * in edition, creates hash map between the names of the devices in the vector, and the original names from the file.
+     * @param filePath contains the path to the devices input file.
+     * @return hash map contains a mapping between the new name (key) to the original name (value) from the input file.
+     */
     public HashMap<Integer,String> prepareDevicesVector(String filePath){
         String line;
         String splitLineBy = ",";
@@ -55,13 +32,13 @@ public class ParseStorageDevices {
         double firstTimeDeclared = -1;
         boolean ftdFlag = false, declared;
         int oldName = -1, newName;
+        int mapIndex = 0;
 
-        //create nodes vector
         devicesVector = new Vector<>();
 
-        //maps between the conventional name ant the original provided one
+        //maps between the conventional name and the original provided one
         HashMap<Integer,String> map = new HashMap<>();
-        int mapIndex = 0;
+
         try{
             BufferedReader br;
             if(filePath.equals("")) {
@@ -95,7 +72,6 @@ public class ParseStorageDevices {
                             //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
                             throw new Exception("The device name " + objects[DEVICE_NAME] + " is not unique!! error in line " + lineCounter);
                         }
-                        //declared = true;
                     } else {//it is not a declaration
                         //checks if the current device exists
                         if(objects[DEVICE_NAME].equals(m.getValue())){
@@ -105,6 +81,7 @@ public class ParseStorageDevices {
                         }
                     }
                 }
+
                 //checks if declaration was found to the device
                 if((!declared) && (firstTimeDeclared != Double.parseDouble(objects[DEVICE_TIME]))){
                     throw new Exception("The device name " + objects[DEVICE_NAME] + " was not declared!! error in line " + lineCounter);
@@ -140,7 +117,6 @@ public class ParseStorageDevices {
         }*/
 
             //write the HashMap to a csv file
-            //csvWrite(map);
             CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Devices_Hash.csv");
 
         }
@@ -148,9 +124,12 @@ public class ParseStorageDevices {
             e.printStackTrace();
         }
         return map;
-    }
+    }//end of prepareDevicesVector
 
     public Vector<StorageDevice> getDevicesVector() {
         return devicesVector;
     }
-}
+
+}//end of class ParseStorageDevices
+
+//This section has been written by Harel

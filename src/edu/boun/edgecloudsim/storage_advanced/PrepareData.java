@@ -23,11 +23,11 @@ public class PrepareData {
 
             ParseStorageObject p2 = new ParseStorageObject();
             HashMap<String,String> objectsHashVector =
-                    p2.parser(nodesHashVector, SimSettings.getInstance().getPathOfObjectsFile());
+                    p2.prepareObjectsHashVector(nodesHashVector, SimSettings.getInstance().getPathOfObjectsFile());
 
             ParseStorageRequests r1 = new ParseStorageRequests();
             Vector<StorageRequest> storageRequests =
-                r1.prepareRequests(devicesHashVector, objectsHashVector, SimSettings.getInstance().getPathOfRequestsFile());
+                r1.prepareRequestsVector(devicesHashVector, objectsHashVector, SimSettings.getInstance().getPathOfRequestsFile());
         }
         catch (Exception e){
             e.printStackTrace();

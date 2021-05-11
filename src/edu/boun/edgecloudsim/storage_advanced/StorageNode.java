@@ -50,3 +50,5 @@ public class StorageNode {
         return serviceClass;
     }
 }
+
+//This section has been written by Harel

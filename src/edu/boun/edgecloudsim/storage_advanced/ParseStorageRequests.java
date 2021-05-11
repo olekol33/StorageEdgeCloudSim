@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+/**
+ * This class parses the requests input file.
+ */
 public class ParseStorageRequests {
     private final int REQUEST_DEVICE_NAME = 0; // object[0]
     private final int REQUEST_TIME = 1; // object[1]
@@ -14,16 +17,24 @@ public class ParseStorageRequests {
     private final int REQUEST_TASK_PRIORITY = 4; // object[4]
     private final int REQUEST_TASK_DEADLINE = 5; // object[5]
 
-    public Vector<StorageRequest> prepareRequests(HashMap<Integer,String> nodesHashVector, HashMap<String,String> objectsHashVector, String file_path){
+    /**
+     * gets a path to a file and parse the requests from it into a vector.
+     * @param devicesHashVector contains a hashMap of devices used for checking the correctness of every device name
+     *                          parameter imported from the requests input file.
+     * @param objectsHashVector contains a hashMap of objects used for checking the correctness of every object ID
+     *                          parameter imported from the requests input file.
+     * @param file_path contains the path to the requests input file.
+     * @return StorageRequests vector holding all the requests imported from the requests input file.
+     */
+    public Vector<StorageRequest> prepareRequestsVector(HashMap<Integer,String> devicesHashVector, HashMap<String,String> objectsHashVector, String file_path){
         String line;
         String splitLineBy = ",";
         int lineCounter = 1;
         double prevRequestTime = 0;
 
-        //create nodes vector
         Vector<StorageRequest> requestsVector = new Vector<>();
 
-        //maps between the conventional name ant the original provided one
+        //maps between the conventional name and the original provided one
         try{
             BufferedReader br;
             if(file_path.equals("")) {
@@ -39,18 +50,19 @@ public class ParseStorageRequests {
                 //check if the deviceName is in the Devices file
                 boolean checkIfDeviceExists;
                 checkIfDeviceExists = false;
-                for(Map.Entry<Integer,String> m: nodesHashVector.entrySet()){
+                for(Map.Entry<Integer,String> m: devicesHashVector.entrySet()){
                     if(m.getValue().equals(objects[REQUEST_DEVICE_NAME])){
                         checkIfDeviceExists = true;
                         break;
                     }
                 }
                 if(!checkIfDeviceExists){
-                    throw new Exception("The request is trying to access a non-existing Node!! error in line " + lineCounter + "\n" + "The node " + objects[REQUEST_DEVICE_NAME] + " does not exist!!");
+                    throw new Exception("The request is trying to access a non-existing Node!! error in line " +
+                            lineCounter + "\n" + "The node " + objects[REQUEST_DEVICE_NAME] + " does not exist!!");
                 }
 
 
-                //TODO: check if the objectID is in the Objects file
+                //checks if the objectID is in the Objects file
                 boolean checkIfObjectExists;
                 checkIfObjectExists = false;
                 String new_name = "";
@@ -62,7 +74,8 @@ public class ParseStorageRequests {
                     }
                 }
                 if(!checkIfObjectExists){
-                    throw new Exception("The request is trying to access a non-existing Node!! error in line " + lineCounter + "\n" + "The object " + objects[REQUEST_OBJECT_ID] + " does not exist!!");
+                    throw new Exception("The request is trying to access a non-existing Node!! error in line " +
+                            lineCounter + "\n" + "The object " + objects[REQUEST_OBJECT_ID] + " does not exist!!");
                 }
 
 
@@ -77,6 +90,7 @@ public class ParseStorageRequests {
 
 
                 StorageRequest sRequest;
+
                 //check if the priority or deadline fields are empty
                 if(!objects[REQUEST_TASK_PRIORITY].equals("") && !objects[REQUEST_TASK_DEADLINE].equals("")){//both are not empty
                     sRequest = new StorageRequest(new_name,Double.parseDouble(objects[REQUEST_TIME]),objects[REQUEST_OBJECT_ID],Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
@@ -105,4 +119,7 @@ public class ParseStorageRequests {
         }
         return requestsVector;
     }
-}
+
+}//end of class ParseStorageRequests
+
+//This section has been written by Harel

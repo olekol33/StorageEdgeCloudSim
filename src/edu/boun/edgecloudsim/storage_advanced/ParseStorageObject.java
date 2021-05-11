@@ -1,12 +1,13 @@
 package edu.boun.edgecloudsim.storage_advanced;
 
-import edu.boun.edgecloudsim.core.SimSettings;
-
 import java.io.*;
 import java.util.*;
 
 //changed
 
+/**
+ * This class parses the objects input file.
+ */
 public class ParseStorageObject {
     private final int OBJECT_NAME = 0; // object[0]
     private final int OBJECT_SIZE = 1; // object[1]
@@ -15,54 +16,27 @@ public class ParseStorageObject {
     private final int OBJECT_CLASS = 4; // object[4]
     private Vector<StorageObject> objectsVector;
 
-    /*
-    public static void csvWrite(HashMap<String,String> h){
-        try {
-            if (h == null) throw new Exception("The HashMap you are trying to export is null!!");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        try(PrintWriter writer = new PrintWriter(new File("scripts/sample_app6/Objects_Hash.csv"))){
-            StringBuilder sbTitle = new StringBuilder();
-            sbTitle.append("conventional name");
-            sbTitle.append(",");
-            sbTitle.append("original name");
-            sbTitle.append("\n");
-            writer.write(sbTitle.toString());
-            for(Map.Entry m : h.entrySet()) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.getKey());
-                sb.append(",");
-                sb.append(m.getValue());
-                sb.append("\n");
-                writer.write(sb.toString());
-            }
-            System.out.println("The objects have been exported to Objects_Hash.csv successfully!!!");
-        }
-        catch(FileNotFoundException e){
-            System.out.println(e.getMessage());
-        }
-    }
-    */
 
-    public HashMap<String,String> parser(HashMap<Integer,String> nodesHashVector, String file_path){
+    /**
+     * gets a path to a file and parse the objects from it into a vector.
+     * in edition, creates hash map between the names of the objects in the vector, and the original names from the file.
+     * @param nodesHashVector contains a hashMap of nodes that used to check the correctness of the data imported
+     *                        from the objects input file.
+     * @param file_path contains the path to the objects input file.
+     * @return hash map contains a mapping between the new name (key) to the original name (value) from the input file.
+     */
+    public HashMap<String,String> prepareObjectsHashVector(HashMap<Integer,String> nodesHashVector, String file_path){
         String line;
         String splitLineBy = ",";
         String splitVectorBy = " ";
         int lineCounter = 1;
+        int mapIndex = 0;
 
-        //TODO: change to exception
-        if(nodesHashVector.size() == 0){
-            System.out.println("EMPTY!!!");
-        }
-
-        //create objects vector
         objectsVector = new Vector<>();
 
-        //maps between the conventional name ant the original provided one
+        //maps between the conventional name and the original provided one
         HashMap<String,String> map = new HashMap<>();
-        int mapIndex = 0;
+
         try{
             if(nodesHashVector.isEmpty()){
                 throw new Exception("There are no nodes in the system (nodesHashVector is empty)");
@@ -87,7 +61,7 @@ public class ParseStorageObject {
                                 !objects[OBJECT_LOCATION_PROB_VECTOR].equals("") &&
                                         objects[OBJECT_LOCATION_VECTOR].equals(""))){
                     //System.out.println("The number of locations does not match the number of probs!! error in line " + lineCounter);
-                    throw new Exception("The number of locations does not match the number of probs!! error in line " + lineCounter);
+                    throw new Exception("The number of locations does not match the number of probabilities!! error in line " + lineCounter);
                 }
 
                 //checks if the current object's name is unique
@@ -98,7 +72,7 @@ public class ParseStorageObject {
                     }
                 }
 
-                //CHECKS THAT THE LOCATIONS IN THE location LIST MATCH A NODES IN THE NODES FILE!
+                //checks that the locations in the location list match a nodes in the nodes list
                 boolean checkIfNodeExists;
                 for(int i = 0; i < locations.length && !objects[OBJECT_LOCATION_PROB_VECTOR].equals(""); i++){
                     checkIfNodeExists = false;
@@ -119,11 +93,10 @@ public class ParseStorageObject {
                 //mapping the objects and renaming them to the convention.
                 String objectPrefix = "d";
                 String objectNewName = objectPrefix + mapIndex;
-                //System.out.println(objectNewName);
                 map.put(objectNewName,objects[OBJECT_NAME]);
                 mapIndex++;
 
-                objects[OBJECT_NAME] = objectNewName; //The actually name changing of the object
+                objects[OBJECT_NAME] = objectNewName; //The actual name changing of the object
 
                 double[] lpb = new double[locProbVec.length];
                 double sum = 0;
@@ -136,7 +109,7 @@ public class ParseStorageObject {
                     }
                 }
 
-                //convert the array in to a List
+                //convert the array in to a List - may be redundant
                 List<Double> lpv = new ArrayList<>();
                 for (double v : lpb) {
                     lpv.add(v);
@@ -146,10 +119,10 @@ public class ParseStorageObject {
                 List<String> locationsList = Arrays.asList(locations);
                 StorageObject so = new StorageObject(objects[OBJECT_NAME],
                         objects[OBJECT_SIZE],locationsList,lpv,Integer.parseInt(objects[OBJECT_CLASS]));
-                //objectsList.add(so);
                 objectsVector.add(so);
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
+
                 //checks if the sum of the probabilities is less then or equal to 1
                 if(sum > 1){
                     //System.out.println("The prob sum is more then 1!");
@@ -165,7 +138,6 @@ public class ParseStorageObject {
             }*/
 
             //write the HashMap to a csv file
-            //csvWrite(map);
             CsvWrite.csvWriteSS(map,"scripts/sample_app6/hash_tables/Objects_Hash.csv" );
         }
         catch (Exception e){
@@ -184,9 +156,12 @@ public class ParseStorageObject {
         }
 */
         return map;
-    }
+    }//end of prepareObjectsHashVector
 
     public Vector<StorageObject> getObjectsVector() {
         return objectsVector;
     }
-}
+
+}//end of class ParseStorageObjects
+
+//This section has been written by Harel

@@ -45,3 +45,5 @@ public class StorageDevice {
     }
 
 }
+
+//This section has been written by Harel
