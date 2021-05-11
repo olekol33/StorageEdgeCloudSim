@@ -9,6 +9,9 @@ import java.util.Vector;
 
 //changed
 
+/**
+ * This class parses the nodes input file.
+ */
 public class ParseStorageNodes {
     private final int NODE_NAME = 0; // object[0]
     private final int NODE_X_POSE = 1; // object[1]
@@ -21,39 +24,13 @@ public class ParseStorageNodes {
     private double xRange;
     private double yRange;
 
-    /*
-    public static void csvWrite(HashMap<Integer,String> h){
-        try {
-            if (h == null) throw new Exception("The HashMap you are trying to export is null!!");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        try(PrintWriter writer = new PrintWriter(new File("scripts/sample_app6/Nodes_Hash.csv"))){
-            StringBuilder sbTitle = new StringBuilder();
-            sbTitle.append("number");
-            sbTitle.append(",");
-            sbTitle.append("original name");
-            sbTitle.append("\n");
-            writer.write(sbTitle.toString());
-            int mapIndex = 0;
-            while(mapIndex < h.size()){
-                StringBuilder sb = new StringBuilder();
-                sb.append(mapIndex);
-                sb.append(",");
-                sb.append(h.get(mapIndex));
-                sb.append("\n");
-                writer.write(sb.toString());
-                mapIndex++;
-            }
-            System.out.println("The nodes have been exported to Nodes_Hash.csv successfully!!!");
-        }
-        catch(FileNotFoundException e){
-            System.out.println(e.getMessage());
-        }
-    }
-     */
 
+    /**
+     * exports the nodes from the nodes vector to a file (edge_devices.xml).
+     * creates new file or rewrites an existing one.
+     *
+     * @param nodesVector contains the nodes. each Node in the vector is from type StorageNode.
+     */
     public static void xmlWrite(Vector<StorageNode> nodesVector){
         try{
             FileWriter writer = new FileWriter("scripts/sample_app6/config/edge_devices.xml");
@@ -117,6 +94,13 @@ public class ParseStorageNodes {
         }
     }
 
+    /**
+     * gets a path to a file and parse the nodes from it into a vector.
+     * in edition, creates hash map between the names of the nodes in the vector, and the original names of the nodes.
+     *
+     * @param file_path contains the path to the nodes input file.
+     * @return hash map contains a mapping between the new name (key) to the original name (value) from the input file.
+     */
     public HashMap<Integer,String> prepareNodesHashVector(String file_path){
         String line;
         String splitLineBy = ",";
@@ -127,7 +111,7 @@ public class ParseStorageNodes {
         //create nodes vector
         Vector<StorageNode> nodesVector = new Vector<>();
 
-        //maps between the conventional name ant the original provided one
+        //maps between the conventional name and the original provided one
         HashMap<Integer,String> map = new HashMap<>();
         int mapIndex = 0;
         try{
@@ -153,12 +137,9 @@ public class ParseStorageNodes {
                 //mapping the objects and renaming them to the convention.
                 map.put(mapIndex,objects[NODE_NAME]);
                 mapIndex++;
-
-
-                //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
                 lineCounter++;
 
-                //creat new storageNode and add it to the nodes vector
+                //create new storageNode and add it to the nodes vector
                 StorageNode sNode = new StorageNode(mapIndex-1,Double.parseDouble(objects[NODE_X_POSE]),
                         Double.parseDouble(objects[NODE_Y_POSE]),Integer.parseInt(objects[NODE_SERVICE_CLASS]),
                         Integer.parseInt(objects[NODE_CAPACITY]),Integer.parseInt(objects[NODE_SERVICE_RATE]));
@@ -182,19 +163,20 @@ public class ParseStorageNodes {
                 minY = Math.min(minY, y);
             }
             System.out.println("The nodes' vector successfully created!!!");
+
             /*
             System.out.println("Displaying HashMap:");
             for(Map.Entry m: map.entrySet()){
                 System.out.println(m.getKey() +" "+m.getValue());
             }*/
 
-            //expand the limits of the grid by host radius
+            //expand the limits of the grid by host radius (for devices with negative location on the aligned grid).
             minX -= SimSettings.getInstance().getHostRadius();
             minY -= SimSettings.getInstance().getHostRadius();
 
 
             //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
-            if(SimSettings.getInstance().isGpsConversionRequired()) { //check the cast flag
+            if(SimSettings.getInstance().isGpsConversionRequired()) { //check the GPS conversion flag
                 for (StorageNode temp : nodesVector) {
                     //TODO: delete this section - for testing purposes only
                     if (SimSettings.getInstance().isItIntTest()) {
@@ -215,13 +197,12 @@ public class ParseStorageNodes {
                 }
             }
 
-            //host_radius was added to take care of some cases
             xMin = minX;
             yMin = minY;
             xRange = maxX;
             yRange = maxY;
+
             //write the HashMap to a csv file
-            //csvWrite(map);
             CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Nodes_Hash.csv");
 
             //write the edge_device.xml file
@@ -233,7 +214,8 @@ public class ParseStorageNodes {
         }
 
         return map;
-    }
+
+    }// end of prepareNodesHashVector
 
     public double getxMin() {
         return xMin;
@@ -250,4 +232,5 @@ public class ParseStorageNodes {
     public double getyRange() {
         return yRange;
     }
-}
+
+}// end of class ParseStorageNodes
