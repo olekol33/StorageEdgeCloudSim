@@ -112,6 +112,7 @@ public class SimSettings {
 	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
 	private int MAN_THRESHOLD;
+	private double MAN_THRESHOLD_FACTOR;
 	private int MAX_CLOUD_REQUESTS;
 
 
@@ -291,6 +292,7 @@ public class SimSettings {
 				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				MAN_THRESHOLD = Integer.parseInt(prop.getProperty("man_threshold"));
+				MAN_THRESHOLD_FACTOR = Double.parseDouble(prop.getProperty("man_threshold_factor"));
 				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 
 			}
@@ -816,6 +818,9 @@ public class SimSettings {
 	}
 	public int getManThreshold() {
 		return MAN_THRESHOLD;
+	}
+	public double getManThresholdFactor() {
+		return MAN_THRESHOLD_FACTOR;
 	}
 	public int getMaxCloudRequests() {
 		return MAX_CLOUD_REQUESTS;

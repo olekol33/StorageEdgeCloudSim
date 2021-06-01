@@ -6,7 +6,6 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
-import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
@@ -179,7 +178,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 //if data object can't be read - read parity
                 if (objectLocations.size()==0) {
                     LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
-                    boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
+                    boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task,
+                            Integer.MAX_VALUE, String.valueOf(-1));
                     if (!parityGenerated) //if parity not generated, it's lost
                         SimLogger.getInstance().taskFailedDueToInaccessibility(task.getCloudletId(), CloudSim.clock(),
                                 SimSettings.VM_TYPES.EDGE_VM.ordinal(),task);
@@ -188,22 +188,28 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 int relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
                 int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(relatedHostId);
                 //if not nearest host contains object or host is congested, read from it - read on grid
-                if (relatedHostId!=deviceLocation.getServingWlanId() || queueSize >= SimSettings.getInstance().getManThreshold()){
+//                if (relatedHostId!=deviceLocation.getServingWlanId() || queueSize >= SimSettings.getInstance().getManThreshold()){ //mind the threshold
+                if (relatedHostId!=deviceLocation.getServingWlanId()){ //if object not in nearest host
                     //uniformly select host on grid
-                    relatedHostId = randomlySelectHostToRead(operativeHosts);
+//                    relatedHostId = randomlySelectHostToRead(operativeHosts);
+                    //select host with min queue from grid
+                    relatedHostId = getHostWithShortestManQueue(operativeHosts,deviceLocation);
                     queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(relatedHostId);
                     //if MAN queue too large
-                    if (queueSize >= SimSettings.getInstance().getManThreshold()) {
-                        double probContinueRead = SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][LoadGeneratorModel.PROB_CLOUD_SELECTION];
+//                    if (queueSize >= SimSettings.getInstance().getManThreshold()) {
+                    if (1==1) { //always try to use parity if it's faster by factor
+                        //Avoid probContinueRead for now
+/*                        double probContinueRead = SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][LoadGeneratorModel.PROB_CLOUD_SELECTION];
                         //with probability probContinueRead proceed with original request
                         if (random.nextInt(100)<=probContinueRead) {
                             List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
                             selectedVM = vmArray.get(0);
                             return selectedVM;
-                        }
+                        }*/
                         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
                         task.setHostID(relatedHostId);
-                        boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task);
+                        boolean parityGenerated = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).createParityTask(task,
+                                queueSize,String.valueOf(relatedHostId) );
                         //don't read data, only parity
 //                        if (parityGenerated==true && policy.equalsIgnoreCase("IF_CONGESTED_READ_ONLY_PARITY")) {
                         if (parityGenerated==true) {

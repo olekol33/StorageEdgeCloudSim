@@ -192,8 +192,10 @@ public class RedisListHandler {
     //Returns data object IDs in index 0 and parity in index 1
     public static String[] getStripeObjects(String metadataID){
         Jedis jedis = new Jedis(localhost, 6379);
-        String dataObjects = jedis.hget("object:"+metadataID,"data");
-        String parityObjects = jedis.hget("object:"+metadataID,"parity");
+        if (!metadataID.contains("object:"))
+            metadataID = "object:"+metadataID;
+        String dataObjects = jedis.hget(metadataID,"data");
+        String parityObjects = jedis.hget(metadataID,"parity");
         jedis.close();
         return new String[] {dataObjects,parityObjects};
 

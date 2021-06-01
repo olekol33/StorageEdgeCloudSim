@@ -593,7 +593,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
         int numOfIOTasks = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).getNumOfIOTasks();
         double ratio;
-        double ratioTh = 0.02;
+        double ratioTh = 0.01;
         if (SimSettings.getInstance().isCountFailedduetoinaccessibility()) {
             ratio = (double) (failedDueToBW + failedDueToInaccessibility) / numOfIOTasks;
             //larger threshold in this case
@@ -641,7 +641,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 PrintStream out = new PrintStream(new FileOutputStream(SimLogger.getInstance().getOutputFolder() + "/" +
                         SimLogger.getInstance().getFilePrefix()  + "_TASK_FAILED.log"));
                 out.print("failedDueToBW,failedDueToInaccessibility\n" + failedDueToBW+","+failedDueToInaccessibility);
-                out.print("failedDueToBW,failedDueToInaccessibility\n" + (double)(failedDueToBW)/numOfIOTasks+","+(double)(failedDueToInaccessibility)/numOfIOTasks);
+                out.print("\nfailedDueToBW,failedDueToInaccessibility\n" + (double)(failedDueToBW)/numOfIOTasks+","+(double)(failedDueToInaccessibility)/numOfIOTasks);
 /*                if (!file.exists())
                     new FileOutputStream(file).close();*/
                 System.out.println("Failed for: " + SimLogger.getInstance().getFilePrefix());

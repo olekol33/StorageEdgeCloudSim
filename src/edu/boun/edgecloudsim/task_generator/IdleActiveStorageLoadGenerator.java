@@ -5,13 +5,11 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
-import edu.boun.edgecloudsim.storage.MMPP;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -119,11 +117,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
 
-            //TODO: currently select random task, not by weight
+
             if(SimSettings.getInstance().isNsfExperiment()) {
                 randomTaskType = i%2;
             }
-            else
+            else //TODO: currently select random task, not by weight
                 randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
             taskTypeOfDevices[i] = randomTaskType;
 
@@ -385,7 +383,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return taskTypeOfDevices[deviceId];
     }
 
-    public boolean createParityTask(Task task){
+    public boolean createParityTask(Task task, int dataQueueSize, String dataObjectLocation){
         int taskType = task.getTaskType();
         int isParity=1;
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
@@ -434,23 +432,40 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         if (mdObjects.size()==0)
             return false;
 //        String stripeID = task.getStripeID();
-        //TODO: currently selects random stripe
         int mdObjectIndex;
         String stripeID;
+        String[] minStripeObjects = new String[0];
         String[] stripeObjects;
         List<String> dataObjects = null;
         List<String> parityObjects = null;
+        int minStripeQueueSize = Integer.MAX_VALUE;
         if (nonOperateHosts.size()==0){ //no failed hosts
-            mdObjectIndex = parityRandom.nextInt(mdObjects.size());
-            stripeID = RedisListHandler.getObjectID(mdObjects.get(mdObjectIndex));
-            stripeObjects = RedisListHandler.getStripeObjects(stripeID);
-            dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
-            parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
+//            mdObjectIndex = parityRandom.nextInt(mdObjects.size());
+//            stripeID = RedisListHandler.getObjectID(mdObjects.get(mdObjectIndex));
+//            stripeObjects = RedisListHandler.getStripeObjects(stripeID);
+            for (String stripe:mdObjects){
+                stripeObjects = RedisListHandler.getStripeObjects(stripe); //get as array of data and parity
+                ArrayList<String> stripeObjectsList = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" "))); //convert to list
+                stripeObjectsList.add(stripeObjects[1]);
+                stripeObjectsList.remove(task.getObjectRead());
+                int stripeQueueSize = getStripeMaxQueueSize(stripeObjectsList,dataObjectLocation);
+                if(stripeQueueSize<minStripeQueueSize && stripeQueueSize!=-1){
+                    minStripeQueueSize=stripeQueueSize;
+                    minStripeObjects=stripeObjects;
+                }
+            }
+            if(minStripeQueueSize == Integer.MAX_VALUE) //found nothing
+                return false;
+            if(minStripeQueueSize*SimSettings.getInstance().getManThresholdFactor()>dataQueueSize) //create parity only if queue lower by factor
+                return false;
+            
+            dataObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[0].split(" ")));
+            parityObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[1].split(" ")));
         }
         else {
             boolean stripeFound=false;
             while (mdObjects.size() > 0) { //Check that stripe objects are available
-                mdObjectIndex = parityRandom.nextInt(mdObjects.size());
+                mdObjectIndex = parityRandom.nextInt(mdObjects.size()); //TODO: currently selects random, use above logic
                 stripeID = RedisListHandler.getObjectID(mdObjects.get(mdObjectIndex));
                 stripeObjects = RedisListHandler.getStripeObjects(stripeID);
                 dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
@@ -505,6 +520,31 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return lambda;
     }
 
+    //Returns min queue size for stripe
+    private int getStripeMaxQueueSize(ArrayList<String> stripeObjects, String dataObjectLocation){
+        int stripeQueueSize=0;
+        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        for (String objectID:stripeObjects){ //For each stripe object
+            String locations = RedisListHandler.getObjectLocations(objectID);
+            List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+            int objectQueueSize=Integer.MAX_VALUE;
+            for (String location:objectLocations){  //for each object location
+                int manQueue = ((StorageNetworkModel) networkModel).getManQueueSize(Integer.valueOf(location));
+                //if min host so far and not dataObjectLocation
+                if(manQueue<objectQueueSize && !location.equals(dataObjectLocation)){
+                    objectQueueSize=manQueue;
+                }
+            }
+            if (objectQueueSize==Integer.MAX_VALUE) //if stripe must read from dataObjectLocation
+                return -1;
+            else{
+                if(stripeQueueSize<objectQueueSize) //take max queue size between stripe objects
+                    stripeQueueSize=objectQueueSize;
+            }
+        }
+        return stripeQueueSize;
+    }
+
     //Checks if all stripe parities are available
     private boolean checkStripeValidity(List<String>  stripeObjects){
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
@@ -539,7 +579,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         //Check if there is a host below queue threshold. If not, don't use parity.
         for (String host : objectLocations){
             int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(Integer.valueOf(host));
-            if (queueSize < SimSettings.getInstance().getManThreshold())
+            if (queueSize < SimSettings.getInstance().getManThreshold()) //TODO: remove MAN threshold
                 return true;
         }
         return false;
