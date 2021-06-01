@@ -51,6 +51,8 @@ failedTaskDuetoLanBw = 4
 failedTaskDuetoManBw = 5
 failedTaskDuetoWanBw = 6
 
+#Get all elements from list that contains substring subs
+#Used to find relevant files
 def Filter(list, subs):
     filter_data = [i for i in list if subs in i]
     return filter_data

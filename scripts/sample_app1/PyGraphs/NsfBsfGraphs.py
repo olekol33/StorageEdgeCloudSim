@@ -15,6 +15,8 @@ from os.path import isfile, join
 from matplotlib import ticker
 from collections import Counter
 import matplotlib
+import inspect
+
 matplotlib.rcParams['ps.useafm'] = True
 matplotlib.rcParams['pdf.use14corefonts'] = True
 #matplotlib.rcParams['text.usetex'] = True
@@ -55,25 +57,59 @@ def Filter(list, subs):
     filter_data = [i for i in list if subs in i]
     return filter_data
 
-def get_objects_read(lambdas, failed_lambdas, files, folderPath):
+def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1):
+    orbitMode=False
+    compareToOrbit=False
+    curframe=inspect.currentframe()
+    calframe = inspect.getouterframes(curframe, 2)
+    if "plotOrbitNSF" in calframe[1][3]:
+        orbitMode=True
+    #When comparing to orbit print number of tasks and not lambda
+    if not orbitMode: #can't be together
+        compareToOrbit = True #Set manually
+    if(compareToOrbit and clients==1):
+        # orbitMode=True
+        diskRate=525
+        print("Comparing to NSF")
+
     extra_objects_read = pd.DataFrame()
     latencies_df = pd.DataFrame()
     tasks_df = pd.DataFrame()
     latencies = pd.DataFrame(columns=["lambda0","lambda1","Latency","Tasks"])
     for lam in lambdas:
         if lam in failed_lambdas:
-            lambda0 = lam[0][0]
-            lambda1 = lam[0][1]
+            if orbitMode:
+                lambda0 = clients/float(lam[0][0])
+                lambda1 = clients/float(lam[0][1])
+            elif compareToOrbit:
+                lambda0 = diskRate * float(lam[0][0])
+                lambda1 = diskRate * float(lam[0][1])
+            else:
+                lambda0 = lam[0][0]
+                lambda1 = lam[0][1]
             extra_objects_read.at[lambda1, lambda0] = np.nan
             latencies_df.at[lambda1, lambda0] = np.nan
             tasks_df.at[lambda1, lambda0] = np.nan
             continue
-        lambda0 = lam[0][0]
-        lambda1 = lam[0][1]
-        fileName = Filter(files, ''.join(['SIMRESULT_',lambda0,'_',lambda1]))
-        filePath = ''.join([folderPath, '\ite1\\',fileName[0]])
+        lambda0 = str(lam[0][0])
+        lambda1 = str(lam[0][1])
+        if not orbitMode or compareToOrbit:
+            fileName = Filter(files, ''.join(['SIMRESULT_',lambda0,'_',lambda1]))
+            filePath = ''.join([folderPath, '\ite1\\',fileName[0]])
+        else:
+            filePath = ''.join([folderPath, '\ite1\\runlogs_',lambda0,'_',lambda1,
+                                '\\SIMRESULT_SINGLE_TIER_IF_CONGESTED_READ_PARITY_CODING_PLACE_6DEVICES_READOBJECTS.log'])
         data = pd.read_csv(filePath, delimiter=';')
         # data.latency = data.latency.astype(float)
+        if orbitMode:
+            lambda0=clients/float(lam[0][0])
+            lambda1=clients/float(lam[0][1])
+        elif compareToOrbit:
+            lambda0=diskRate*float(lam[0][0])
+            lambda1=diskRate*float(lam[0][1])
+        else:
+            lambda0 = lam[0][0]
+            lambda1 = lam[0][1]
         latencies=latencies.append({'lambda0':lambda0, 'lambda1':lambda1, 'Latency':data.latency.mean(),
                                     "Tasks": data.latency.count()}, ignore_index=True)
 
@@ -85,24 +121,50 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
         latencies_df.at[lambda1,lambda0]=data.latency.mean()
         tasks_df.at[lambda1,lambda0]=data.latency.count()
 
+    # Remove entire Row+Column if nan
+    for column in latencies_df.columns:
+        if latencies_df[column].isnull().sum()==latencies_df.shape[0]:  #if entire column nan
+            if latencies_df.loc[column,:].isnull().sum()==latencies_df.shape[1]: #if entire row nan
+                latencies_df=latencies_df.drop(columns=column,axis=1)
+                latencies_df=latencies_df.drop(column,axis=0)
+                tasks_df=tasks_df.drop(columns=column,axis=1)
+                tasks_df=tasks_df.drop(column,axis=0)
+                extra_objects_read=extra_objects_read.drop(columns=column,axis=1)
+                extra_objects_read=extra_objects_read.drop(column,axis=0)
 
-    extra_objects_read.reset_index(inplace=True)
-    extra_objects_read_index=extra_objects_read["index"].astype(float)
-    extra_objects_read_index=round(extra_objects_read_index,4)
-    extra_objects_read=extra_objects_read.iloc[:, 1:]
 
-    extra_objects_read = pd.DataFrame(np.vstack([extra_objects_read.columns, extra_objects_read]))
-    extra_objects_read = extra_objects_read.astype(float)
-    extra_objects_read.sort_values(by=0, ascending=True, axis=1,inplace=True)
-    new_header = extra_objects_read.iloc[0]
-    extra_objects_read = extra_objects_read[1:]
-    new_header = round(new_header,4)
-    extra_objects_read.columns = new_header
-    extra_objects_read.reset_index(inplace=True)
+    #Order for plotting
+    #Rows
+    latencies_df = latencies_df.sort_index().iloc[::-1]
+    tasks_df = tasks_df.sort_index().iloc[::-1]
+    extra_objects_read = extra_objects_read.sort_index().iloc[::-1]
+    #columns
+    if orbitMode:
+        latencies_df = latencies_df.reindex(sorted(latencies_df.columns).reverse(), axis=1)
+        tasks_df = tasks_df.reindex(sorted(tasks_df.columns).reverse(), axis=1)
+        extra_objects_read = extra_objects_read.reindex(sorted(extra_objects_read.columns).reverse(), axis=1)
+    else:
+        latencies_df = latencies_df.reindex(sorted(latencies_df.columns).reverse(), axis=1).iloc[:, ::-1]
+        tasks_df = tasks_df.reindex(sorted(tasks_df.columns).reverse(), axis=1).iloc[:, ::-1]
+        extra_objects_read = extra_objects_read.reindex(sorted(extra_objects_read.columns).reverse(), axis=1).iloc[:, ::-1]
 
-    extra_objects_read["index"] = extra_objects_read_index
-    extra_objects_read.sort_values(by=["index"], ascending=False,inplace=True)
-    extra_objects_read.set_index("index",inplace=True)
+    # extra_objects_read.reset_index(inplace=True)
+    # extra_objects_read_index=extra_objects_read["index"].astype(float)
+    # extra_objects_read_index=round(extra_objects_read_index,4)
+    # extra_objects_read=extra_objects_read.iloc[:, 1:]
+
+    # extra_objects_read = pd.DataFrame(np.vstack([extra_objects_read.columns, extra_objects_read]))
+    # extra_objects_read = extra_objects_read.astype(float)
+    # extra_objects_read.sort_values(by=0, ascending=True, axis=1,inplace=True)
+    # new_header = extra_objects_read.iloc[0]
+    # extra_objects_read = extra_objects_read[1:]
+    # new_header = round(new_header,4)
+    # extra_objects_read.columns = new_header
+    # extra_objects_read.reset_index(inplace=True)
+    #
+    # extra_objects_read["index"] = extra_objects_read_index
+    # extra_objects_read.sort_values(by=["index"], ascending=False,inplace=True)
+    # extra_objects_read.set_index("index",inplace=True)
 
     fig,ax=plt.subplots()
     if(len(latencies_df.index.astype(float).values)>len(latencies_df.columns.astype(float).values)):
@@ -112,21 +174,25 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
     # im = ax.pcolormesh(latencies_df.index.astype(float).values, latencies_df.columns.astype(float).values
     im = ax.pcolormesh(indices, indices
                        , latencies_df.to_numpy(),cmap=sns.cm.rocket_r)
-    ax.set_xlabel(r'$\lambda_a$',fontsize=22)
-    ax.set_ylabel(r'$\lambda_b$',fontsize=22)
+
     # fig.colorbar(im, ax=ax)
     ax.tick_params(axis='both', labelsize=14)
     cb = fig.colorbar(im, ax=ax)
     cb.ax.tick_params(labelsize=14)
-    ax.set_xlim(right=2.5)
-    ax.set_ylim(top=2.5)
-    # cb.set_clim(0.08, 0.4)
-    cb.mappable.set_clim(0.08, 0.4)
-    # ax.set_title("Latency as a Function of Lambdas",y=1.01)
+    if not orbitMode and not compareToOrbit:
+        ax.set_xlabel(r'$\lambda_a$', fontsize=22)
+        ax.set_ylabel(r'$\lambda_b$', fontsize=22)
+        # ax.set_xlim(right=2.5)
+        # ax.set_ylim(top=2.5)
+        # cb.mappable.set_clim(0.08, 0.4)
+    else:
+        ax.set_xlabel('\'a\' req per sec', fontsize=22)
+        ax.set_ylabel('\'b\' req per sec', fontsize=22)
+    ax.set_title("Latency as a Function of Arrival Rate",y=1.01)
     # plt.show()
     plt.savefig(folderPath + '\\fig\\Latency.png', bbox_inches='tight', format='png')
     # plt.savefig(folderPath + '\\fig\\Latency.eps', bbox_inches='tight', format='eps')
-
+    plt.close(fig)
     #Count plot
     # sns.scatterplot(x="lambda0",
     #                 y="lambda1",
@@ -152,22 +218,65 @@ def get_objects_read(lambdas, failed_lambdas, files, folderPath):
     # im = ax.pcolormesh(tasks_df.index.astype(float).values, tasks_df.columns.astype(float).values
     im = ax.pcolormesh(indices, indices
                        , tasks_df.to_numpy(),cmap=sns.cm.rocket_r)
-    ax.set_xlabel(r'$\lambda_a$',fontsize=22)
-    ax.set_ylabel(r'$\lambda_b$',fontsize=22)
+    if not orbitMode and not compareToOrbit:
+        ax.set_xlabel(r'$\lambda_a$', fontsize=22)
+        ax.set_ylabel(r'$\lambda_b$', fontsize=22)
+        # ax.set_xlim(right=2.5)
+        # ax.set_ylim(top=2.5)
+        # cb.mappable.set_clim(0.08, 0.4)
+    else:
+        ax.set_xlabel('\'a\' req per sec', fontsize=22)
+        ax.set_ylabel('\'b\' req per sec', fontsize=22)
     # fig.colorbar(im, ax=ax)
     ax.tick_params(axis='both', labelsize=14)
     cb = fig.colorbar(im, ax=ax)
     cb.ax.tick_params(labelsize=14)
-    # ax.set_title("Number of Completed Tasks",y=1.01)
-    ax.set_xlim(right=2.5)
-    ax.set_ylim(top=2.5)
+    ax.set_title("Number of Completed Tasks",y=1.01)
+    # ax.set_xlim(right=2.5)
+    # ax.set_ylim(top=2.5)
     # plt.show()
     plt.savefig(folderPath + '\\fig\\Number of Completed Tasks.png', bbox_inches='tight', format ='png')
     # plt.savefig(folderPath + '\\fig\\Number of Completed Tasks.eps', bbox_inches='tight', format='eps')
+    plt.close(fig)
 
+    # sns.set()
+    # extra_objects_read=extra_objects_read.iloc[::-1]
+    # extra_objects_read = extra_objects_read.fillna(0)
+    fig, ax = plt.subplots()
+    # ax.pcolormesh(bounds, bounds, values)
+    if(len(extra_objects_read.index.values[::-1])>len(extra_objects_read.columns.values[::-1])):
+        indices0 = extra_objects_read.index.values[::-1]
+        indices1 = extra_objects_read.index.astype(float).values
+    else:
+        indices0 = extra_objects_read.columns.astype(float).values
+        indices1 = extra_objects_read.columns.values[::-1]
+    im = ax.pcolormesh(indices, indices, extra_objects_read.to_numpy(),
+                  vmin=1,vmax=2,cmap=sns.cm.rocket_r)
+    # ax.set_xlabel('λ_a',fontsize=22)
+    if not orbitMode and not compareToOrbit:
+        ax.set_xlabel(r'$\lambda_a$', fontsize=22)
+        ax.set_ylabel(r'$\lambda_b$', fontsize=22)
+        # ax.set_xlim(right=2.5)
+        # ax.set_ylim(top=2.5)
+    else:
+        ax.set_xlabel('\'a\' req per sec', fontsize=22)
+        ax.set_ylabel('\'b\' req per sec', fontsize=22)
+    ax.tick_params(axis='both', labelsize=14)
+    cb = fig.colorbar(im, ax=ax)
+    cb.ax.tick_params(labelsize=14)
+    # fig.suptitle("Average Number Of Objects Read Per IO Request",y=1.001)
+    ax.set_title("Average Number Of Objects Read Per IO Request",y=1.01)
+    # ax.set_xticks(xs)
+    # ax.set_xticklabels(xs, rotation=90)
+    # ax.set_yticks(xs)
+    # ax.set_yticklabels(xs, rotation=0)
+    # plt.tight_layout()
+    # plt.show()
+    fig.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request.png', bbox_inches='tight', format ='png')
+    plt.close(fig)
     return extra_objects_read
 
-def read_by_type(lambdas,failed_lambdas,files,folderPath):
+def processNSFByType(lambdas, failed_lambdas, files, folderPath):
     type_read_total = pd.DataFrame(columns=["lambdas","count"])
     type_read_data = pd.DataFrame(columns=["lambdas","count"])
     type_read_parity = pd.DataFrame(columns=["lambdas","count"])
@@ -297,6 +406,7 @@ def plot_locations(gridFilePath,folderPath):
 
 
 def NsfBsfGraph():
+    print("Running " + NsfBsfGraph.__name__)
     folderPath = getConfiguration("folderPath")
 
     filePath = ''.join([folderPath, '\ite1'])
@@ -313,7 +423,7 @@ def NsfBsfGraph():
     for file in failed_files:
         # r1 = re.findall('\d+', file )
         failed_lambdas.append(re.findall( r'SIMRESULT_([-+]?\d*\.\d+|\d+)_([-+]?\d*\.\d+|\d+)_.*', file))
-    extra_objects_read = get_objects_read(lambdas, failed_lambdas, filtered_files, folderPath)
+    extra_objects_read = handleNSFObjectsRead(lambdas, failed_lambdas, filtered_files, folderPath)
     for lam in lambdas:
         if lam not in failed_lambdas:
             fileName = Filter(all_files, ''.join(['SIMRESULT_', lam[0][0], '_', lam[0][1]]))
@@ -324,50 +434,12 @@ def NsfBsfGraph():
 
     # g=sns.heatmap(extra_objects_read,cbar_kws={'label': 'Objects Read'},vmin=1,vmax=2,cmap=sns.cm.rocket_r)
 
-    # sns.set()
-    fig, ax = plt.subplots()
-    # ax.pcolormesh(bounds, bounds, values)
-    if(len(extra_objects_read.index.values[::-1])>len(extra_objects_read.columns.values[::-1])):
-        indices0 = extra_objects_read.index.values[::-1]
-        indices1 = extra_objects_read.index.values
-    else:
-        indices0 = extra_objects_read.columns.values
-        indices1 = extra_objects_read.columns.values[::-1]
-    im = ax.pcolormesh(indices0, indices1, extra_objects_read.to_numpy(),
-                  vmin=1,vmax=2,cmap=sns.cm.rocket_r)
-    # ax.set_xlabel('λ_a',fontsize=22)
-    ax.set_xlabel(r'$\lambda_a$',fontsize=22)
-    ax.set_ylabel(r'$\lambda_b$',fontsize=22)
-    ax.tick_params(axis='both', labelsize=14)
-    cb = fig.colorbar(im, ax=ax)
-    cb.ax.tick_params(labelsize=14)
-    ax.set_xlim(right=2.5)
-    ax.set_ylim(top=2.5)
-    # fig.suptitle("Average Number Of Objects Read Per IO Request",y=1.01)
-    # ax.set_title("Average Number Of Objects Read Per IO Request",y=1.01)
-    # ax.set_xticks(xs)
-    # ax.set_xticklabels(xs, rotation=90)
-    # ax.set_yticks(xs)
-    # ax.set_yticklabels(xs, rotation=0)
-    # plt.tight_layout()
-    # plt.show()
-    fig.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request.png', bbox_inches='tight', format ='png')
-    # fig.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request.eps', bbox_inches='tight', format='eps')
 
-
-
-    # g.set(xlabel='λ_a', ylabel='λ_b')
-    # plt.xticks(rotation=90)
-    # # g.collections[0].colorbar.ax.set_ylim(0.99, 2)
-    # g.set_title("Average Number Of Objects Read Per IO Request")
-    # plt.savefig(folderPath + '\\fig\\Average Number Of Objects Read Per IO Request' + '.png', bbox_inches='tight')
-    # # plt.show()
 
     average_queue_size(lambdas, failed_lambdas, all_files,'MAN_QUEUE', folderPath)
     average_queue_size(lambdas, failed_lambdas, all_files,'HOST_QUEUE', folderPath)
-    read_by_type(lambdas,failed_lambdas,filtered_files,folderPath)
+    processNSFByType(lambdas, failed_lambdas, filtered_files, folderPath)
 
 
-
-NsfBsfGraph()
-
+if __name__=="__main__":
+    NsfBsfGraph()

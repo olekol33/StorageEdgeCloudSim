@@ -330,4 +330,4 @@ def plotReadObjects():
                 plt.close()
                 exit()
 
-# plotReadObjects()
+plotReadObjects()

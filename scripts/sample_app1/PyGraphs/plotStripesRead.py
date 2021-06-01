@@ -58,6 +58,9 @@ def plotStripesRead():
     legends = getConfiguration("legends");
     orchestratorPolicies = getConfiguration("orchestratorPolicy");
     objectPlacements = getConfiguration("objectPlacement");
+    saveToCSV = getConfiguration("saveToCSV");
+    isOrbitRun = getConfiguration("isOrbitRun");
+
     numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
 #    pos = getConfiguration(9);
 
@@ -74,6 +77,9 @@ def plotStripesRead():
     type_read_total = pd.DataFrame(index=numOfDevices)
     type_read_data = pd.DataFrame(index=numOfDevices)
     type_read_parity = pd.DataFrame(index=numOfDevices)
+    # latency_total = pd.DataFrame(index=numOfDevices)
+    latency_data = pd.DataFrame(index=numOfDevices)
+    latency_parity = pd.DataFrame(index=numOfDevices)
     markers = ['s', 'x', 'o', '^', ',','^']
     # colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd','#7f7f7f','#4F0041']
 
@@ -103,8 +109,11 @@ def plotStripesRead():
                         requests.at[mobileDeviceNumber,policy] = data.shape[0]
                         type_read_data.at[mobileDeviceNumber,policy] = data[data["type"]=="data"].shape[0]
                         type_read_total.at[mobileDeviceNumber, policy] = data["type"].shape[0]
+                        latency_data.at[mobileDeviceNumber, policy] = data[data["type"] == "data"]["latency"].mean()
+
                         if "parity" in data["type"].unique():
                             parity_count = data[data["type"]=="parity"].shape[0]
+                            latency_parity.at[mobileDeviceNumber, policy] = data[data["type"]=="parity"]["latency"].mean()
                         else:
                             parity_count = 0
 
@@ -142,6 +151,7 @@ def plotStripesRead():
             latency_requests_df = latency_requests_df.append({'Devices': row[0], 'Latency': latencies.loc[row[0]][column],
                                   'Requests': requests.loc[row[0]][column], 'Policy': column}, ignore_index=True)
 
+    #Plot amount of reads by type of object read
     fig2, ax2 = plt.subplots(3, 1, figsize=(12, 10))
     type_read_total.plot(kind="bar", use_index=True, ax=ax2[0])
     type_read_data.plot(kind="bar", use_index=True, ax=ax2[1])
@@ -156,7 +166,23 @@ def plotStripesRead():
     fig2.tight_layout(h_pad=2)
     fig2.savefig(folderPath + '\\fig\\Read_By_Type' + '.png',
                  bbox_inches='tight')
+    plt.close(fig2)
 
+    #Plot latency by type of object read
+    fig2, ax2 = plt.subplots(3, 1, figsize=(12, 10))
+    latencies.plot(kind="bar", use_index=True, ax=ax2[0])
+    latency_data.plot(kind="bar", use_index=True, ax=ax2[1])
+    latency_parity.plot(kind="bar", use_index=True, ax=ax2[2])
+    for axis in ax2:
+        axis.set_xlabel("Devices")
+        axis.set_ylabel("Latency(sec)")
+        axis.grid(True)
+    ax2[0].set_title("All Reads")
+    ax2[1].set_title("Data Reads")
+    ax2[2].set_title("Parity Reads")
+    fig2.tight_layout(h_pad=2)
+    fig2.savefig(folderPath + '\\fig\\Latency by object type' + '.png',
+                 bbox_inches='tight')
     plt.close(fig2)
 
     header="Configuration,Devices,Policy,Latency,Cost,Total Requests,Data Requests,Parity Requests\n"
@@ -164,10 +190,11 @@ def plotStripesRead():
     #     for index, row in df.iterrows():
     #         entry=str(index)+",total,"+col+","+str(row[col])+"\n"
     #         df_to_csv(''.join([folderPath, '\csv\\read_by_type.csv']),getConfiguration("runType"),entry,header)
-    for index, row in df.iterrows():
-        entry = str(row["Devices"]) + "," + str(row["Policy"]) + "," + str(row["Latency"]) + "," + str(row["Cost"]) + ","+\
-                str(row["Total Requests"]) + "," + str(row["Data Requests"]) +"," + str(row["Parity Requests"]) + "\n"
-        df_to_csv(''.join([folderPath, '\csv\\stripe_data.csv']), getConfiguration("runType"), entry, header)
+    if (saveToCSV):
+        for index, row in df.iterrows():
+            entry = str(row["Devices"]) + "," + str(row["Policy"]) + "," + str(row["Latency"]) + "," + str(row["Cost"]) + ","+\
+                    str(row["Total Requests"]) + "," + str(row["Data Requests"]) +"," + str(row["Parity Requests"]) + "\n"
+            df_to_csv(''.join([folderPath, '\csv\\stripe_data.csv']), getConfiguration("runType"), entry, header)
     # for col in type_read_data.columns:
     #     for index, row in type_read_total.iterrows():
     #         entry=str(index)+",data,"+col+","+str(row[col])+"\n"
@@ -183,7 +210,10 @@ def plotStripesRead():
     ax.grid(True)
 
     fig.tight_layout(h_pad=2)
-    fig.suptitle("Average Data Read Latency per IO Request"+ " - " + getConfiguration("runType"), y=1.01)
+    if (isOrbitRun): #TODO: temp
+        fig.suptitle("Average Data Read Latency per IO Request", y=1.01)
+    else:
+        fig.suptitle("Average Data Read Latency per IO Request"+ " - " + getConfiguration("runType"), y=1.01)
     fig.savefig(folderPath + '\\fig\\Average Data Read Latency per IO Request' + '.png',
                 bbox_inches='tight')
     plt.close(fig)
@@ -238,6 +268,8 @@ def plotStripesRead():
             x = row["Policy"].split(" | ")
             # plt.scatter(x=row["Latency"], y=row["Requests"], color=colors[orchestratorPolicies.index(x[1])],
             # plt.scatter(x=row["Latency"], y=row["Requests"], marker=markers[orchestratorPolicies.index(x[1])],
+            plt.xlim(0, 0.64)
+            plt.ylim(0, 200000)
             plt.scatter(x=row["Latency"], y=row["Requests"], marker=markers[index],
                         alpha=0.7,s=80,label=renamePolicy(row["Policy"]))
                         # marker=markers[objectPlacements.index(x[0])],alpha=0.7,s=40)
@@ -273,5 +305,5 @@ def plotStripesRead():
         plt.close(fig)
 
 
-
-plotStripesRead()
+if __name__=="__main__":
+    plotStripesRead()

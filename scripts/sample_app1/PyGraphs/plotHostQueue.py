@@ -144,21 +144,53 @@ def plotHostQueue():
                             continue
                         fig, ax = plt.subplots(1, 1, figsize=(20,10))
                         data = pd.read_csv(filePath, delimiter=';')
-                        NUM_COLORS = max(data["HostID"])
-                        exists = False
-                        queue_size_series = data.groupby(['HostID']).mean()["Requests"]
-                        queue_size_frame[policy] = queue_size_series
-                        if data["Requests"].max()>20:
-                        # if mobileDeviceNumber==1000:
-                            exists = True
-                            for host in data["HostID"].unique():
-                                host_data = data[data["HostID"] == host]
-                                # plot only above threshold
-                                # if host_data["Requests"].max()>30:
+                        #partial plot
+                        partial_plot=True
+                        if (partial_plot):
+                            host_list=[0,1,2,3]
+                            tmp_data = data.loc[data['HostID'].isin(host_list)]
+                            NUM_COLORS = max(tmp_data["HostID"])
+                            exists = False
+
+
+                            if tmp_data["Requests"].max() > 20:
+                                # if mobileDeviceNumber==1000:
+                                exists = True
+                                for host in tmp_data["HostID"].unique():
+                                    # if host not in host_list:
+                                    #     continue
+                                    host_data = tmp_data[data["HostID"] == host]
+                                    # plot only above threshold
+                                    # if host_data["Requests"].max()>30:
                                     # exists = True
                                     # host_data = data[data["HostID"]==host]
-                                sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))
-                                c += 1
+                                    cm = plt.get_cmap('Spectral')
+                                    sns.lineplot(x="Time", y="Requests", data=host_data, label=host,
+                                                 color=cm(1. * c / NUM_COLORS))
+                                    c += 1
+                        else:
+                            NUM_COLORS = max(data["HostID"])
+                            exists = False
+                            # queue_size_series = data.groupby(['HostID']).mean()["Requests"]
+                            #
+                            # queue_size_frame[policy] = queue_size_series
+
+                            if data["Requests"].max()>20:
+                            # if mobileDeviceNumber==1000:
+                                exists = True
+                                for host in data["HostID"].unique():
+                                    # if host not in host_list:
+                                    #     continue
+                                    host_data = data[data["HostID"] == host]
+                                    # plot only above threshold
+                                    # if host_data["Requests"].max()>30:
+                                        # exists = True
+                                        # host_data = data[data["HostID"]==host]
+                                    sns.lineplot(x="Time",y="Requests",data=host_data,label=host,color=cm(1. * c / NUM_COLORS))
+                                    c += 1
+
+                        queue_size_series = data.groupby(['HostID']).mean()["Requests"]
+                        queue_size_frame[policy] = queue_size_series
 
                         if exists==False:
                             plt.close(fig)
@@ -166,8 +198,11 @@ def plotHostQueue():
                         # ax.legend()
                         # ax.set_title('MAN Queue - Orchestrator Policy: ' + orchestratorPolicy + ", Object Placement: " +
                         #              objectPlacement + ", Devices: " + str(mobileDeviceNumber)+ " - " + getConfiguration("runType"))
-                        ax.set_xlabel("Time")
-                        ax.set_ylabel("Queue Size")
+                        ax.set_title("Read Queue Size During Simulation Run", y=1.05, fontsize=20)
+                        ax.set_xlabel("Time", fontsize=13)
+                        ax.set_ylabel("Queue Size", fontsize=13)
+                        ax.tick_params(labelsize=11)
+                        ax.legend(prop={'size': 11})
                         fig.suptitle('HOST MAN QUEUE - ' + orchestratorPolicy + "; " + objectPlacement + "; " +
                                     str(mobileDeviceNumber)+ ' Devices'+ "; " + getConfiguration("runType"))
                         fig.savefig(folderPath + '\\fig\\HOST_MAN_QUEUE_' + orchestratorPolicy + "_" + objectPlacement + "_" +
