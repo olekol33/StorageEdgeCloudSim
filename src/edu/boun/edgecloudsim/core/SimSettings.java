@@ -30,6 +30,8 @@ import org.w3c.dom.NodeList;
 
 import edu.boun.edgecloudsim.utils.SimLogger;
 
+//changed by Harel
+
 public class SimSettings {
 	private static SimSettings instance = null;
 	private Document edgeDevicesDoc = null;
@@ -436,7 +438,7 @@ public class SimSettings {
 			}catch (Exception e){
 				e.printStackTrace();
 			}
-		}
+		}//proceed
 
 		//checks if we are in external objects mode
 		//updates the number of objects accordingly
@@ -456,7 +458,7 @@ public class SimSettings {
 		return result;
 	}
 
-	//was added by Harel - for convenience
+	//was added by Harel
 	private HashMap<String, String> reverseHash(HashMap<String,String> map){
 		HashMap<String,String> reversedHash = new HashMap<>();
 		for(Map.Entry<String,String> m : map.entrySet()){

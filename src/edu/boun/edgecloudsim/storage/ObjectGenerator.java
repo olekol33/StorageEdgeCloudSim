@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//changed by Harel
+
 public class ObjectGenerator {
     private int numOfDataObjects;
     private int numOfStripes;
@@ -94,7 +96,7 @@ public class ObjectGenerator {
         if(!SimSettings.getInstance().isExternalObjects()) {
             dataObjects = createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
         }else{//import objects from file
-            dataObjects = importObjectsFromFile(numOfDataObjects);//TODO: complete
+            dataObjects = importObjectsFromFile(numOfDataObjects);
         }
         //Initial data object placement
         if(SimSettings.getInstance().isNsfExperiment()) {
@@ -415,6 +417,7 @@ public class ObjectGenerator {
         return listOfDataObjects;
     }
 
+    //TODO: created by Harel
     //Creates list of data objects that was given as external file
     private List<Map> importObjectsFromFile(int numOfDataObjects){
         List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);

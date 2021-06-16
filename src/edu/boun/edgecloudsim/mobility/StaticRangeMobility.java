@@ -18,6 +18,8 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.*;
 
+//changed by Harel
+
 public class StaticRangeMobility extends MobilityModel {
     private List<TreeMap<Double, Location>> treeMapArray;
 //    private static List<Location> dcLocations = new ArrayList<>();
@@ -26,6 +28,7 @@ public class StaticRangeMobility extends MobilityModel {
         super(_numberOfMobileDevices, _simulationTime);
     }
 
+    //TODO: changed by Harel
     @Override
     public void initialize() {//TODO:add switch here
         treeMapArray = new ArrayList<TreeMap<Double, Location>>();
@@ -123,7 +126,7 @@ public class StaticRangeMobility extends MobilityModel {
 
         return e.getValue();*/
     }
-    //TODO: this takes long time to run
+    //TODO: takes a long time to run
     public static Location getDCLocation(int DatacenterId) {
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
@@ -295,7 +298,7 @@ public class StaticRangeMobility extends MobilityModel {
     }
 
     //Randomly places device on grid within range of at least one host
-    private Location randomPlaceDevice(Random random){//TODO:edit
+    private Location randomPlaceDevice(Random random){
         //get grid size
         int xRange, yRange;
         if(!SimSettings.getInstance().isExternalNodes()) {
@@ -332,6 +335,7 @@ public class StaticRangeMobility extends MobilityModel {
         }
     }
 
+    //TODO: created by Harel
     //places device on grid within range of at least one host
     private Location realPlaceDevice(int index){//TODO:edit
         StorageDevice s1 = SimSettings.getInstance().getDevicesVector().get(index);

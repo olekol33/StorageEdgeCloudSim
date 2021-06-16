@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+//changed by Harel
+
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
     static private int numOfIOTasks;
@@ -254,6 +256,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         checkModeAfterInit(dataSizeMean, OG.getOverhead());// TODO: mark as changed - Harel
     }
 
+    //TODO: created by Harel
     public void initializeModelWithRequestsFromInput() {
         //int ioTaskID=0;
         //double sumPoisson = 0;
@@ -302,6 +305,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         checkModeAfterInit(dataSizeMean, OG.getOverhead());
     }
 
+    //TODO: the rest of initialize
     private void checkModeAfterInit(double dataSizeMean, double overhead){
         if(SimSettings.getInstance().isNsfExperiment()) {
             for(int i=0; i<2; i++) {
@@ -443,6 +447,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return taskTypeOfDevices[deviceId];
     }
 
+    //TODO: changed by Harel
     public boolean createParityTask(Task task){
         int taskType = task.getTaskType();
         int isParity=1;
