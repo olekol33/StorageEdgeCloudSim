@@ -16,6 +16,8 @@ import org.cloudbus.cloudsim.UtilizationModel;
 
 import edu.boun.edgecloudsim.utils.Location;
 
+//changed by Harel
+
 public class Task extends Cloudlet {
 	private Location submittedLocation;
 	private int type;
