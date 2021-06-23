@@ -1,5 +1,5 @@
 from getConfiguration import *
-
+from glob import glob
 
 def ensure_dir(file_path):
     directory = os.path.dirname(file_path)
@@ -10,6 +10,7 @@ def ensure_dir(file_path):
 #Returns host ID for file name
 def parseHostID(filename):
     patterns = re.findall(r'.*HOST(\d+)_.*', filename)
+    # patterns = re.findall(r'.*DEVICES_.*(\d+)_.*', filename)
     return patterns[0]
 
 def parsePolicies(filename):
@@ -30,14 +31,20 @@ def parsePolicies(filename):
 
 
 #Returns list of files with host logs
-def getLogsByName(suffix):
-    folderPath = getConfiguration("folderPath")
-
-    filePath = ''.join([folderPath, '\ite1'])
+def getLogPathByName(filePath, suffix):
+    files = []
     all_files = [f for f in listdir(filePath) if isfile(join(filePath, f))]
-    return Filter(all_files,suffix)
+    for file in all_files:
+        if suffix in file:
+            files.append(filePath+"\\"+file)
+    return files
+    # return Filter(all_files,suffix)
 
 def getLogsByNameFromFilepath(filePath,suffix):
     all_files = [f for f in listdir(filePath) if isfile(join(filePath, f))]
     return Filter(all_files,suffix)
+
+def getRunlogsDirs():
+    folderPath = getConfiguration("folderPath")
+    return glob(''.join([folderPath, '\ite1\*\\']))
 

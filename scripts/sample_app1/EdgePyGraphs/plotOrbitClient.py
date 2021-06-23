@@ -4,13 +4,15 @@ from scipy.stats import t
 import itertools
 import pandas as pd
 import seaborn as sns
+import configparser
 from OrbitPackages import *
 
-
-def parseClientTaskFiles(filename,runDF):
-    folderPath = getConfiguration("folderPath")
+#Parses READOBJECTS and LOST_TASKS
+def parseClientTaskFiles(filePath,runDF):
+    # folderPath = getConfiguration("folderPath")
+    filename = os.path.basename(filePath)
     orchestratorPolicy, objectPlacement, mobileDeviceNumber = parsePolicies(filename)
-    filePath = ''.join([folderPath, '\ite1\\',filename])
+    # filePath = ''.join([folderPath, '\ite1\\',filename])
     df = pd.read_csv(filePath,delimiter=';',engine='python')
     runDF = runDF.append({    'policy':objectPlacement,
         'total tasks':df.shape[0],
@@ -38,8 +40,23 @@ def parseClientTaskFiles(filename,runDF):
     result['parityCount'] = result['parityCount'].fillna(0)
     result['parityCount'] = result['parityCount'].astype(int)
     result.rename(columns={"parityCount": "Parity","dataCount" : "Data"}, inplace=True)
+    result["Lost"] = 0
     result = result.set_index('ObjectIDStripped')
 
+    result = result.sort_index()
+
+    # Lost tasks
+    folderPath = os.path.dirname(filePath)
+    taskFiles = getLogPathByName(folderPath,"DEVICES_LOST_TASKS")
+    lostTasksFiles = Filter(taskFiles, orchestratorPolicy)
+    # filePath = ''.join([folderPath, "\\",lostTasksFiles[0]])
+    lostTasksDF = pd.read_csv(lostTasksFiles[0], delimiter=';')
+    lostTasksDF['objectID'] = lostTasksDF['objectID'].map(lambda x: x.lstrip('object:d'))
+    for object in lostTasksDF['objectID'].unique():
+        numObjects = lostTasksDF[lostTasksDF['objectID']==object].shape[0]
+        result.loc[int(object),"Lost"] = numObjects
+
+    result = result.fillna(0)
     fig, ax = plt.subplots(1, 1, figsize=(12, 10))
     result.plot(kind="bar", stacked=True, ax=ax)
     fig.tight_layout(h_pad=2)
@@ -52,13 +69,27 @@ def parseClientTaskFiles(filename,runDF):
 
     return runDF
 
-def plot3StackedGraph(runDF, name, ylabel):
+def plot3StackedGraph(rundir,runDF, name, ylabel):
     folderPath = getConfiguration("folderPath")
     #Total num of tasks
-    taskFiles = getLogsByName("TASK_LIST")
-    filePath = ''.join([folderPath, '\ite1\\', taskFiles[0]])
-    data = pd.read_csv(filePath, delimiter=',')
-    numOfTasks = data.shape[0]
+    taskFiles1 = getLogPathByName(rundir,"LOST_TASKS")
+    taskFiles2 = getLogPathByName(rundir,"DEVICES_READOBJECTS")
+    # filePath = ''.join([folderPath, '\ite1\\', taskFiles[0]])
+    filePath1 = taskFiles1[0]
+    data1 = pd.read_csv(filePath1, delimiter=',')
+    filePath2 = taskFiles2[0]
+    data2 = pd.read_csv(filePath2, delimiter=',')
+    numOfTasks = data1.shape[0]+data2.shape[0]
+
+    #Warm up
+    # config = getLogPathByName(rundir,"default_config.properties")
+    # configParser = configparser.RawConfigParser()
+    # # configParser.read(folderPath+'\ite1\\'+config[0])
+    # configParser.read(config[0])
+    # warm_up_period = float(configParser.get('run-settings', 'warm_up_period'))*60
+    # data = data[data["startTime"] > warm_up_period]
+
+
 
     fig,ax = plt.subplots(3, 1, figsize=(12, 10))
 
@@ -77,10 +108,12 @@ def plot3StackedGraph(runDF, name, ylabel):
     fig.savefig(getConfiguration("figPath")+'\\'+name + '.png',bbox_inches='tight')
     plt.close(fig)
 
-def plotClientTasks(filename):
-    folderPath = getConfiguration("folderPath")
+
+def plotClientTasks(filePath):
+    # folderPath = getConfiguration("folderPath")
+    filename = os.path.basename(filePath)
     orchestratorPolicy, objectPlacement, mobileDeviceNumber = parsePolicies(filename)
-    filePath = ''.join([folderPath, '\ite1\\',filename])
+    # filePath = ''.join([folderPath, '\ite1\\',filename])
     figPath = ''.join([getConfiguration("figPath"), '\\'+objectPlacement+'\\'])
     ensure_dir(figPath)
     patterns = re.findall(r'.*(CLIENT\d).*', filename)
@@ -98,9 +131,11 @@ def plotClientTasks(filename):
     plt.close(fig)
 
     # Lost tasks
-    taskFiles = getLogsByName("DEVICES_LOST_TASKS")
+    folderPath = os.path.dirname(filePath)
+    taskFiles = getLogPathByName(folderPath,"DEVICES_LOST_TASKS")
     lostTasksFiles = Filter(taskFiles, orchestratorPolicy)
-    filePath = ''.join([folderPath, '\ite1\\', lostTasksFiles[0]])
+    # filePath = ''.join([folderPath, '\ite1\\', lostTasksFiles[0]])
+    filePath = lostTasksFiles[0]
     data = pd.read_csv(filePath, delimiter=';')
     if data.empty:
         return
@@ -124,18 +159,18 @@ def plotClientTasks(filename):
 
 
 
-def plotOrbitClient():
+def plotOrbitClient(rundir):
     print("Running " + plotOrbitClient.__name__)
     runDF = pd.DataFrame(columns=["policy","total tasks","data tasks","parity tasks","total latency", "data latency","parity latency"])
-    taskFiles = getLogsByName("DEVICES_READOBJECTS")
+    taskFiles = getLogPathByName(rundir,"DEVICES_READOBJECTS")
     for file in taskFiles:
         runDF = parseClientTaskFiles(file,runDF)
 
     runDF = runDF.set_index("policy")
-    plot3StackedGraph(runDF.iloc[:,[0,1,2]],"Read by type","Reads")
-    plot3StackedGraph(runDF.iloc[:,[3,4,5]],"Latency by type","Latency[s]")
+    plot3StackedGraph(rundir,runDF.iloc[:,[0,1,2]],"Read by type","Reads")
+    plot3StackedGraph(rundir,runDF.iloc[:,[3,4,5]],"Latency by type","Latency[s]")
 
-    clientTaskFiles = getLogsByName("_READOBJECTS")
+    clientTaskFiles = getLogPathByName(rundir,"_READOBJECTS")
     #Keep only client files
     clientTaskFiles = [x for x in clientTaskFiles if x not in taskFiles]
     for file in clientTaskFiles:

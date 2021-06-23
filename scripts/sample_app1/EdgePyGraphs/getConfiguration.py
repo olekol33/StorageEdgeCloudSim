@@ -92,6 +92,6 @@ def getConfiguration(argType):
          return ["CODING_PLACE","REPLICATION_PLACE","DATA_PARITY_PLACE"]
     elif (argType == "figPath"): #1
         curPath = Path(os.path.dirname(sys.argv[0]))
-        return os.path.join(curPath.parent.parent.parent, 'sim_results\\fig')
+        return os.path.join(curPath.parent.parent.parent, 'sim_results\\fig\\')
 
 

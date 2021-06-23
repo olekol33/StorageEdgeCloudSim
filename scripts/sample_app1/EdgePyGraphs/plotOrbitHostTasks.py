@@ -40,15 +40,12 @@ failedTaskDuetoLanBw = 4
 failedTaskDuetoManBw = 5
 failedTaskDuetoWanBw = 6
 
-def plotHostTasks(filename,hostLatenciesDict):
-
-
-    folderPath = getConfiguration("folderPath")
-    filePath = ''.join([folderPath, '\ite1\\',filename])
+def plotHostTasks(filePath,hostLatenciesDict):
+    filename = os.path.basename(filePath)
     data = pd.read_csv(filePath, delimiter=';')
     if data.empty:
         return
-    fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+    fig, ax = plt.subplots(2, 1, figsize=(20, 10))
     NUM_COLORS = len(data["srcHost"].unique())
     orchestratorPolicy,objectPlacement,mobileDeviceNumber=parsePolicies(filename)
     figPath = ''.join([getConfiguration("figPath"), '\\'+objectPlacement+'\\'])
@@ -65,15 +62,20 @@ def plotHostTasks(filename,hostLatenciesDict):
         host_data['Count']=1
 
         #group by seconds
-        num_of_req = host_data.resample('5S', on='Time').Count.sum().to_frame().reset_index()
+        num_of_req = host_data.resample('S', on='Time').Count.sum().to_frame().reset_index()
         num_of_req['Time'] =num_of_req['Time'].astype('timedelta64[s]')
 
-        sns.lineplot(x='Time',y="Count", data=num_of_req, label=host, color=cm(1. * c / NUM_COLORS), ax=ax)
+        #group by 0.1 seconds
+        probMean = host_data.resample('S', on='Time').parityProb.mean().to_frame().reset_index()
+        probMean['Time'] =probMean['Time'].astype('timedelta64[s]')
+
+        sns.lineplot(x='Time',y="Count", data=num_of_req, label=host, color=cm(1. * c / NUM_COLORS), ax=ax[0])
+        sns.lineplot(x='Time',y="parityProb", data=probMean, label=host, color=cm(1. * c / NUM_COLORS), ax=ax[1])
 
         c += 1
 
-    ax.set_xlabel("Time(sec)")
-    ax.set_ylabel("Events")
+    ax[0].set_xlabel("Time(sec)")
+    ax[0].set_ylabel("Events")
     fig.suptitle('Host' + hostID+ ' Requests To Other Hosts - ' + orchestratorPolicy + "; " + objectPlacement + "; " +
                  str(mobileDeviceNumber) + 'Devices', y=1.01)
     # fig.tight_layout()
@@ -125,31 +127,13 @@ def plotHostTasks(filename,hostLatenciesDict):
     plt.close(fig)
 
 
-def plotOrbitHostTasks():
+def plotOrbitHostTasks(rundir):
     print("Running " + plotOrbitHostTasks.__name__)
-    folderPath = getConfiguration("folderPath")
-    numOfSimulations = getConfiguration("numOfSimulations")
-    startOfMobileDeviceLoop = getConfiguration("startOfMobileDeviceLoop")
-    stepOfMobileDeviceLoop = getConfiguration("stepOfMobileDeviceLoop")
-    endOfMobileDeviceLoop = getConfiguration("endOfMobileDeviceLoop")
-    xTickLabelCoefficient = getConfiguration("xTickLabelCoefficient")
-    scenarioType = getConfiguration("scenarioType");
-    legends = getConfiguration("legends");
-    orchestratorPolicies = getConfiguration("orchestratorPolicy");
-    objectPlacements = getConfiguration("objectPlacement");
-    numOfMobileDevices = int((endOfMobileDeviceLoop - startOfMobileDeviceLoop) / stepOfMobileDeviceLoop + 1)
-#    pos = getConfiguration(9);
-
-
-    numOfDevices = list(range(startOfMobileDeviceLoop,endOfMobileDeviceLoop+1,stepOfMobileDeviceLoop))
-    latencies = pd.DataFrame(index=numOfDevices, columns=orchestratorPolicies)
-    marker = ['*', 'x', 'o', '.', ',']
-    # sns.set_palette(sns.color_palette("Dark2", 20))
 
 
     hostLatenciesDict = {}
 
-    taskFiles = getLogsByName("HOST_TASKS")
+    taskFiles = getLogPathByName(rundir,"HOST_TASKS")
     for file in taskFiles:
         plotHostTasks(file,hostLatenciesDict)
 

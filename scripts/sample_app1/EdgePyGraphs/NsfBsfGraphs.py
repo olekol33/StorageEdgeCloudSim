@@ -57,7 +57,7 @@ def Filter(list, subs):
     filter_data = [i for i in list if subs in i]
     return filter_data
 
-def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1):
+def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1,orbitRate=0):
     orbitMode=False
     compareToOrbit=False
     curframe=inspect.currentframe()
@@ -69,7 +69,7 @@ def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1):
         compareToOrbit = True #Set manually
     if(compareToOrbit and clients==1):
         # orbitMode=True
-        diskRate=525
+        diskRate=orbitRate
         print("Comparing to NSF")
 
     extra_objects_read = pd.DataFrame()
@@ -91,8 +91,10 @@ def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1):
             latencies_df.at[lambda1, lambda0] = np.nan
             tasks_df.at[lambda1, lambda0] = np.nan
             continue
-        lambda0 = str(lam[0][0])
-        lambda1 = str(lam[0][1])
+        # lambda0 = str(lam[0][0])
+        # lambda1 = str(lam[0][1])
+        lambda0 = "{:.5f}".format(lam[0][0])
+        lambda1 = "{:.5f}".format(lam[0][1])
         if not orbitMode or compareToOrbit:
             fileName = Filter(files, ''.join(['SIMRESULT_',lambda0,'_',lambda1]))
             filePath = ''.join([folderPath, '\ite1\\',fileName[0]])
@@ -171,6 +173,7 @@ def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1):
         indices = latencies_df.index.astype(float).values
     else:
         indices = latencies_df.columns.astype(float).values
+    indices = np.append(indices,0) #start from 0
     # im = ax.pcolormesh(latencies_df.index.astype(float).values, latencies_df.columns.astype(float).values
     im = ax.pcolormesh(indices, indices
                        , latencies_df.to_numpy(),cmap=sns.cm.rocket_r)
@@ -182,13 +185,15 @@ def handleNSFObjectsRead(lambdas, failed_lambdas, files, folderPath,clients=1):
     if not orbitMode and not compareToOrbit:
         ax.set_xlabel(r'$\lambda_a$', fontsize=22)
         ax.set_ylabel(r'$\lambda_b$', fontsize=22)
+        ax.set_title("Latency as a Function of Arrival Rate", y=1.01)
         # ax.set_xlim(right=2.5)
         # ax.set_ylim(top=2.5)
         # cb.mappable.set_clim(0.08, 0.4)
     else:
         ax.set_xlabel('\'a\' req per sec', fontsize=22)
         ax.set_ylabel('\'b\' req per sec', fontsize=22)
-    ax.set_title("Latency as a Function of Arrival Rate",y=1.01)
+        ax.set_title("Latency as a Function of Arrival Rate", y=1.01)
+
     # plt.show()
     plt.savefig(folderPath + '\\fig\\Latency.png', bbox_inches='tight', format='png')
     # plt.savefig(folderPath + '\\fig\\Latency.eps', bbox_inches='tight', format='eps')
