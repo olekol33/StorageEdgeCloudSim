@@ -178,8 +178,8 @@ public class ParseStorageNodes {
                 for (StorageNode temp : nodesVector) {
                     //TODO: delete this section - for testing purposes only
                     if (SimSettings.getInstance().isItIntTest()) {
-                        temp.setxPos((int) ((temp.getxPos() - minX) * 100));
-                        temp.setyPos((int) ((temp.getyPos() - minY) * 100));
+                        //temp.setxPos((int) ((temp.getxPos() - minX) * 100));
+                        //temp.setyPos((int) ((temp.getyPos() - minY) * 100));
                     } else {
                         temp.setxPos(temp.getxPos() - minX);
                         temp.setyPos(temp.getyPos() - minY);

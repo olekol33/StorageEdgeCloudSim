@@ -65,16 +65,17 @@ public class ParseStorageRequests {
                 //checks if the objectID is in the Objects file
                 boolean checkIfObjectExists;
                 checkIfObjectExists = false;
-                String new_name = "";
+                String new_object_name = "";
                 for(Map.Entry<String,String> m: objectsHashVector.entrySet()){
                     if(m.getValue().equals(objects[REQUEST_OBJECT_ID])){
                         checkIfObjectExists = true;
-                        new_name = m.getKey();
+                        new_object_name = m.getKey();
                         break;
                     }
                 }
+
                 if(!checkIfObjectExists){
-                    throw new Exception("The request is trying to access a non-existing Node!! error in line " +
+                    throw new Exception("The request is trying to access a non-existing Device!! error in line " +
                             lineCounter + "\n" + "The object " + objects[REQUEST_OBJECT_ID] + " does not exist!!");
                 }
 
@@ -93,13 +94,13 @@ public class ParseStorageRequests {
 
                 //check if the priority or deadline fields are empty
                 if(!objects[REQUEST_TASK_PRIORITY].equals("") && !objects[REQUEST_TASK_DEADLINE].equals("")){//both are not empty
-                    sRequest = new StorageRequest(new_name,Double.parseDouble(objects[REQUEST_TIME]),objects[REQUEST_OBJECT_ID],Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
+                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
                 } else if(objects[REQUEST_TASK_PRIORITY].equals("") && objects[REQUEST_TASK_DEADLINE].equals("")){//both are empty
-                    sRequest = new StorageRequest(new_name,Double.parseDouble(objects[REQUEST_TIME]),objects[REQUEST_OBJECT_ID],Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
+                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
                 } else if(objects[REQUEST_TASK_PRIORITY].equals("")){
-                    sRequest = new StorageRequest(new_name,Double.parseDouble(objects[REQUEST_TIME]),objects[REQUEST_OBJECT_ID],Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
+                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
                 } else{
-                    sRequest = new StorageRequest(new_name,Double.parseDouble(objects[REQUEST_TIME]),objects[REQUEST_OBJECT_ID],Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]));
+                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]));
                 }
 
                 //creat new StorageDevice and add it to the nodes vector

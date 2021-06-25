@@ -168,6 +168,7 @@ public class SimSettings {
 	private HashMap<Integer,String> devicesHashVector;
 	private HashMap<String,String> objectsHashVector;
 	private HashMap<String,String> reversedHashVector;
+	private HashMap<String, Integer> reversedHashDevicesVector;
 	private Vector<StorageDevice> devicesVector;
 	private Vector<StorageObject> objectsVector;
 	private Vector<StorageRequest> storageRequests;
@@ -432,6 +433,7 @@ public class SimSettings {
 			try{
 				ParseStorageDevices deviceParser = new ParseStorageDevices();
 				devicesHashVector = deviceParser.prepareDevicesVector(getPathOfDevicesFile());
+				reversedHashDevicesVector = reverseHashDevices(devicesHashVector);
 				devicesVector = deviceParser.getDevicesVector();
 				MIN_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
 				MAX_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
@@ -462,6 +464,15 @@ public class SimSettings {
 	private HashMap<String, String> reverseHash(HashMap<String,String> map){
 		HashMap<String,String> reversedHash = new HashMap<>();
 		for(Map.Entry<String,String> m : map.entrySet()){
+			reversedHash.put(m.getValue(),m.getKey());
+		}
+		return reversedHash;
+	}
+
+	//was added by Harel
+	private HashMap<String, Integer> reverseHashDevices(HashMap<Integer,String> map){
+		HashMap<String,Integer> reversedHash = new HashMap<>();
+		for(Map.Entry<Integer,String> m : map.entrySet()){
 			reversedHash.put(m.getValue(),m.getKey());
 		}
 		return reversedHash;
@@ -777,6 +788,10 @@ public class SimSettings {
 
 	public HashMap<String, String> getReversedHashVector() {
 		return reversedHashVector;
+	}
+
+	public HashMap<String, Integer> getReversedHashDevicesVector() {
+		return reversedHashDevicesVector;
 	}
 
 	public boolean isGpsConversionRequired(){

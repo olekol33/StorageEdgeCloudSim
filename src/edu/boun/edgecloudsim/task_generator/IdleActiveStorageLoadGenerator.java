@@ -294,8 +294,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         for(int i = 0; i < numOfExternalTasks; i++) {
             StorageRequest sRequest = SimSettings.getInstance().getStorageRequests().elementAt(i);
+            int device_ID = SimSettings.getInstance().getReversedHashDevicesVector().get(sRequest.getDeviceName());
             //taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), 0, expRngList)); //TODO: this line is important
-            taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getDeviceName(), sRequest.getIoTaskID(), sRequest.getTaskPriority(), sRequest.getTaskDeadline(), 0)); //TODO: this line is important
+            taskList.add(new TaskProperty(device_ID, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), sRequest.getTaskPriority(), sRequest.getTaskDeadline(), 0)); //TODO: this line is important
 
         }
 
