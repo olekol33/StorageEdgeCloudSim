@@ -6,7 +6,6 @@ package edu.boun.edgecloudsim.storage;
 
 
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.storage_advanced.StorageObject;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import org.apache.commons.math3.distribution.ZipfDistribution;

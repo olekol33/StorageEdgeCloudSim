@@ -10,15 +10,11 @@
 
 package edu.boun.edgecloudsim.utils;
 
-import edu.boun.edgecloudsim.storage.RedisListHandler;
-import edu.boun.edgecloudsim.storage_advanced.StorageObject;
+import edu.boun.edgecloudsim.storage.StorageObject;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import edu.boun.edgecloudsim.core.SimSettings;
-
-import java.util.HashMap;
-import java.util.Vector;
 
 public class TaskProperty {
     private double startTime;

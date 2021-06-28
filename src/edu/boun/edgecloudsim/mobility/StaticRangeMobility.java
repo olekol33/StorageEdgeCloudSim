@@ -2,11 +2,9 @@ package edu.boun.edgecloudsim.mobility;
 
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
-import edu.boun.edgecloudsim.storage_advanced.StorageDevice;
+import edu.boun.edgecloudsim.storage.StorageDevice;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
-import edu.boun.edgecloudsim.utils.SimUtils;
-import org.cloudbus.cloudsim.core.CloudSim;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

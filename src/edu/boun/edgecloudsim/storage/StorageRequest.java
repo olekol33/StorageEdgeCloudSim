@@ -1,4 +1,4 @@
-package edu.boun.edgecloudsim.storage_advanced;
+package edu.boun.edgecloudsim.storage;
 
 
 public class StorageRequest {

@@ -1,4 +1,4 @@
-package edu.boun.edgecloudsim.storage_advanced;
+package edu.boun.edgecloudsim.storage;
 
 import edu.boun.edgecloudsim.core.SimSettings;
 

@@ -22,7 +22,7 @@ import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import edu.boun.edgecloudsim.storage_advanced.*;
+import edu.boun.edgecloudsim.storage.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
