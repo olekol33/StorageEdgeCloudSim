@@ -738,7 +738,6 @@ public class SampleNetworkModel extends NetworkModel {
 		if(numOfWlanUser < experimentalWlanDelay.length)
 			result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
 
-		//System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
 		return result;
 	}
 	

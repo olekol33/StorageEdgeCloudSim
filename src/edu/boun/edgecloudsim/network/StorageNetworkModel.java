@@ -152,19 +152,16 @@ public class StorageNetworkModel extends SampleNetworkModel {
             //In case something went wrong
             if (wlanDelay==0)
                 System.out.println("delay=0");
-            if (wlanDelay<0)
-                System.out.println("delay<0");
+/*            if (wlanDelay<0)
+                System.out.println("delay<0");*/
 //                return delay;
             //Add delay on network if access point not in range
             Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
             if (nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId())
                 System.out.println("nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId()");
-            //divide by factor
-/*            double distance = StaticRangeMobility.getDistance(deviceLocation,nearestAccessPoint);//Inverse-square law
-            double distance2 = Math.sqrt(distance);
-            System.out.println(delay*distance2);*/
-            delay /= StaticRangeMobility.getDistanceDegradation(deviceLocation,nearestAccessPoint);
-//            System.out.println(delay);
+            //divide by factor //TODO: temp removed
+//            delay /= StaticRangeMobility.getDistanceDegradation(deviceLocation,nearestAccessPoint);
+            delay+=SimSettings.getInstance().getInternalLanDelay(); //TODO: comparing to ORBIT - add to config
         }
 
         return delay;
