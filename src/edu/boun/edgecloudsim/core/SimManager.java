@@ -276,7 +276,6 @@ public class SimManager extends SimEntity {
 //		System.out.println("Finally Generated parity ioTaskID = " + lastTask.getIoTaskID() + ",");
 /*		System.out.println("Finally parity at " + CloudSim.clock() + " .Submitting ioTaskID = " + lastTask.getIoTaskID() +
 				", of time: " + lastTask.getStartTime() +", isParity = " + lastTask.getIsParity());*/
-		//TODO: add delay to new object generation
 		schedule(getId(), 0, CREATE_TASK, lastTask);
 /*		if (CloudSim.running()) {
 			CloudSim.send(getId(), dest, delay, CREATE_TASK, lastTask);*/
@@ -289,6 +288,9 @@ public class SimManager extends SimEntity {
 			case CREATE_TASK:
 				try {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
+					//remove head of list once read - to reduce heap size
+					loadGeneratorModel.getTaskList().set(0,null);
+					loadGeneratorModel.getTaskList().remove(0);
 					//storage
 					///Send task for each object read
 /*					System.out.println("At " + CloudSim.clock() + " Submitting ioTaskID = " + edgeTask.getIoTaskID() +

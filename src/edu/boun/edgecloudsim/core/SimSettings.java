@@ -113,6 +113,7 @@ public class SimSettings {
 	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
 	private int MAN_THRESHOLD;
+	private double MAN_THRESHOLD_FACTOR; //TODO: remove
 	private int MAX_CLOUD_REQUESTS;
 
 
@@ -184,6 +185,10 @@ public class SimSettings {
 		return instance;
 	}
 
+	static boolean toBoolean(String input){
+		return (input != null) ? Boolean.valueOf(input) : null;
+	}
+
 	/**
 	 * Reads configuration file and stores information to local variables
 	 * @param propertiesFile
@@ -198,90 +203,75 @@ public class SimSettings {
 			// load a properties file
 			Properties prop = new Properties();
 			prop.load(input);
-
-			SIMULATION_TIME = (double)60 * Double.parseDouble(prop.getProperty("simulation_time")); //seconds
-			WARM_UP_PERIOD = (double)60 * Double.parseDouble(prop.getProperty("warm_up_period")); //seconds
-			INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_load_check_interval")); //seconds
-			INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
-			FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("file_log_enabled"));
-			DEEP_FILE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("deep_file_log_enabled"));
-			STORAGE_LOG_ENABLED = Boolean.parseBoolean(prop.getProperty("storage_log_enabled"));
-			CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = Boolean.parseBoolean(prop.getProperty("terminate_failed_run"));
-			COUNT_FAILEDDUETOINACCESSIBILITY = Boolean.parseBoolean(prop.getProperty("count_failedDueToInaccessibility"));
-			OVERHEAD_SCAN = Boolean.parseBoolean(prop.getProperty("overhead_scan"));
-
-			MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
-			MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
-			MOBILE_DEVICE_COUNTER_SIZE = Integer.parseInt(prop.getProperty("mobile_device_counter_size"));
-			
-			WAN_PROPOGATION_DELAY = Double.parseDouble(prop.getProperty("wan_propogation_delay"));
-			LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("lan_internal_delay"));
-			BANDWITH_WLAN = 1000 * Integer.parseInt(prop.getProperty("wlan_bandwidth"));
-			BANDWITH_WAN = 1000 * Integer.parseInt(prop.getProperty("wan_bandwidth"));
-			BANDWITH_GSM =  1000 * Integer.parseInt(prop.getProperty("gsm_bandwidth"));
-
-		    NUM_OF_HOST_ON_CLOUD_DATACENTER = Integer.parseInt(prop.getProperty("number_of_host_on_cloud_datacenter"));
-		    NUM_OF_VM_ON_CLOUD_HOST = Integer.parseInt(prop.getProperty("number_of_vm_on_cloud_host"));
-		    CORE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("core_for_cloud_vm"));
-		    MIPS_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("mips_for_cloud_vm"));
-		    RAM_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("ram_for_cloud_vm"));
-			STORAGE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("storage_for_cloud_vm"));
-
-			RAM_FOR_VM = Integer.parseInt(prop.getProperty("ram_for_mobile_vm"));
-			CORE_FOR_VM = Integer.parseInt(prop.getProperty("core_for_mobile_vm"));
-			MIPS_FOR_VM = Integer.parseInt(prop.getProperty("mips_for_mobile_vm"));
-			STORAGE_FOR_VM = Integer.parseInt(prop.getProperty("storage_for_mobile_vm"));
-
-			ORCHESTRATOR_POLICIES = prop.getProperty("orchestrator_policies").split(",");
-			
-			SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
-			OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
-			FAIL_SCENARIOS = prop.getProperty("fail_scenarios").split(",");
-
-			HOST_FAILURE_SCENARIO = Boolean.parseBoolean(prop.getProperty("host_failure_scenario"));
-			DYNAMIC_FAILURE = Boolean.parseBoolean(prop.getProperty("dynamic_failure"));
-			HOST_FAILURE_ID = prop.getProperty("host_failure_id");
-			HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
-
-			ORBIT_MODE = Boolean.parseBoolean(prop.getProperty("orbit_mode"));
-			VARIABILITY_RUN = Boolean.parseBoolean(prop.getProperty("variability_run"));
-			MMPP = Boolean.parseBoolean(prop.getProperty("mmpp"));
-			VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
-			NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
-
-
-			PARAM_SCAN_MODE = false;
-
 			try {
-				NSF_EXPERIMENT = Boolean.parseBoolean(prop.getProperty("nsf"));
-				RAID = Integer.parseInt(prop.getProperty("raid"));
-				LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
-				LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
-				LAMBDA1_MIN = Double.parseDouble(prop.getProperty("lambda1_min"));
-				LAMBDA1_MAX = Double.parseDouble(prop.getProperty("lambda1_max"));
-				LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
-				LAMBDA1_STEP = Double.parseDouble(prop.getProperty("lambda1_step"));
-			}
-			catch (Exception e)
-			{
-			}
-			try {
-				LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
-				LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
-				LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
-			}
-			catch (Exception e)
-			{
-			}
+				SIMULATION_TIME = (double)60 * Double.parseDouble(prop.getProperty("simulation_time")); //seconds
+				WARM_UP_PERIOD = (double)60 * Double.parseDouble(prop.getProperty("warm_up_period")); //seconds
+				INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_load_check_interval")); //seconds
+				INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
+				FILE_LOG_ENABLED = toBoolean(prop.getProperty("file_log_enabled"));
+				DEEP_FILE_LOG_ENABLED = toBoolean(prop.getProperty("deep_file_log_enabled"));
+				STORAGE_LOG_ENABLED = toBoolean(prop.getProperty("storage_log_enabled"));
+				CLEAN_OUTPUT_FOLDER_PER_CONFIGURATION = toBoolean(prop.getProperty("terminate_failed_run"));
+				COUNT_FAILEDDUETOINACCESSIBILITY = toBoolean(prop.getProperty("count_failedDueToInaccessibility"));
+				OVERHEAD_SCAN = toBoolean(prop.getProperty("overhead_scan"));
+
+				MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
+				MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
+				MOBILE_DEVICE_COUNTER_SIZE = Integer.parseInt(prop.getProperty("mobile_device_counter_size"));
+
+				WAN_PROPOGATION_DELAY = Double.parseDouble(prop.getProperty("wan_propogation_delay"));
+				LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("lan_internal_delay"));
+				BANDWITH_WLAN = 1000 * Integer.parseInt(prop.getProperty("wlan_bandwidth"));
+				BANDWITH_WAN = 1000 * Integer.parseInt(prop.getProperty("wan_bandwidth"));
+				BANDWITH_GSM =  1000 * Integer.parseInt(prop.getProperty("gsm_bandwidth"));
+
+				NUM_OF_HOST_ON_CLOUD_DATACENTER = Integer.parseInt(prop.getProperty("number_of_host_on_cloud_datacenter"));
+				NUM_OF_VM_ON_CLOUD_HOST = Integer.parseInt(prop.getProperty("number_of_vm_on_cloud_host"));
+				CORE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("core_for_cloud_vm"));
+				MIPS_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("mips_for_cloud_vm"));
+				RAM_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("ram_for_cloud_vm"));
+				STORAGE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("storage_for_cloud_vm"));
+
+				RAM_FOR_VM = Integer.parseInt(prop.getProperty("ram_for_mobile_vm"));
+				CORE_FOR_VM = Integer.parseInt(prop.getProperty("core_for_mobile_vm"));
+				MIPS_FOR_VM = Integer.parseInt(prop.getProperty("mips_for_mobile_vm"));
+				STORAGE_FOR_VM = Integer.parseInt(prop.getProperty("storage_for_mobile_vm"));
+
+				ORCHESTRATOR_POLICIES = prop.getProperty("orchestrator_policies").split(",");
+
+				SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
+				OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
+				FAIL_SCENARIOS = prop.getProperty("fail_scenarios").split(",");
+
+				HOST_FAILURE_SCENARIO = toBoolean(prop.getProperty("host_failure_scenario"));
+				DYNAMIC_FAILURE = toBoolean(prop.getProperty("dynamic_failure"));
+				HOST_FAILURE_ID = prop.getProperty("host_failure_id");
+				HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
+
+				ORBIT_MODE = toBoolean(prop.getProperty("orbit_mode"));
+				VARIABILITY_RUN = toBoolean(prop.getProperty("variability_run"));
+				MMPP = toBoolean(prop.getProperty("mmpp"));
+				VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
+				NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
 
+				PARAM_SCAN_MODE = false;
 
-			//avg waiting time in a place (min)
-			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
-			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
-			double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
 
-			try {
+				NSF_EXPERIMENT = toBoolean(prop.getProperty("nsf"));
+				if(NSF_EXPERIMENT==true) {
+					RAID = Integer.parseInt(prop.getProperty("raid"));
+					LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
+					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
+					LAMBDA1_MIN = Double.parseDouble(prop.getProperty("lambda1_min"));
+					LAMBDA1_MAX = Double.parseDouble(prop.getProperty("lambda1_max"));
+					LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
+					LAMBDA1_STEP = Double.parseDouble(prop.getProperty("lambda1_step"));
+					LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
+					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
+					LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
+				}
+
 
 				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
 				Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
@@ -293,23 +283,26 @@ public class SimSettings {
 				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				MAN_THRESHOLD = Integer.parseInt(prop.getProperty("man_threshold"));
+				MAN_THRESHOLD_FACTOR = Double.parseDouble(prop.getProperty("man_threshold_factor"));
 				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
+				RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
+				ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
+				NUM_OF_DATA_OBJECTS = Integer.parseInt(prop.getProperty("num_of_data_objects"));
+				NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
+				NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
+				NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
 
 			}
 			catch (Exception e){
-				System.out.println("Grid ranges incorrect");
-				X_RANGE = -1;
-				Y_RANGE = -1;
-				HOST_RADIUS = -1;
+				System.out.println("ERROR: Missing config");
+				e.printStackTrace();
+				System.exit(1);
 			}
 
-			RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
-			ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
-			NUM_OF_DATA_OBJECTS = Integer.parseInt(prop.getProperty("num_of_data_objects"));
-			NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
-			NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
-			NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
 
+			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
+			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
+			double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
 			//mean waiting time (minute)
 			mobilityLookUpTable = new double[]{
 				place1_mean_waiting_time, //ATTRACTIVENESS_L1
@@ -797,13 +790,6 @@ public class SimSettings {
 		return OBJECT_DIST_PLACE;
 	}
 
-	public String getStripeDistRead() {
-		return STRIPE_DIST_READ;
-	}
-	public String getStripeDistPlace() {
-		return STRIPE_DIST_PLACE;
-	}
-
 	public void setObjectDistRead(String OBJECT_DIST_READ) {
 		this.OBJECT_DIST_READ = OBJECT_DIST_READ;
 	}
@@ -812,20 +798,14 @@ public class SimSettings {
 		this.STRIPE_DIST_READ = STRIPE_DIST_READ;
 	}
 
-	public void setObjectDistPlace(String OBJECT_DIST_PLACE) {
-		this.OBJECT_DIST_PLACE = OBJECT_DIST_PLACE;
-	}
-
-	public void setStripeDistPlace(String STRIPE_DIST_PLACE) {
-		this.STRIPE_DIST_PLACE = STRIPE_DIST_PLACE;
-	}
-
-
 	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;
 	}
 	public int getManThreshold() {
 		return MAN_THRESHOLD;
+	}
+	public double getManThresholdFactor() {
+		return MAN_THRESHOLD_FACTOR;
 	}
 	public int getMaxCloudRequests() {
 		return MAX_CLOUD_REQUESTS;

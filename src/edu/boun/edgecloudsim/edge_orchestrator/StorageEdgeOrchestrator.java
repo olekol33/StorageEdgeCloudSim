@@ -66,7 +66,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
         List<Integer> intObjectLocations = new ArrayList<>();
         for(String s : objectLocations) intObjectLocations.add(Integer.valueOf(s));
-        return StaticRangeMobility.getNearestHost(intObjectLocations, deviceLocation);
+        StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
+        return staticMobility.getNearestHost(intObjectLocations, deviceLocation);
     }
 
 /*    private int selectNearestHostToReadWOQueue(String locations, Location deviceLocation) {

@@ -20,7 +20,8 @@ public class EdgeVM extends Vm {
 
 
 	private int readRate;
-	
+	private int taskProcessingTimeUS;
+
 	public EdgeVM(int id, int userId, double mips, int numberOfPes, int ram,
 			long bw, long size, String vmm, CloudletScheduler cloudletScheduler) {
 		super(id, userId, mips, numberOfPes, ram, bw, size, vmm, cloudletScheduler);
@@ -28,10 +29,11 @@ public class EdgeVM extends Vm {
 		type = SimSettings.VM_TYPES.EDGE_VM;
 	}
 
-	public EdgeVM(int id, int userId, double mips, int numberOfPes, int ram, int _readRate,
+	public EdgeVM(int id, int userId, double mips, int numberOfPes, int ram, int _readRate,int _taskProcessingTimeUS,
 				  long bw, long size, String vmm, CloudletScheduler cloudletScheduler) {
 		super(id, userId, mips, numberOfPes, ram, bw, size, vmm, cloudletScheduler);
 		readRate=_readRate;
+		taskProcessingTimeUS=_taskProcessingTimeUS;
 
 		type = SimSettings.VM_TYPES.EDGE_VM;
 	}
@@ -42,5 +44,9 @@ public class EdgeVM extends Vm {
 
 	public int getReadRate() {
 		return readRate;
+	}
+
+	public int getTaskProcessingTimeUS() {
+		return taskProcessingTimeUS;
 	}
 }

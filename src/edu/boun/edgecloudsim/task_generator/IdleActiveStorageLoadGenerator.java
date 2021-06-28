@@ -233,7 +233,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 }
                 else
                     objectID = OG.getDataObjectID();
-
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;
 /*                if(randomTaskType%2==0)
@@ -486,6 +485,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             }
             if(minStripeQueueSize == Integer.MAX_VALUE) //found nothing
                 return false;
+            //TODO: use adjusting factor (as in Orbit)
             if(minStripeQueueSize*SimSettings.getInstance().getManThresholdFactor()>dataQueueSize) //create parity only if queue lower by factor
                 return false;
             

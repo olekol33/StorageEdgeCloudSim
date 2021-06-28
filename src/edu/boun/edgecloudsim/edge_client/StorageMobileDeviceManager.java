@@ -47,7 +47,9 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 
         //Oleg:set location of the mobile access point of the device
 //        task.setSubmittedLocation(currentLocation);
-        task.setSubmittedLocation(StaticRangeMobility.getDCLocation(currentLocation.getServingWlanId()));
+        StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
+//        task.setSubmittedLocation(StaticRangeMobility.getDCLocation(currentLocation.getServingWlanId()));
+        task.setSubmittedLocation(staticMobility.getDCLocation(currentLocation.getServingWlanId()));
 
 
         //storage
@@ -175,7 +177,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 
         //Oleg:set location of the mobile access point of the device
 //        task.setSubmittedLocation(currentLocation);
-        task.setSubmittedLocation(StaticRangeMobility.getDCLocation(currentLocation.getServingWlanId()));
+        StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
+        task.setSubmittedLocation(staticMobility.getDCLocation(currentLocation.getServingWlanId()));
 
 
         //storage
@@ -359,9 +362,11 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 SimSettings.NETWORK_DELAY_TYPES delayType = SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY;
                 //TODO: recheck, stop read from data host and then read from access point
                 //TODO: GENERIC_EDGE_DEVICE_ID+1 is MAN, not affecting count at host
-                if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0))
-                    ((StorageNetworkModel) networkModel).downloadFinished(StaticRangeMobility.getDCLocation(task.getAssociatedHostId()),
-                            SimSettings.GENERIC_EDGE_DEVICE_ID+1,task.getAssociatedHostId());
+                if (!(task.getIsParity() == 1 && task.getParitiesToRead() == 0)) {
+                    StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
+                    ((StorageNetworkModel) networkModel).downloadFinished(staticMobility.getDCLocation(task.getAssociatedHostId()),
+                            SimSettings.GENERIC_EDGE_DEVICE_ID + 1, task.getAssociatedHostId());
+                }
 
                 //SimLogger.printLine(CloudSim.clock() + ": " + getName() + ": task #" + task.getCloudletId() + " received from edge");
                 //get delay between access point and device
@@ -611,7 +616,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     String simScenario = SimManager.getInstance().getSimulationScenario();
                     String orchestratorPolicy = SimManager.getInstance().getOrchestratorPolicy();
                     String objectPlacementPolicy = SimManager.getInstance().getObjectPlacementPolicy();
-                    String distribution = SimSettings.getInstance().getStripeDistPlace();
+                    String distribution = SimSettings.getInstance().getObjectDistPlace();
                     String fail = "";
                     if (SimSettings.getInstance().isHostFailureScenario())
                         fail="WITHFAIL";

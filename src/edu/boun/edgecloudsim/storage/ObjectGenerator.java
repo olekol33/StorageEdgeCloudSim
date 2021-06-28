@@ -651,7 +651,7 @@ public class ObjectGenerator {
         int deadlockCount=0;
         int stripeID;
         List<Integer> listOfStripeIDs = null;
-        String dist = SimSettings.getInstance().getStripeDistPlace();
+        String dist = SimSettings.getInstance().getObjectDistPlace();
         //select stripe according to popularity policy
         if(SimSettings.getInstance().isNsfExperiment()) {
             listOfStripeIDs = getNumbersInRange(0,SimSettings.getInstance().getNumOfStripes());

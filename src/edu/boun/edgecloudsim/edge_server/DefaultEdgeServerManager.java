@@ -90,11 +90,13 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 					double mips = Double.parseDouble(vmElement.getElementsByTagName("mips").item(0).getTextContent());
 					int ram = Integer.parseInt(vmElement.getElementsByTagName("ram").item(0).getTextContent());
 					int readRate = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
+					int taskProcessingTimeUS = Integer.parseInt(vmElement.getElementsByTagName("taskProcessingTimeUS").item(0).getTextContent());
 					long storage = Long.parseLong(vmElement.getElementsByTagName("storage").item(0).getTextContent());
 					long bandwidth = SimSettings.getInstance().getWlanBandwidth() / (hostNodeList.getLength()+vmNodeList.getLength());
 					
 					//VM Parameters		
-					EdgeVM vm = new EdgeVM(vmCounter, brockerId, mips, numOfCores, ram, readRate, bandwidth, storage, vmm, new CloudletSchedulerTimeShared());
+					EdgeVM vm = new EdgeVM(vmCounter, brockerId, mips, numOfCores, ram, readRate, taskProcessingTimeUS,
+							bandwidth, storage, vmm, new CloudletSchedulerTimeShared());
 					vmList.get(hostCounter).add(vm);
 					vmCounter++;
 				}

@@ -17,14 +17,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -47,14 +49,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -77,14 +81,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -107,14 +113,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -137,14 +145,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -167,14 +177,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -197,14 +209,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -227,14 +241,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -257,14 +273,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -287,14 +305,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
@@ -317,14 +337,16 @@
 				<mips>80000</mips>
 				<ram>16000</ram>
 				<storage>10000</storage>
-				<readRate>12</readRate>
+				<readRate>525</readRate>
+				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
 					<VM vmm="Xen">
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
 						<storage>10000</storage>
-						<readRate>12</readRate>
+						<readRate>525</readRate>
+						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
 				</VMs>
 			</host>
