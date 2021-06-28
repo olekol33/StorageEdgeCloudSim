@@ -65,7 +65,8 @@ public class SimSettings {
     private int MIN_NUM_OF_MOBILE_DEVICES;
     private int MAX_NUM_OF_MOBILE_DEVICES;
     private int MOBILE_DEVICE_COUNTER_SIZE;
-    
+	private int THIS_MOBILE_DEVICE;
+
     private int NUM_OF_EDGE_DATACENTERS;
     private int NUM_OF_EDGE_HOSTS;
     private int NUM_OF_EDGE_VMS;
@@ -250,8 +251,9 @@ public class SimSettings {
 
 
 			PARAM_SCAN_MODE = false;
-			NSF_EXPERIMENT = false;
+
 			try {
+				NSF_EXPERIMENT = Boolean.parseBoolean(prop.getProperty("nsf"));
 				RAID = Integer.parseInt(prop.getProperty("raid"));
 				LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
 				LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
@@ -458,6 +460,14 @@ public class SimSettings {
 	public int getMobileDevCounterSize()
 	{
 		return MOBILE_DEVICE_COUNTER_SIZE;
+	}
+
+	public int getThisMobileDevice() {
+		return THIS_MOBILE_DEVICE;
+	}
+
+	public void setThisMobileDevice(int THIS_MOBILE_DEVICE) {
+		this.THIS_MOBILE_DEVICE = THIS_MOBILE_DEVICE;
 	}
 
 	/**

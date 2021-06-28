@@ -43,6 +43,7 @@ public class OrbitMain {
 		
 		int iterationNumber = 1;
 		int currentHost=0;
+		int currentClient=0;
 		long currentTime;
 		String runType = "";
 		String configFile = "";
@@ -51,16 +52,17 @@ public class OrbitMain {
 		String applicationsFile = "";
 
 
-
-		if (args.length == 2){
-			runType = args[0];
+		runType = args[0];
+		if (runType.equals("host")){
+//			runType = args[0];
 			currentHost = Integer.valueOf(args[1]);
 //			currentTime = Long.valueOf(args[2]);
 			currentTime = Instant.now().toEpochMilli();
 		}
 		else {
-			runType = "client";
+//			runType = "client";
 			currentHost = 0;
+			currentClient = Integer.valueOf(args[1]);
 			currentTime = Instant.now().toEpochMilli();
 		}
 
@@ -98,6 +100,7 @@ public class OrbitMain {
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
+		SS.setThisMobileDevice(currentClient);
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);

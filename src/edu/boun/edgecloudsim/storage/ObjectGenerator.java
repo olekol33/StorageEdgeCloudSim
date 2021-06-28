@@ -55,8 +55,7 @@ public class ObjectGenerator {
     private int numOfNodes;
     private static final double zipfExponent = SimSettings.getInstance().getZipfExponent();
 
-    //TODO: fix
-//    private static int getNumOfDataInStripeStatic = 2;
+    //TODO: check why 21 objects generated when capacity is 20 (2 nodes)
     Random ran;
 
 

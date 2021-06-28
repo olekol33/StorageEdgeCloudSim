@@ -21,6 +21,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -361,22 +364,49 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     }
 
     public void exportTaskList() throws IOException {
+
         File taskListFile = null;
         FileWriter taskListFW = null;
         BufferedWriter taskListBW = null;
-
-//        taskListFile = new File(SimLogger.getInstance().getOutputFolder(), "TASK_LIST.txt");
-        taskListFile = new File("/tmp/TASK_LIST.txt");
+//        Path pTask = Paths.get("/tmp/TASK_LIST.txt");
+//        if(Files.exists(pTask)){
+//            SimLogger.print("TASK_LIST.txt exist"+"\n");
+//            return;
+//        }
+//        List<File> taskListFiles = new ArrayList<>();
+//        List<FileWriter> taskListFWs = new ArrayList<>();
+//        List<BufferedWriter> taskListBWs = new ArrayList<>();
+//
+//        for(int i=0; i<numberOfMobileDevices; i++){
+//            taskListFiles.add(i,new File("/tmp/TASK_LIST"+Integer.toString(i)+".txt"));
+//            taskListFWs.add(i,new FileWriter(taskListFiles.get(i), false));
+//            taskListBWs.add(i,new BufferedWriter(taskListFWs.get(i)));
+//            taskListBWs.get(i).write("startTime,outputFileSize,mobileDeviceId,objectRead,ioTaskID");
+//            taskListBWs.get(i).newLine();
+//        }
+        int currentDevice = SimSettings.getInstance().getThisMobileDevice();
+        taskListFile = new File("/tmp/TASK_LIST"+Integer.toString(currentDevice)+".txt");
         taskListFW = new FileWriter(taskListFile, false);
         taskListBW = new BufferedWriter(taskListFW);
-        taskListBW.write("startTime,length,inputFileSize,outputFileSize,taskType,pesNumber,mobileDeviceId,objectRead,ioTaskID");
+        taskListBW.write("startTime,outputFileSize,mobileDeviceId,objectRead,ioTaskID");
         taskListBW.newLine();
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(9);
         for(TaskProperty task:getTaskList()){
-            taskListBW.write(task.getStartTime()+","+task.getLength()+","+task.getInputFileSize()+","+task.getOutputFileSize()+","+
-                    task.getTaskType()+","+task.getPesNumber()+","+task.getMobileDeviceId()+","+task.getObjectRead()+","+task.getIoTaskID());
-            taskListBW.newLine();
+            if(task.getMobileDeviceId()==currentDevice) {
+                taskListBW.write(df.format(task.getStartTime()) + "," + task.getOutputFileSize() +
+                        "," + task.getMobileDeviceId() + "," + task.getObjectRead() + "," + task.getIoTaskID());
+                taskListBW.newLine();
+            }
+//            taskListBWs.get(task.getMobileDeviceId()).write(df.format(task.getStartTime())+","+task.getOutputFileSize()+
+//                    ","+task.getMobileDeviceId()+","+task.getObjectRead()+","+task.getIoTaskID());
+//            taskListBWs.get(task.getMobileDeviceId()).newLine();
         }
+//        for(int i=0; i<numberOfMobileDevices; i++) {
+//            taskListBWs.get(i).close();
+//        }
         taskListBW.close();
+        System.out.println("Task list generated for client "+ Integer.toString(currentDevice));
     }
 
     @Override

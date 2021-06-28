@@ -17,6 +17,7 @@ import redis.clients.jedis.util.Slowlog;
 import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.nio.file.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -62,6 +63,12 @@ public class RedisListHandler {
 
     //Generate list of all object locations in the system for orchestration
     private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
+        Path pLoc = Paths.get("/tmp/Object_Locations.txt");
+        Path pDist = Paths.get("/tmp/OBJECT_DISTRIBUTION.txt");
+        if(Files.exists(pLoc) && Files.exists(pDist)){
+            SimLogger.print("Object locations and distribution files exist"+"\n");
+            return;
+        }
         File objectFile = new File("/tmp/Object_Locations.txt");
         File objectDistFile = new File("/tmp/OBJECT_DISTRIBUTION.txt");
         FileWriter objectFW = new FileWriter(objectFile, false),
@@ -74,6 +81,8 @@ public class RedisListHandler {
         objectDistBW.write("Object Name;Object Type;Occurrences");
         objectDistBW.newLine();
         for (Map<String,String> KV : OG.getListOfObjects()) {
+            if(KV.get("type").equals("metadata"))
+                continue;
             objectBW.write("object:" + KV.get("id")+","+KV.get("locations"));
             objectBW.newLine();
 
@@ -98,6 +107,8 @@ public class RedisListHandler {
         OG = new ObjectGenerator(objectPlacementPolicy);
         //Generate Redis objects for this host
         for (Map<String,String> KV : OG.getListOfObjects()) {
+            if(KV.get("type").equals("metadata"))
+                continue;
             String locations = KV.get("locations");
             StringTokenizer st = new StringTokenizer(locations, " "); // Space as delimiter
             Set<String> locationsSet = new HashSet<String>();
