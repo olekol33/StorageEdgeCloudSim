@@ -1,5 +1,3 @@
-//TODO: Create redis connection exceptions
-//TODO: Add constants (PARITY,DATA,MD) to parity (object:md*)
 package edu.boun.edgecloudsim.storage;
 
 import edu.boun.edgecloudsim.core.SimSettings;

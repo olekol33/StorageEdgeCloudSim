@@ -225,7 +225,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
                 //if data object can't be read - read parity
                 if (objectLocations.size()==0) {
-                    LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
                     boolean parityGenerated = createParityTask(task, String.valueOf(-1));
                     if (!parityGenerated) //if parity not generated, it's lost
                         SimLogger.getInstance().taskFailedDueToInaccessibility(task.getCloudletId(), CloudSim.clock(),
@@ -312,7 +311,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         else
             coding=true;
         //If replication policy, read the same object, but mark it as parity
-//        if (replication || dataParity) {
         if (replication) {
             String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
             List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
@@ -329,9 +327,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             if (objectLocations.size()==1 && replication)
                 return false;
 
-                //if there are replicas of the object
-                //If dataParity, check that replica queue is less than threshold
-//            else if(objectLocations.size()>= 2 && ((checkReplicaQueue(task.getObjectRead()) && dataParity)||replication)) {
+            //if there are replicas of the object
             else if(objectLocations.size()>= 2) {
                 loadGeneratorModel.getTaskList().add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
                         task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength(),
@@ -354,7 +350,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         //no parities
         if (mdObjects.size()==0)
             return false;
-//        String stripeID = task.getStripeID();
         int mdObjectIndex;
         String stripeID;
         String[] minStripeObjects = new String[0];
@@ -401,8 +396,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             }
 
 
-            dataObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[0].split(" ")));
-            parityObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[1].split(" ")));
+//            dataObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[0].split(" ")));
+//            parityObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[1].split(" ")));
         }
         else { //There are inactive nodes
             boolean stripeFound=false;

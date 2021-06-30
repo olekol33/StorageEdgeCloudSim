@@ -596,7 +596,6 @@ public class ObjectGenerator {
             KV.put("locations", Integer.toString(host));
             hostsContents.get(host).put("capacity", (int) hostsContents.get(host).get("capacity")-objectSize);
             hostsContents.get(host).put("objects", addLocation(KV.get("id"), (String) hostsContents.get(host).get("objects")));
-            //TODO: write test
             if ((int) hostsContents.get(host).get("capacity")<0)
                 System.out.println("hostStorageCapacity[host]<0");
             //next host in list
@@ -699,7 +698,6 @@ public class ObjectGenerator {
                     }
                     else {
 //                        stripeID = getObjectID(numOfStripes, "stripes", dist);
-                        //TODO: fix when coding can't fit
                         List<String> lowOccurrenceObjects =objectsPlaced.get(lowestNumOfOccurrences);
                         objectName = lowOccurrenceObjects.get(newObjectRand.nextInt(lowOccurrenceObjects.size()));
                         if(deadlockCount>20){
@@ -846,13 +844,6 @@ public class ObjectGenerator {
             //get object name
             objectName = (String)dataObjects.get(objectID).get("id");
 
-/*             String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
-
-           String objects = (String) hostsContents.get(currentHost).get("objects");
-            StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
-            Set<String> objectsSet = new HashSet<String>();
-            while (st.hasMoreTokens())
-                objectsSet.add(st.nextToken());*/
             //get objects on selected host
             Set<String> objectsSet = stringTokenizer((String) hostsContents.get(currentHost).get("objects"));
 
@@ -865,11 +856,6 @@ public class ObjectGenerator {
                         Node datacenterNode = datacenterList.item(j);
                         Element datacenterElement = (Element) datacenterNode;
                         int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
-/*                        objects = (String) hostsContents.get(j).get("objects");
-                        st= new StringTokenizer(objects, " "); // Space as delimiter
-                        objectsSet = new HashSet<String>();
-                        while (st.hasMoreTokens())
-                            objectsSet.add(st.nextToken());*/
                         objectsSet = stringTokenizer((String) hostsContents.get(j).get("objects"));
 
                         if ((objectsSet.size() * objectSize) != hostCapacity)
@@ -946,10 +932,7 @@ public class ObjectGenerator {
     private String addLocation(String toAdd, String locations){
         if (locations != null) {
             //get list of locations of object
-            StringTokenizer st = new StringTokenizer(locations, " "); // Space as delimiter
-            Set<String> locationsSet = new HashSet<String>();
-            while (st.hasMoreTokens())
-                locationsSet.add(st.nextToken());
+            Set<String> locationsSet = stringTokenizer(locations);
             //add location
             locationsSet.add(toAdd);
             String newLocations = "";
@@ -1039,22 +1022,7 @@ public class ObjectGenerator {
                     j--;
                 }
                 else {
-/*                    String objectLocations = (String)dataObjects.get(objectID).get("locations");
-                    Set<String> locationsSet = new HashSet<String>();
-                    StringTokenizer st = new StringTokenizer(objectLocations, " ");
-                    while (st.hasMoreTokens())
-                        locationsSet.add(st.nextToken());*/
                     Set<String> locationsSet = stringTokenizer((String)dataObjects.get(objectID).get("locations"));
-/*
-                    if (objectPlacementPolicy.equalsIgnoreCase("DATA_PARITY_PLACE")){
-                        //load balancing for data objects- avoid object with locationDelta or more placements than min
-                        if (locationsSet.size() + 1 > getLowestNumberOfLocationsPerDataObject() + locationDelta) {
-                            deadlockCount++;
-                            if (deadlockCount < 20) {
-                                objectDenied = 1;
-                            }
-                        }
-                    }*/
                     if (!dataList.isEmpty()){ //if list is not empty //TODO: recheck
                         for (Map<String, String> dataObject:dataList){ //check if new object is in same host as previous
                             if (dataObject.get("locations").equals((String)dataObjects.get(objectID).get("locations"))) {
@@ -1133,6 +1101,7 @@ public class ObjectGenerator {
         StringTokenizer st = new StringTokenizer(str, " ");
         while (st.hasMoreTokens())
             hashSet.add(st.nextToken());
+
         return hashSet;
     }
 

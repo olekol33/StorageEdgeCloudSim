@@ -33,7 +33,6 @@ public class NomadicMobility extends MobilityModel {
 	
 	public NomadicMobility(int _numberOfMobileDevices, double _simulationTime) {
 		super(_numberOfMobileDevices, _simulationTime);
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override

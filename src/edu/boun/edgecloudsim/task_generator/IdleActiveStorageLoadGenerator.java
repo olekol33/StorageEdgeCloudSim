@@ -392,7 +392,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     @Override
     public int getTaskTypeOfDevice(int deviceId) {
-        // TODO Auto-generated method stub
         return taskTypeOfDevices[deviceId];
     }
 

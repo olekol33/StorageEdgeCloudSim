@@ -170,7 +170,6 @@ public class OrbitMain {
 							if (runType.equals("client")) {
 								OrbitReader orbitClient = new OrbitReader(currentHost);
 								orbitClient.clientRun();
-								//TODO: close all connections
 								RedisListHandler.closeConnection();
 							}
 
