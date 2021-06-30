@@ -288,7 +288,7 @@ public class SimLogger {
 				objectsSet.add(st.nextToken());
 			List<Integer> dataObjectPriorities = new ArrayList<Integer>();
 			List<Integer> parityObjectPriorities = new ArrayList<Integer>();
-			List<List<Map>> listOfStripes =  OG.getListOfStripes();
+			HashMap<String,List<Map>> listOfStripes =  OG.getListOfStripes();
 			//For each object in host
 			for (String object : objectsSet){
 					//if data object, its ID can be derived from its name
@@ -299,7 +299,7 @@ public class SimLogger {
 					//If parity, get key of value (stripe) that contains this parity - it's the ID
 					else if (object.startsWith("p")){
 						int i=0;
-						for (List<Map> stripe : listOfStripes){
+						for (List<Map> stripe : listOfStripes.values()){
 							//assumes one parity
 							//search each stripe for the parity
 							if (stripe.get(SimSettings.getInstance().getNumOfDataInStripe()).get("id").equals(object)) {

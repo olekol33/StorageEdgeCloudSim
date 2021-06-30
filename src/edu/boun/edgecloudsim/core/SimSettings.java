@@ -107,13 +107,9 @@ public class SimSettings {
 	private int HOST_RADIUS;
 
 	private String OBJECT_DIST_READ;
-	private String STRIPE_DIST_READ;
 	private String OBJECT_DIST_PLACE;
-	private String STRIPE_DIST_PLACE;
-	private int MAX_PENDING_REQUESTS;
 	private int CONGESTED_THRESHOLD;
-	private int MAN_THRESHOLD;
-	private double MAN_THRESHOLD_FACTOR; //TODO: remove
+	private double PARITY_PROB_STEP;
 	private int MAX_CLOUD_REQUESTS;
 
 
@@ -124,6 +120,7 @@ public class SimSettings {
 	private int NUM_OF_STRIPES;
 	private int NUM_OF_DATA_IN_STRIPE;
 	private int NUM_OF_PARITY_IN_STRIPE;
+	private double REDUNDANCY_DATA_SHARE;
 
 	//Host failure
 	private boolean HOST_FAILURE_SCENARIO;
@@ -277,13 +274,9 @@ public class SimSettings {
 				Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
 				HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
 				OBJECT_DIST_READ = prop.getProperty("object_dist_read");
-				STRIPE_DIST_READ = prop.getProperty("stripe_dist_read");
 				OBJECT_DIST_PLACE = prop.getProperty("object_dist_place");
-				STRIPE_DIST_PLACE = prop.getProperty("stripe_dist_place");
-				MAX_PENDING_REQUESTS = Integer.parseInt(prop.getProperty("max_pending_requests"));
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
-				MAN_THRESHOLD = Integer.parseInt(prop.getProperty("man_threshold"));
-				MAN_THRESHOLD_FACTOR = Double.parseDouble(prop.getProperty("man_threshold_factor"));
+				PARITY_PROB_STEP = Double.parseDouble(prop.getProperty("parityProbStep"));
 				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 				RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
 				ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
@@ -291,6 +284,7 @@ public class SimSettings {
 				NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
 				NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
 				NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
+				REDUNDANCY_DATA_SHARE = Double.parseDouble(prop.getProperty("redundancy_data_share"));
 
 			}
 			catch (Exception e){
@@ -794,19 +788,14 @@ public class SimSettings {
 		this.OBJECT_DIST_READ = OBJECT_DIST_READ;
 	}
 
-	public void setStripeDistRead(String STRIPE_DIST_READ) {
-		this.STRIPE_DIST_READ = STRIPE_DIST_READ;
-	}
-
 	public int getCongestedThreshold() {
 		return CONGESTED_THRESHOLD;
 	}
-	public int getManThreshold() {
-		return MAN_THRESHOLD;
+
+	public double getParityProbStep() {
+		return PARITY_PROB_STEP;
 	}
-	public double getManThresholdFactor() {
-		return MAN_THRESHOLD_FACTOR;
-	}
+
 	public int getMaxCloudRequests() {
 		return MAX_CLOUD_REQUESTS;
 	}
@@ -866,6 +855,11 @@ public class SimSettings {
 
 	public int getNumOfParityInStripe() {
 		return NUM_OF_PARITY_IN_STRIPE;
+	}
+
+
+	public double getRedundancyDataShare() {
+		return REDUNDANCY_DATA_SHARE;
 	}
 	
 	private void isAttribtuePresent(Element element, String key) {

@@ -16,7 +16,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -24,7 +24,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -48,7 +48,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -56,7 +56,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -80,7 +80,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -88,7 +88,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -112,7 +112,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -120,7 +120,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -144,7 +144,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -152,7 +152,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -176,7 +176,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -184,7 +184,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -208,7 +208,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -216,7 +216,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -240,7 +240,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -248,7 +248,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -272,7 +272,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -280,7 +280,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -304,7 +304,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -312,7 +312,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -336,7 +336,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>10000</storage>
+				<storage>320000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -344,7 +344,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>10000</storage>
+						<storage>320000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
