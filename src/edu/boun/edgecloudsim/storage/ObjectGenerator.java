@@ -276,7 +276,16 @@ public class ObjectGenerator {
         for (int i=0;i<numOfNodes;i++){
             Node datacenterNode = datacenterList.item(i);
             Element datacenterElement = (Element) datacenterNode;
-            int storageCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
+            int storageCapacity=0;
+            try {
+                storageCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
+            }
+            catch (Exception e){
+                System.out.println("Failed reading node "+ String.valueOf(i));
+                System.out.println(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
+                e.printStackTrace();
+                System.exit(0);
+            }
 //            hostStorageCapacity[i] = storageCapacity;
             hostsContents.get(i).put("capacity",storageCapacity);
         }
@@ -617,8 +626,6 @@ public class ObjectGenerator {
         List<String> objectList = new ArrayList<String>();
         for(List<Map> object:listOfStripes.values())
             objectList.add((String)object.get(numOfDataInStripe).get("id"));
-        //To randomize
-        Collections.shuffle(objectList);
         objectsPlaced.put(0,objectList);
         objectsPlaced.put(1,new ArrayList<String>());
         int lowestNumOfOccurrences=0;
@@ -966,8 +973,6 @@ public class ObjectGenerator {
                 objects = new ArrayList<String>();
                 objects.add(object.get("id"));
             }
-            //For uniform selection later
-            Collections.shuffle(objects);
             objectsPlaced.put(appearances,objects);
         }
         return objectsPlaced;
@@ -986,8 +991,6 @@ public class ObjectGenerator {
         if(!objectsPlaced.containsKey(lowestNumOfOccurrences+1))
             objectsPlaced.put(lowestNumOfOccurrences+1,new ArrayList<String>());
 
-        HashMap<String,List<Map>> listOfStripes = new HashMap<>();
-        List<Set<Integer>> existingStripes = new ArrayList();
         List<Integer> listOfDataObjectIDs = null;
         int deadlockCount=0;
         int objectDenied=0;
