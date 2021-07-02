@@ -84,6 +84,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             lambda = new double[2];
         else //permutation controlled by input seed
             createZipfPermutations(1);
+        System.out.println("!");
 
     }
 
@@ -454,7 +455,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     //Creates n permutations of size numOfDataObjects
     private void createZipfPermutations(int n){
         Random DynamicZipfRandom = new Random();
-        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
+        DynamicZipfRandom.setSeed(SimSettings.getInstance().getRandomSeed());
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         zipfPermutations = new int[n][numOfDataObjects];
         for (int i=0;i<n;i++){
