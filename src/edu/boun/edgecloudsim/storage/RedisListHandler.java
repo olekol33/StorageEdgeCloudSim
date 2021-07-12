@@ -76,7 +76,7 @@ public class RedisListHandler {
 
 
         objectBW.write("object,locations\n");
-        objectDistBW.write("Object Name;Object Type;Occurrences");
+        objectDistBW.write("Object Name,Object Type,Occurrences");
         objectDistBW.newLine();
         for (Map<String,String> KV : OG.getListOfObjects()) {
             if(KV.get("type").equals("metadata"))
