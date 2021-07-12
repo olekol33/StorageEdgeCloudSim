@@ -120,7 +120,7 @@ public class SimSettings {
 	private int NUM_OF_STRIPES;
 	private int NUM_OF_DATA_IN_STRIPE;
 	private int NUM_OF_PARITY_IN_STRIPE;
-	private double REDUNDANCY_DATA_SHARE;
+	private double REDUNDANCY_SHARE;
 
 	//Host failure
 	private boolean HOST_FAILURE_SCENARIO;
@@ -284,7 +284,7 @@ public class SimSettings {
 				NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
 				NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
 				NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
-				REDUNDANCY_DATA_SHARE = Double.parseDouble(prop.getProperty("redundancy_data_share"));
+				REDUNDANCY_SHARE = Double.parseDouble(prop.getProperty("redundancy_share"));
 
 			}
 			catch (Exception e){
@@ -858,8 +858,8 @@ public class SimSettings {
 	}
 
 
-	public double getRedundancyDataShare() {
-		return REDUNDANCY_DATA_SHARE;
+	public double getRedundancyShare() {
+		return REDUNDANCY_SHARE;
 	}
 	
 	private void isAttribtuePresent(Element element, String key) {

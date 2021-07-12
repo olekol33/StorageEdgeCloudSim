@@ -786,7 +786,7 @@ public class ObjectGenerator {
 
     /*Used for DATA_PARITY_PLACE to fill remaining capacity up to predefined share of data objects*/
     private void partiallyFillHostsWithDataObjects(){
-        double dataShare = SimSettings.getInstance().getRedundancyDataShare();
+        double redundancyShare = SimSettings.getInstance().getRedundancyShare();
         int initialCapacity = getRemainingStorageCapacity();
         int remainingCapacity=initialCapacity;
         int host=0;
@@ -809,7 +809,8 @@ public class ObjectGenerator {
             //next host in list
             host = (host+1)% numOfHosts;
             remainingCapacity -= objectSize;
-            if((double)remainingCapacity/initialCapacity<=1-dataShare) //target reached
+
+            if((double)remainingCapacity/initialCapacity<=redundancyShare) //target reached
                 return;
         }
 
