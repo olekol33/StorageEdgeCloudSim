@@ -850,7 +850,8 @@ public class ObjectGenerator {
             }
             int objectDenied=0;
             //get object name
-            objectName = (String)dataObjects.get(objectID).get("id");
+            objectName = (String)dataObjects.get("d"+String.valueOf(objectID)).get("id");
+
 
             //get objects on selected host
             Set<String> objectsSet = stringTokenizer((String) hostsContents.get(currentHost).get("objects"));
@@ -887,7 +888,7 @@ public class ObjectGenerator {
             st = new StringTokenizer(objectLocations, " ");
             while (st.hasMoreTokens())
                 locationsSet.add(st.nextToken());*/
-            Set<String> locationsSet = stringTokenizer((String)dataObjects.get(objectID).get("locations"));
+            Set<String> locationsSet = stringTokenizer((String)dataObjects.get("d"+String.valueOf(objectID)).get("locations"));
             //load balancing - avoid object with locationDelta or more placements than min
             if (locationsSet.size()+1>getLowestNumberOfLocationsPerDataObject()+locationDelta){
                 objectID = getObjectID(numOfDataObjects,"objects",dist);
@@ -899,9 +900,9 @@ public class ObjectGenerator {
 
             if (objectDenied!=1) {
                 deadlockCount=0;
-                String locations = (String)dataObjects.get(objectID).get("locations");
+                String locations = (String)dataObjects.get("d"+String.valueOf(objectID)).get("locations");
                 //add new location
-                dataObjects.get(objectID).put("locations",addLocation(Integer.toString(currentHost),locations));
+                dataObjects.get("d"+String.valueOf(objectID)).put("locations",addLocation(Integer.toString(currentHost),locations));
                 hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-objectSize);
                 String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
                 hostsContents.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
@@ -1112,7 +1113,7 @@ public class ObjectGenerator {
     private int getLowestNumberOfLocationsPerDataObject(){
         int minNumOfLocations=Integer.MAX_VALUE;
         for (int i=0;i<numOfDataObjects;i++){
-            String locations = (String)dataObjects.get(i).get("locations");
+            String locations = (String)dataObjects.get("d"+String.valueOf(i)).get("locations");
             StringTokenizer st = new StringTokenizer(locations, " "); // Space as delimiter
             Set<String> locationsSet = new HashSet<String>();
             while (st.hasMoreTokens())
