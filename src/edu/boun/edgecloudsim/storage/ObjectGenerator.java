@@ -647,6 +647,10 @@ public class ObjectGenerator {
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
 
+        //Get next vacant host
+        while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
+            currentHost = (currentHost+1)%numOfNodes;
+
         while(1==1) {
             if(SimSettings.getInstance().getRAID()==4) {
             if(SimSettings.getInstance().isNsfExperiment())
@@ -672,23 +676,6 @@ public class ObjectGenerator {
 //                stripeID = getObjectID(numOfStripes,"stripes",dist);
                 continue;
             }
-            //locations of parity
-/*            String objectLocations = (String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("locations");
-            if(objectLocations!=null) {
-*//*                Set<String> locationsSet = new HashSet<String>();
-                st = new StringTokenizer(objectLocations, " ");
-                while (st.hasMoreTokens())
-                    locationsSet.add(st.nextToken());*//*
-                Set<String> locationsSet = stringTokenizer((String)listOfStripes.get(stripeID).get(numOfDataInStripe).get("locations"));
-                //load balancing - avoid object with locationDelta or more placements than min
-                if (locationsSet.size()+1>(getLowestNumberOfLocationsPerParityObject()+locationDelta)){
-                    stripeID = getObjectID(numOfStripes,"stripes",dist);
-                    deadlockCount++;
-                    if(deadlockCount<20)
-                        continue;
-                }
-            }*/
-
 
             //avoid having parity and data of same stripe in the same host
             boolean flag=false;
@@ -755,11 +742,6 @@ public class ObjectGenerator {
                         Node datacenterNode = datacenterList.item(j);
                         Element datacenterElement = (Element) datacenterNode;
                         int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
-/*                        objects = (String) hostsContents.get(j).get("objects");
-                        st= new StringTokenizer(objects, " "); // Space as delimiter
-                        objectsSet = new HashSet<String>();
-                        while (st.hasMoreTokens())
-                            objectsSet.add(st.nextToken());*/
                         objectsSet = stringTokenizer((String) hostsContents.get(j).get("objects"));
                         if ((objectsSet.size() * objectSize) < hostCapacity)
                             System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(j));
