@@ -458,7 +458,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     public int getTaskTypeOfDevice(int deviceId) {
         return taskTypeOfDevices[deviceId];
     }
-
+/*
     //TODO: changed by Harel
     public boolean createParityTask(Task task){
         int taskType = task.getTaskType();
@@ -490,10 +490,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 return false;
 
             //if object not found
-/*            else if(objectLocations.size()==0) {
-                System.out.println("ERROR: No such object");
-                System.exit(0);
-            }*/
+
             //if there are replicas of the object
             //If dataParity, check that replica queue is less than threshold
             //TODO: add my line here
@@ -550,8 +547,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         }
         int i=0;
         int paritiesToRead=1;
-/*        if (SimManager.getInstance().getOrchestratorPolicy().equalsIgnoreCase("IF_CONGESTED_READ_PARITY"))
-            paritiesToRead=1;*/
+
         for (String objectID:dataObjects){
             i++;
             //if data object, skip
@@ -586,7 +582,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         activeCodedIOTasks.put(task.getIoTaskID(),i-1);
         return true;
     }
-
+*/
     public static int getNumOfIOTasks() {
         return numOfIOTasks;
     }

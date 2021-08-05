@@ -71,6 +71,7 @@ public class ParseStorageNodes {
                                 "\t\t\t\t<ram>16000</ram>\n"+
                                 "\t\t\t\t<storage>" + s.getCapacity() + "</storage>\n"+
                                 "\t\t\t\t<readRate>" + s.getServiceRate() + "</readRate>\n"+
+                                "\t\t\t\t<taskProcessingTimeUS>300</taskProcessingTimeUS>"+
                                 "\t\t\t\t<VMs>\n"+
                                 "\t\t\t\t\t<VM vmm=\"Xen\">\n"+
                                 "\t\t\t\t\t\t<core>16</core>\n"+
@@ -78,6 +79,7 @@ public class ParseStorageNodes {
                                 "\t\t\t\t\t\t<ram>16000</ram>\n"+
                                 "\t\t\t\t\t\t<storage>" + s.getCapacity() + "</storage>\n"+
                                 "\t\t\t\t\t\t<readRate>" + s.getServiceRate() + "</readRate>\n"+
+                                "\t\t\t\t\t\t<taskProcessingTimeUS>300</taskProcessingTimeUS>"+
                                 "\t\t\t\t\t</VM>\n"+
                                 "\t\t\t\t</VMs>\n"+
                                 "\t\t\t</host>\n"+
