@@ -131,7 +131,6 @@ public class ParamScanApp {
 							for (String dist : distributions) {
 								if(SS.isMMPP()) {
 									SS.setObjectDistRead("UNIFORM");
-									SS.setStripeDistRead("UNIFORM");
 								}
 								else {
 //									SS.setObjectDistRead("ZIPF");

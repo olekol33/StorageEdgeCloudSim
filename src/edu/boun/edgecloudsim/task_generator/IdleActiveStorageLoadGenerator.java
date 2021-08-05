@@ -5,12 +5,14 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
+import edu.boun.edgecloudsim.storage.MMPP;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.storage.StorageRequest;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -20,6 +22,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +50,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int[][] MMPPObjectDemand;
     int[][] zipfPermutations;
     int numOfZipfPermutations;
+
+
     Random parityRandom;
     Random failRandom;
 //    Random DynamicZipfRandom;
@@ -62,7 +69,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         numOfAIOTasks = 0;
         numOfBIOTasks = 0;
         nZIPF=2;
-        if(SimSettings.getInstance().isMMPP()) {
+/*        if(SimSettings.getInstance().isMMPP()) {
             intervalSize = 1;//sec
             numOfIntervals = (int)(SimSettings.getInstance().getSimulationTime() / intervalSize);
             MMPPObjectDemand = new int[SimSettings.getInstance().getNumOfDataObjects()][numOfIntervals];
@@ -77,9 +84,12 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         if(SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPFN")){
             numOfZipfPermutations = nZIPF*SimSettings.getInstance().getNumOfEdgeHosts()/2;
             createZipfPermutations(numOfZipfPermutations);
-        }
+        }*/
         if(SimSettings.getInstance().isNsfExperiment())
             lambda = new double[2];
+        else //permutation controlled by input seed
+            createZipfPermutations(1);
+        System.out.println("!");
 
     }
 
@@ -104,7 +114,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
 
         //exponential number generator for file input size, file output size and task length
-        //TODO: copy
         ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][ACTIVE_PERIOD];
 
         //create random number generator for each place
@@ -125,11 +134,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
 
-            //TODO: currently select random task, not by weight
+
             if(SimSettings.getInstance().isNsfExperiment()) {
                 randomTaskType = i%2;
             }
-            else
+            else //TODO: currently select random task, not by weight
                 randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
             taskTypeOfDevices[i] = randomTaskType;
 
@@ -177,7 +186,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     }
                 }
                 //for MMPP take object with max requests in interval
-                else if(SimSettings.getInstance().isMMPP()){
+ /*               else if(SimSettings.getInstance().isMMPP()){
                     int curInterval=(int)(virtualTime/intervalSize);
                     if (virtualTime>SimSettings.getInstance().getSimulationTime())
                         continue;
@@ -191,8 +200,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 //                            maxRequests=MMPPObjectDemand[id][curInterval];
                         }
                         //list of objects with the same popularity
-/*                        else if (MMPPObjectDemand[id][curInterval]==maxRequests)
-                            maxID.add(id);*/
+*//*                        else if (MMPPObjectDemand[id][curInterval]==maxRequests)
+                            maxID.add(id);*//*
                     }
                     //randomly select object with top popularity
                     //TODO: double use of this value (for parity as well) - this is incorrect
@@ -236,11 +245,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     objectID = OG.getDataObjectID(intObjectID);
 
                 }
-                else
-                    objectID = OG.getDataObjectID();
-
-                //TODO: randomTaskType = 0
-                taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList)); //TODO: this line is important
+                else*/
+//                objectID = OG.getDataObjectID();
+                String dist = SimSettings.getInstance().getObjectDistRead();
+                objectID = "d"+String.valueOf(zipfPermutations[0][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects",dist)]);
+                taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;
 /*                if(randomTaskType%2==0)
                     numOfAIOTasks++;
@@ -421,28 +430,32 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         parityReadStarted = new boolean[numOfIOTasks];
         parityReadFinished = new boolean[numOfIOTasks];
     }
+
     public void exportTaskList() throws IOException {
         File taskListFile = null;
         FileWriter taskListFW = null;
         BufferedWriter taskListBW = null;
-
-//        taskListFile = new File(SimLogger.getInstance().getOutputFolder(), "TASK_LIST.txt");
-        taskListFile = new File("/tmp/TASK_LIST.txt");
+        int currentDevice = SimSettings.getInstance().getThisMobileDevice();
+        taskListFile = new File("/tmp/TASK_LIST"+Integer.toString(currentDevice)+".txt");
         taskListFW = new FileWriter(taskListFile, false);
         taskListBW = new BufferedWriter(taskListFW);
-        taskListBW.write("startTime,length,inputFileSize,outputFileSize,taskType,pesNumber,mobileDeviceId,objectRead,ioTaskID");
+        taskListBW.write("startTime,outputFileSize,mobileDeviceId,objectRead,ioTaskID");
         taskListBW.newLine();
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(9);
         for(TaskProperty task:getTaskList()){
-            taskListBW.write(task.getStartTime()+","+task.getLength()+","+task.getInputFileSize()+","+task.getOutputFileSize()+","+
-                    task.getTaskType()+","+task.getPesNumber()+","+task.getMobileDeviceId()+","+task.getObjectRead()+","+task.getIoTaskID());
-            taskListBW.newLine();
+            if(task.getMobileDeviceId()==currentDevice) {
+                taskListBW.write(df.format(task.getStartTime()) + "," + task.getOutputFileSize() +
+                        "," + task.getMobileDeviceId() + "," + task.getObjectRead() + "," + task.getIoTaskID());
+                taskListBW.newLine();
+            }
         }
         taskListBW.close();
+        System.out.println("Task list generated for client "+ Integer.toString(currentDevice));
     }
 
     @Override
     public int getTaskTypeOfDevice(int deviceId) {
-        // TODO Auto-generated method stub
         return taskTypeOfDevices[deviceId];
     }
 
@@ -582,48 +595,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return lambda;
     }
 
-    //Checks if all stripe parities are available
-    private boolean checkStripeValidity(List<String>  stripeObjects){
-        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
-        List<String> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
-
-        for (String objectID:stripeObjects){
-            String locations = RedisListHandler.getObjectLocations(objectID);
-            List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
-            if (contains(nonOperateHosts,objectLocations))
-                return false;
-            //Check if there is a host below queue threshold. If not, don't use parity.
-/*            boolean availableHost=false;
-            for (String host : objectLocations){
-                int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(Integer.valueOf(host));
-                if (queueSize < SimSettings.getInstance().getManThreshold())
-                    availableHost=true;
-            }
-            if (availableHost==false)
-                return false;*/
-        }
-        return true;
-    }
-    //Check if replicas are below threshold
-    private boolean checkReplicaQueue(String objectID){
-        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
-        List<String> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
-
-        String locations = RedisListHandler.getObjectLocations(objectID);
-        List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
-        for (String host : nonOperateHosts)
-            objectLocations.remove(host);
-        //Check if there is a host below queue threshold. If not, don't use parity.
-        for (String host : objectLocations){
-            int queueSize = ((StorageNetworkModel) networkModel).getManQueueSize(Integer.valueOf(host));
-            if (queueSize < SimSettings.getInstance().getManThreshold())
-                return true;
-        }
-        return false;
-    }
-
     //check if one list is subset of another
-    private boolean contains(List<?> list, List<?> sublist) {
+    public boolean contains(List<?> list, List<?> sublist) {
         return Collections.indexOfSubList(list, sublist) != -1;
     }
 
@@ -646,30 +619,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return -2;
     }
 
-    //For each data object create array with number of requests in each interval
-/*    private void createMMPPDemandArray(){
-        int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
-        MMPP mmpp = new MMPP(random); //TODO: change random variable
-        for(int i=0; i<numOfDataObjects;i++){
-            int curInterval=1;
-            double arrivalTime = mmpp.gen_interval();
-            int arrivalsInInterval=0;
-            while(curInterval< numOfIntervals){
-                while(arrivalTime<(curInterval+1)* intervalSize){
-                    arrivalsInInterval++;
-                    arrivalTime += mmpp.gen_interval();
-                }
-                MMPPObjectDemand[i][curInterval] = arrivalsInInterval;
-                curInterval++;
-                arrivalsInInterval=0;
-            }
-        }
-        try {
-            logMMPPDemand();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }*/
 
     //Output demand vector for each object
     private void logMMPPDemand() throws FileNotFoundException {
@@ -697,7 +646,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     //Creates n permutations of size numOfDataObjects
     private void createZipfPermutations(int n){
         Random DynamicZipfRandom = new Random();
-        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
+        DynamicZipfRandom.setSeed(SimSettings.getInstance().getRandomSeed());
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         zipfPermutations = new int[n][numOfDataObjects];
         for (int i=0;i<n;i++){
@@ -784,6 +733,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     public int getNumOfZipfPermutations() {
         return numOfZipfPermutations;
+    }
+
+
+    public Random getParityRandom() {
+        return parityRandom;
     }
 
 }

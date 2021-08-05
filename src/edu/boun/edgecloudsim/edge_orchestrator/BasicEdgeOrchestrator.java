@@ -239,19 +239,16 @@ public class BasicEdgeOrchestrator extends EdgeOrchestrator {
 
 	@Override
 	public void processEvent(SimEvent arg0) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void shutdownEntity() {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void startEntity() {
-		// TODO Auto-generated method stub
-		
+
 	}
 }

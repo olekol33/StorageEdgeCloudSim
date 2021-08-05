@@ -200,25 +200,21 @@ public class MM1Queue extends NetworkModel {
 
 	@Override
 	public void uploadStarted(Location accessPointLocation, int destDeviceId) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void uploadFinished(Location accessPointLocation, int destDeviceId) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
-		// TODO Auto-generated method stub
-		
+
 	}
 }
