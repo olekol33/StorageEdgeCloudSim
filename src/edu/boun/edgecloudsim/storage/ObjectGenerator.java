@@ -982,7 +982,7 @@ public class ObjectGenerator {
             listOfDataObjectIDs = getNumbersInRange(0,SimSettings.getInstance().getNumOfDataObjects());
         }
         if(SimSettings.getInstance().getObjectDistPlace().equals("ZIPF")){
-            System.out.println("partiallyFillHostsWithDataObjects() - Assumed UNIFORM");
+            System.out.println("ERROR: partiallyFillHostsWithDataObjects() - Assumed UNIFORM - GOT ZIPF");
             System.exit(1);
         }
         // For each stripe
