@@ -238,8 +238,10 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 }
                 else*/
 //                objectID = OG.getDataObjectID();
-                String dist = SimSettings.getInstance().getObjectDistRead();
-                objectID = "d"+String.valueOf(zipfPermutations[0][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects",dist)]);
+                else {
+                    String dist = SimSettings.getInstance().getObjectDistRead();
+                    objectID = "d" + String.valueOf(zipfPermutations[0][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(), "objects", dist)]);
+                }
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;
 /*                if(randomTaskType%2==0)
