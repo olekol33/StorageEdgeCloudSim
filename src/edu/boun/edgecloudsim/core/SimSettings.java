@@ -17,18 +17,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Properties;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import edu.boun.edgecloudsim.storage.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import edu.boun.edgecloudsim.utils.SimLogger;
+
+//changed by Harel
 
 public class SimSettings {
 	private static SimSettings instance = null;
@@ -137,6 +139,17 @@ public class SimSettings {
 	private boolean PARAM_SCAN_MODE;
 	private int NUMBER_OF_EDGE_NODES;
 
+	//Input properties
+	private boolean GPS_COORDINATES_CONVERSION;
+	private boolean EXTERNAL_NODES_INPUT;
+	private boolean EXTERNAL_DEVICES_INPUT;
+	private boolean EXTERNAL_OBJECTS_INPUT;
+	private boolean EXTERNAL_REQUESTS_INPUT;
+	private boolean TEST_USING_INT;
+	private String NODES_DIRECT_PATH;
+	private String DEVICES_DIRECT_PATH;
+	private String OBJECTS_DIRECT_PATH;
+	private String REQUESTS_DIRECT_PATH;
 
 	//SPECIAL EXPERIMENT
 	private boolean NSF_EXPERIMENT;
@@ -148,6 +161,65 @@ public class SimSettings {
 	private double LAMBDA0_STEP;
 	private double LAMBDA1_STEP;
 
+
+	//EXTERNAL INPUT
+	private HashMap<Integer,String> nodesHashVector;
+	private HashMap<Integer,String> devicesHashVector;
+	private HashMap<String,String> objectsHashVector;
+	private HashMap<String,String> reversedHashVector;
+	private HashMap<String, Integer> reversedHashDevicesVector;
+	private Vector<StorageDevice> devicesVector;
+	private Vector<StorageObject> objectsVector;
+	private Vector<StorageRequest> storageRequests;
+	private double minXpos;
+	private double minYpos;
+	private double xRange;
+	private double yRange;
+	private int numOfExternalTasks;
+
+	public HashMap<Integer, String> getNodesHashVector() {
+		return nodesHashVector;
+	}
+
+	public HashMap<Integer, String> getDevicesHashVector() {
+		return devicesHashVector;
+	}
+
+	public HashMap<String, String> getObjectsHashVector() {
+		return objectsHashVector;
+	}
+
+	public Vector<StorageDevice> getDevicesVector() {
+		return devicesVector;
+	}
+
+	public Vector<StorageObject> getObjectsVector() {
+		return objectsVector;
+	}
+
+	public double getMinXpos() {
+		return minXpos;
+	}
+
+	public double getMinYpos() {
+		return minYpos;
+	}
+
+	public double getxRange() {
+		return xRange;
+	}
+
+	public double getyRange() {
+		return yRange;
+	}
+
+	public int getNumOfExternalTasks() {
+		return numOfExternalTasks;
+	}
+
+	public Vector<StorageRequest> getStorageRequests() {
+		return storageRequests;
+	}
 
 	public void setPoissonInTaskLookUpTable(int task, double poisson_interarrival) {
 		taskLookUpTable[task][2] = poisson_interarrival;
@@ -251,6 +323,16 @@ public class SimSettings {
 				VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 				NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
+			GPS_COORDINATES_CONVERSION = Boolean.parseBoolean(prop.getProperty("gps_coordinates_conversion"));
+			EXTERNAL_NODES_INPUT = Boolean.parseBoolean(prop.getProperty("external_nodes_input"));
+			EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
+			EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
+			EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
+			TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
+			NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
+			DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
+			OBJECTS_DIRECT_PATH = prop.getProperty("objects_direct_path");
+			REQUESTS_DIRECT_PATH = prop.getProperty("requests_direct_path");
 
 				PARAM_SCAN_MODE = false;
 
@@ -318,11 +400,72 @@ public class SimSettings {
 			}
 		}
 		parseApplicatinosXML(applicationsFile);
+
+		//checks if we are in external nodes mode
+		if(SimSettings.instance.isExternalNodes()){
+			try{
+				ParseStorageNodes nodeParser = new ParseStorageNodes();
+				nodesHashVector = nodeParser.prepareNodesHashVector(getPathOfNodesFile());
+				minXpos = nodeParser.getxMin();
+				minYpos = nodeParser.getyMin();
+				xRange = nodeParser.getxRange();
+				yRange = nodeParser.getyRange();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
 		parseEdgeDevicesXML(edgeDevicesFile);
-		
+
+		//checks if we are in external devices mode
+		//update the min/max number of mobile devices accordingly
+		if(SimSettings.instance.isExternalDevices()){
+			try{
+				ParseStorageDevices deviceParser = new ParseStorageDevices();
+				devicesHashVector = deviceParser.prepareDevicesVector(getPathOfDevicesFile());
+				reversedHashDevicesVector = reverseHashDevices(devicesHashVector);
+				devicesVector = deviceParser.getDevicesVector();
+				MIN_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
+				MAX_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}//proceed
+
+		//checks if we are in external objects mode
+		//updates the number of objects accordingly
+		if(SimSettings.getInstance().isExternalObjects()){
+			ParseStorageObject objectParser = new ParseStorageObject();
+			objectsHashVector = objectParser.prepareObjectsHashVector(nodesHashVector, getPathOfObjectsFile());
+			reversedHashVector = reverseHash(objectsHashVector);
+			NUM_OF_DATA_OBJECTS = objectsHashVector.size();
+			objectsVector = objectParser.getObjectsVector();
+		}
+
+		if(SimSettings.getInstance().isExternalRequests()){
+			ParseStorageRequests requestsParser = new ParseStorageRequests();
+			storageRequests = requestsParser.prepareRequestsVector(devicesHashVector, objectsHashVector,getPathOfRequestsFile());
+			numOfExternalTasks = storageRequests.size();
+		}
 		return result;
 	}
-	
+
+	//was added by Harel
+	private HashMap<String, String> reverseHash(HashMap<String,String> map){
+		HashMap<String,String> reversedHash = new HashMap<>();
+		for(Map.Entry<String,String> m : map.entrySet()){
+			reversedHash.put(m.getValue(),m.getKey());
+		}
+		return reversedHash;
+	}
+
+	//was added by Harel
+	private HashMap<String, Integer> reverseHashDevices(HashMap<Integer,String> map){
+		HashMap<String,Integer> reversedHash = new HashMap<>();
+		for(Map.Entry<Integer,String> m : map.entrySet()){
+			reversedHash.put(m.getValue(),m.getKey());
+		}
+		return reversedHash;
+	}
 	/**
 	 * returns the parsed XML document for edge_devices.xml
 	 */
@@ -640,6 +783,53 @@ public class SimSettings {
 		return ORBIT_MODE;
 	}
 
+	public HashMap<String, String> getReversedHashVector() {
+		return reversedHashVector;
+	}
+
+	public HashMap<String, Integer> getReversedHashDevicesVector() {
+		return reversedHashDevicesVector;
+	}
+
+	public boolean isGpsConversionRequired(){
+		return GPS_COORDINATES_CONVERSION;
+	}
+
+	public boolean isExternalNodes(){
+		return EXTERNAL_NODES_INPUT;
+	}
+
+	public boolean isExternalDevices(){
+		return EXTERNAL_DEVICES_INPUT;
+	}
+
+	public boolean isExternalObjects(){
+		return EXTERNAL_OBJECTS_INPUT;
+	}
+
+	public boolean isExternalRequests(){
+		return EXTERNAL_REQUESTS_INPUT;
+	}
+
+	public boolean isItIntTest(){
+		return TEST_USING_INT;
+	}
+
+	public String getPathOfNodesFile(){
+		return NODES_DIRECT_PATH;
+	}
+
+	public String getPathOfDevicesFile(){
+		return DEVICES_DIRECT_PATH;
+	}
+
+	public String getPathOfObjectsFile(){
+		return OBJECTS_DIRECT_PATH;
+	}
+
+	public String getPathOfRequestsFile(){
+		return REQUESTS_DIRECT_PATH;
+	}
 
 	public boolean isVariabilityRun() {
 		return VARIABILITY_RUN;
@@ -861,7 +1051,7 @@ public class SimSettings {
 	public double getRedundancyShare() {
 		return REDUNDANCY_SHARE;
 	}
-	
+
 	private void isAttribtuePresent(Element element, String key) {
         String value = element.getAttribute(key);
         if (value.isEmpty() || value == null){

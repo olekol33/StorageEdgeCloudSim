@@ -179,6 +179,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
         List<String> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
         String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
+
         String operativeHosts = "";
         List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
         for (String host : nonOperateHosts){

@@ -26,6 +26,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//changed by Harel
+
 public class ObjectGenerator {
     private int numOfDataObjects;
     private int numOfStripes;
@@ -90,7 +92,11 @@ public class ObjectGenerator {
         //Get host capacities
         setHostStorageCapacity();
         //Create data objects
-        createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
+        if(!SimSettings.getInstance().isExternalObjects()) {
+            createDataObjects(numOfDataObjects, Integer.toString(this.objectSize));
+        }else{//import objects from file
+            importObjectsFromFile(numOfDataObjects);
+        }
         //Initial data object placement
         if(SimSettings.getInstance().isNsfExperiment()) {
             //RAID 4 or 5
@@ -232,8 +238,7 @@ public class ObjectGenerator {
         return set;
     }
 
-    private void addObjectLocationsToMetadata()
-    {
+    private void addObjectLocationsToMetadata(){
         for (Map<String,String> KV : metadataObjects) {
             Set<String> dataObjects = tokenizeList(KV.get("data"));
             Set<String> parityObjects = tokenizeList(KV.get("parity"));
@@ -353,8 +358,7 @@ public class ObjectGenerator {
     }
 
 
-    private String getBinaryString(int n)
-    {
+    private String getBinaryString(int n) {
         // create StringBuffer size of AlphaNumericString
         StringBuilder sb = new StringBuilder(n);
 
@@ -384,6 +388,29 @@ public class ObjectGenerator {
             dataObjects.put("d" + Integer.toString(i),map);
         }
     }
+
+    //TODO: created by Harel
+    //Creates list of data objects that was given as external file
+    private void importObjectsFromFile(int numOfDataObjects){
+        //List<Map> listOfDataObjects = new ArrayList(numOfDataObjects);
+        dataObjects = new HashMap<String,Map>();
+        for (int i=0; i<numOfDataObjects; i++){
+            HashMap<String, String> map = new HashMap<String,String>();
+            StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
+            //Map<String, String> map = new HashMap<String,String>();
+            map.put("id", sObject.getObjName());
+            map.put("size", sObject.getObjSize());
+            map.put("type", sObject.getType());
+            if (SimSettings.getInstance().isOrbitMode()){
+                map.put("data", getBinaryString(Integer.valueOf(objectSize)));
+            }
+//            map.put("location", "");
+            //listOfDataObjects.add(map);
+            dataObjects.put(sObject.getObjName(), map);
+        }
+        //return listOfDataObjects;
+    }
+
     //Creates list of parity objects with the naming convention: "object:ID0_ID1_..._<0...numOfParityInStripe>"
     private List<Map> createParityObjects(int numOfParityInStripe, List<Map> listOfDataObjects){
         String parityName = "p";
@@ -916,6 +943,7 @@ public class ObjectGenerator {
                 }
                 i=1;
                 objectID = getObjectID(numOfDataObjects,"objects",dist);
+
             }
         }
     }

@@ -5,11 +5,14 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;
+import edu.boun.edgecloudsim.storage.MMPP;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.storage.StorageRequest;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -27,6 +30,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+//changed by Harel
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     int taskTypeOfDevices[];
@@ -90,6 +95,10 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     @Override
     public void initializeModel() {
+        if(SimSettings.getInstance().isExternalRequests()){
+            initializeModelWithRequestsFromInput();
+            return;
+        }
         int ioTaskID=0;
         double sumPoisson = 0;
         double dataSizeMean = 0;
@@ -251,6 +260,61 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         }
         numOfIOTasks = ioTaskID;
 
+        checkModeAfterInit(dataSizeMean, OG.getOverhead());// TODO: mark as changed - Harel
+    }
+
+    //TODO: created by Harel
+    public void initializeModelWithRequestsFromInput() {
+        //int ioTaskID=0;
+        //double sumPoisson = 0;
+        double dataSizeMean = 0;
+        Random random = new Random();
+        random.setSeed(ObjectGenerator.getSeed());
+        //parityRandom = new Random();
+//        DynamicZipfRandom = new Random();
+        //failRandom = new Random();
+        //failRandom.setSeed(ObjectGenerator.getSeed());
+        //parityRandom.setSeed(ObjectGenerator.getSeed());
+//        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
+        taskList = new ArrayList<TaskProperty>();
+        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+        int numOfExternalTasks = SimSettings.getInstance().getNumOfExternalTasks();
+
+        //exponential number generator for file input size, file output size and task length
+        //TODO: copy
+        ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][ACTIVE_PERIOD];
+
+        //create random number generator for each place
+        for(int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
+            if(SimSettings.getInstance().getTaskLookUpTable()[i][USAGE_PERCENTAGE] ==0)
+                continue;
+            expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
+            expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
+            expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
+            dataSizeMean+=SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD];
+        }
+        dataSizeMean /= SimSettings.getInstance().getTaskLookUpTable().length;
+
+        //Each mobile device utilizes an app type (task type)
+        //taskTypeOfDevices = new int[numberOfMobileDevices];
+        //Calculate lambdas for NSF experiment
+
+        for(int i = 0; i < numOfExternalTasks; i++) {
+            StorageRequest sRequest = SimSettings.getInstance().getStorageRequests().elementAt(i);
+            int device_ID = SimSettings.getInstance().getReversedHashDevicesVector().get(sRequest.getDeviceName());
+            //taskList.add(new TaskProperty(i, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), 0, expRngList)); //TODO: this line is important
+            taskList.add(new TaskProperty(device_ID, 0, sRequest.getTime(), sRequest.getObjectID(), sRequest.getIoTaskID(), sRequest.getTaskPriority(), sRequest.getTaskDeadline(), 0)); //TODO: this line is important
+
+        }
+
+        //numOfIOTasks = ioTaskID;
+        numOfIOTasks = SimSettings.getInstance().getNumOfExternalTasks();//TODO: check if make sense with oleg!!
+
+        checkModeAfterInit(dataSizeMean, OG.getOverhead());
+    }
+
+    //TODO: the rest of initialize
+    private void checkModeAfterInit(double dataSizeMean, double overhead){
         if(SimSettings.getInstance().isNsfExperiment()) {
             for(int i=0; i<2; i++) {
                 int randomTaskType = i % 2;
@@ -328,7 +392,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             //Calculation from actual number of tasks
             double meanRate = numOfIOTasks/SimSettings.getInstance().getSimulationTime(); //Tasks per second
             singleLambda = meanRate / muTotal;
-            double overhead = OG.getOverhead();
+            //double overhead = OG.getOverhead();
             String dist = "";
             if(SimSettings.getInstance().isMMPP())
                 dist = "MMPP";
@@ -368,7 +432,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     }
 
     public void exportTaskList() throws IOException {
-
         File taskListFile = null;
         FileWriter taskListFW = null;
         BufferedWriter taskListBW = null;
@@ -395,7 +458,131 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     public int getTaskTypeOfDevice(int deviceId) {
         return taskTypeOfDevices[deviceId];
     }
+/*
+    //TODO: changed by Harel
+    public boolean createParityTask(Task task){
+        int taskType = task.getTaskType();
+        int isParity=1;
+        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        List<String> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
+        boolean replication=false;
+        boolean dataParity=false;
+        if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE"))
+            replication=true;
+        else if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("DATA_PARITY_PLACE"))
+            dataParity=true;
+        //If replication policy, read the same object, but mark it as parity
+        //if DATA_PARITY_PLACE - if replica exists, read it
+        if (replication || dataParity) {
+            String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
+            List<String> objectLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+            //if some hosts are unavailable
+            if (nonOperateHosts.size()>0){
+                //remove non active locations
+                for (String host : nonOperateHosts)
+                    objectLocations.remove(host);
+                //if replication and no available objects - false
+                if(objectLocations.size()==0 && replication)
+                    return false;
+            }
+            //if no replicas and REPLICATION_PLACE
+            if (objectLocations.size()==1 && replication)
+                return false;
 
+            //if object not found
+
+            //if there are replicas of the object
+            //If dataParity, check that replica queue is less than threshold
+            //TODO: add my line here
+            else if(objectLocations.size()>= 2 && ((checkReplicaQueue(task.getObjectRead()) && dataParity)||replication)) {
+                if(!SimSettings.getInstance().isExternalRequests()) {
+                    taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
+                            task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength(),
+                            task.getHostID()));
+                }else{
+                    taskList.add(new TaskProperty(task.getMobileDeviceId(), 0, task.getStart_time(), task.getObjectRead(), task.getIoTaskID(), task.getTaskPriority(), task.getTaskDeadline(), 0)); //TODO: this line is important
+                }
+                SimManager.getInstance().createNewTask();
+                return true;
+            }
+        }
+        List<String> mdObjects = RedisListHandler.getObjectsFromRedis("object:md*_"+task.getObjectRead()+"_*");
+        //no parities
+        if (mdObjects.size()==0)
+            return false;
+//        String stripeID = task.getStripeID();
+        //TODO: currently selects random stripe
+        int mdObjectIndex;
+        String stripeID;
+        String[] stripeObjects;
+        List<String> dataObjects = null;
+        List<String> parityObjects = null;
+        if (nonOperateHosts.size()==0){ //no failed hosts
+            mdObjectIndex = parityRandom.nextInt(mdObjects.size());
+            stripeID = RedisListHandler.getObjectID(mdObjects.get(mdObjectIndex));
+            stripeObjects = RedisListHandler.getStripeObjects(stripeID);
+            dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
+            parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
+        }
+        else {
+            boolean stripeFound=false;
+            while (mdObjects.size() > 0) { //Check that stripe objects are available
+                mdObjectIndex = parityRandom.nextInt(mdObjects.size());
+                stripeID = RedisListHandler.getObjectID(mdObjects.get(mdObjectIndex));
+                stripeObjects = RedisListHandler.getStripeObjects(stripeID);
+                dataObjects = new ArrayList<String>(Arrays.asList(stripeObjects[0].split(" ")));
+                parityObjects = new ArrayList<String>(Arrays.asList(stripeObjects[1].split(" ")));
+                List<String> stripeParities = Stream.concat(dataObjects.stream(), parityObjects.stream())
+                        .collect(Collectors.toList());
+                stripeParities.remove(task.getObjectRead());
+                if (checkStripeValidity(stripeParities)) {
+                    stripeFound=true;
+                    break;
+                }
+                else
+                    mdObjects.remove(mdObjectIndex);
+            }
+            if (!stripeFound)
+                return false;
+        }
+        int i=0;
+        int paritiesToRead=1;
+
+        for (String objectID:dataObjects){
+            i++;
+            //if data object, skip
+            if (objectID.equals(task.getObjectRead()))
+                continue;
+            //if not data, than data of parity
+            //TODO: add delay for queue query
+            //TODO: add my line here
+            if(!SimSettings.getInstance().isExternalRequests()) {
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(),
+                        objectID, task.getIoTaskID(), isParity, 0, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            }else{
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), 0, task.getStart_time(), task.getObjectRead(), task.getIoTaskID(), task.getTaskPriority(), task.getTaskDeadline(), 0)); //TODO: this line is important
+            }
+            SimManager.getInstance().createNewTask();
+        }
+        for (String objectID:parityObjects){
+            i++;
+            if(!SimSettings.getInstance().isExternalRequests()) {
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(),
+                        objectID, task.getIoTaskID(), isParity, paritiesToRead, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));
+            }else{
+                taskList.add(new TaskProperty(task.getMobileDeviceId(), 0, task.getStart_time(), task.getObjectRead(), task.getIoTaskID(), task.getTaskPriority(), task.getTaskDeadline(), 0)); //TODO: this line is important
+
+            }
+            SimManager.getInstance().createNewTask();
+            //count just one read for queue
+            paritiesToRead=0;
+        }
+        if (i!=(SimSettings.getInstance().getNumOfDataInStripe()+SimSettings.getInstance().getNumOfParityInStripe()))
+            System.out.println("Not created tasks for all parities");
+        activeCodedIOTasks.put(task.getIoTaskID(),i-1);
+        return true;
+    }
+*/
     public static int getNumOfIOTasks() {
         return numOfIOTasks;
     }

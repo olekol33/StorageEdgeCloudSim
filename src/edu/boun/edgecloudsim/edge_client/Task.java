@@ -16,6 +16,8 @@ import org.cloudbus.cloudsim.UtilizationModel;
 
 import edu.boun.edgecloudsim.utils.Location;
 
+//changed by Harel
+
 public class Task extends Cloudlet {
 	private Location submittedLocation;
 	private int type;
@@ -34,6 +36,11 @@ public class Task extends Cloudlet {
 	private int accessHostID;
 	private long length, inputFileSize, outputFileSize;
 
+	private double start_time;
+	private int taskPriority;
+	private double taskDeadline;
+
+
 	public Task(int _mobileDeviceId, int cloudletId, long cloudletLength, int pesNumber,
 				long cloudletFileSize, long cloudletOutputSize,
 				UtilizationModel utilizationModelCpu,
@@ -45,7 +52,37 @@ public class Task extends Cloudlet {
 		
 		mobileDeviceId = _mobileDeviceId;
 	}
-	
+
+	//storage constructor - added by Harel
+	public Task(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
+				UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam,
+				UtilizationModel utilizationModelBw, int _mobileDeviceId, int _taskType, double _startTime,
+				String _objectID, int _ioTaskID, int _taskPriority, double _taskDeadline, int _isParity){
+		super(cloudletId, cloudletLength, pesNumber, cloudletFileSize,
+				cloudletOutputSize, utilizationModelCpu, utilizationModelRam,
+				utilizationModelBw);
+		mobileDeviceId = _mobileDeviceId;
+		type = _taskType;
+		start_time = _startTime;
+		objectRead = _objectID;
+		ioTaskID = _ioTaskID;
+		isParity = _isParity;
+		taskPriority = _taskPriority;
+		taskDeadline = _taskDeadline;
+	}
+
+	public double getStart_time() {
+		return start_time;
+	}
+
+	public int getTaskPriority() {
+		return taskPriority;
+	}
+
+	public double getTaskDeadline() {
+		return taskDeadline;
+	}
+
 	public void setSubmittedLocation(Location _submittedLocation){
 		submittedLocation =_submittedLocation;
 	}
@@ -162,4 +199,15 @@ public class Task extends Cloudlet {
 		this.outputFileSize = outputFileSize;
 	}
 
+	public void setStart_time(double start_time) {
+		this.start_time = start_time;
+	}
+
+	public void setTaskPriority(int taskPriority) {
+		this.taskPriority = taskPriority;
+	}
+
+	public void setTaskDeadline(double taskDeadline) {
+		this.taskDeadline = taskDeadline;
+	}
 }
