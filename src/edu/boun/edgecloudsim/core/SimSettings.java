@@ -268,6 +268,9 @@ public class SimSettings {
 					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
 					LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
 				}
+				else{
+					REDUNDANCY_SHARE = Double.parseDouble(prop.getProperty("redundancy_share"));
+				}
 
 
 				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
@@ -284,7 +287,7 @@ public class SimSettings {
 				NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
 				NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
 				NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
-				REDUNDANCY_SHARE = Double.parseDouble(prop.getProperty("redundancy_share"));
+
 
 			}
 			catch (Exception e){

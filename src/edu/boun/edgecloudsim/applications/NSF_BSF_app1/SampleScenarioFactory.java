@@ -61,10 +61,11 @@ public class SampleScenarioFactory implements ScenarioFactory {
 	@Override
 //	public MobilityModel getMobilityModel() { return new StaticMobility(numOfMobileDevice,simulationTime); }
 	public MobilityModel getMobilityModel() {
-		if(numOfMobileDevice>2)
+		return new StaticRangeMobility(numOfMobileDevice,simulationTime);
+/*		if(numOfMobileDevice>2)
 			return new StaticRangeMobility(numOfMobileDevice,simulationTime);
 		else
-			return new StaticMobility(numOfMobileDevice,simulationTime);
+			return new StaticMobility(numOfMobileDevice,simulationTime);*/
 	}
 
 	@Override
