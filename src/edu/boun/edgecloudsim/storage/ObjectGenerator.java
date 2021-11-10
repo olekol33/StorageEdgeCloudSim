@@ -278,12 +278,14 @@ public class ObjectGenerator {
     private void setHostStorageCapacity(){
         Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
+        int totalStorageCapacity = 0;
         for (int i=0;i<numOfNodes;i++){
             Node datacenterNode = datacenterList.item(i);
             Element datacenterElement = (Element) datacenterNode;
             int storageCapacity=0;
             try {
                 storageCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
+                totalStorageCapacity += storageCapacity;
             }
             catch (Exception e){
                 System.out.println("Failed reading node "+ String.valueOf(i));
@@ -294,6 +296,10 @@ public class ObjectGenerator {
 //            hostStorageCapacity[i] = storageCapacity;
             hostsContents.get(i).put("capacity",storageCapacity);
         }
+        int objectCapacity = totalStorageCapacity / this.objectSize;
+        System.out.println("System object capacity: " + String.valueOf(this.numOfDataObjects)+ " data objects out of " +
+                String.valueOf(objectCapacity) + " objects in " + String.valueOf(numOfNodes)+
+                " nodes");
     }
 
     //Initialize random generator by seed

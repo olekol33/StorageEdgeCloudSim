@@ -16,7 +16,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>320000</storage>
+				<storage>80000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -24,7 +24,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>320000</storage>
+						<storage>80000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -48,7 +48,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>320000</storage>
+				<storage>80000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -56,7 +56,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>320000</storage>
+						<storage>80000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -80,7 +80,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>320000</storage>
+				<storage>80000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -88,7 +88,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>320000</storage>
+						<storage>80000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -112,7 +112,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>320000</storage>
+				<storage>80000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -120,7 +120,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>320000</storage>
+						<storage>80000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -144,7 +144,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>320000</storage>
+				<storage>80000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -152,7 +152,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>320000</storage>
+						<storage>80000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -176,7 +176,7 @@
 				<core>16</core>
 				<mips>80000</mips>
 				<ram>16000</ram>
-				<storage>320000</storage>
+				<storage>80000</storage>
 				<readRate>525</readRate>
 				<taskProcessingTimeUS>300</taskProcessingTimeUS>
 				<VMs>
@@ -184,7 +184,7 @@
 						<core>16</core>
 						<mips>80000</mips>
 						<ram>16000</ram>
-						<storage>320000</storage>
+						<storage>80000</storage>
 						<readRate>525</readRate>
 						<taskProcessingTimeUS>300</taskProcessingTimeUS>
 					</VM>
@@ -192,164 +192,164 @@
 			</host>
 		</hosts>
 	</datacenter>
-	<datacenter arch="x86" os="Linux" vmm="Xen">
-		<costPerBw>0.1</costPerBw>
-		<costPerSec>3.0</costPerSec>
-		<costPerMem>0.05</costPerMem>
-		<costPerStorage>0.1</costPerStorage>
-		<location>
-			<x_pos>17</x_pos>
-			<y_pos>17</y_pos>
-			<wlan_id>6</wlan_id>
-			<attractiveness>2</attractiveness>
-		</location>
-		<hosts>
-			<host>
-				<core>16</core>
-				<mips>80000</mips>
-				<ram>16000</ram>
-				<storage>320000</storage>
-				<readRate>525</readRate>
-				<taskProcessingTimeUS>300</taskProcessingTimeUS>
-				<VMs>
-					<VM vmm="Xen">
-						<core>16</core>
-						<mips>80000</mips>
-						<ram>16000</ram>
-						<storage>320000</storage>
-						<readRate>525</readRate>
-						<taskProcessingTimeUS>300</taskProcessingTimeUS>
-					</VM>
-				</VMs>
-			</host>
-		</hosts>
-	</datacenter>
-	<datacenter arch="x86" os="Linux" vmm="Xen">
-		<costPerBw>0.1</costPerBw>
-		<costPerSec>3.0</costPerSec>
-		<costPerMem>0.05</costPerMem>
-		<costPerStorage>0.1</costPerStorage>
-		<location>
-			<x_pos>19</x_pos>
-			<y_pos>19</y_pos>
-			<wlan_id>7</wlan_id>
-			<attractiveness>2</attractiveness>
-		</location>
-		<hosts>
-			<host>
-				<core>16</core>
-				<mips>80000</mips>
-				<ram>16000</ram>
-				<storage>320000</storage>
-				<readRate>525</readRate>
-				<taskProcessingTimeUS>300</taskProcessingTimeUS>
-				<VMs>
-					<VM vmm="Xen">
-						<core>16</core>
-						<mips>80000</mips>
-						<ram>16000</ram>
-						<storage>320000</storage>
-						<readRate>525</readRate>
-						<taskProcessingTimeUS>300</taskProcessingTimeUS>
-					</VM>
-				</VMs>
-			</host>
-		</hosts>
-	</datacenter>
-	<datacenter arch="x86" os="Linux" vmm="Xen">
-		<costPerBw>0.1</costPerBw>
-		<costPerSec>3.0</costPerSec>
-		<costPerMem>0.05</costPerMem>
-		<costPerStorage>0.1</costPerStorage>
-		<location>
-			<x_pos>21</x_pos>
-			<y_pos>21</y_pos>
-			<wlan_id>8</wlan_id>
-			<attractiveness>2</attractiveness>
-		</location>
-		<hosts>
-			<host>
-				<core>16</core>
-				<mips>80000</mips>
-				<ram>16000</ram>
-				<storage>320000</storage>
-				<readRate>525</readRate>
-				<taskProcessingTimeUS>300</taskProcessingTimeUS>
-				<VMs>
-					<VM vmm="Xen">
-						<core>16</core>
-						<mips>80000</mips>
-						<ram>16000</ram>
-						<storage>320000</storage>
-						<readRate>525</readRate>
-						<taskProcessingTimeUS>300</taskProcessingTimeUS>
-					</VM>
-				</VMs>
-			</host>
-		</hosts>
-	</datacenter>
-	<datacenter arch="x86" os="Linux" vmm="Xen">
-		<costPerBw>0.1</costPerBw>
-		<costPerSec>3.0</costPerSec>
-		<costPerMem>0.05</costPerMem>
-		<costPerStorage>0.1</costPerStorage>
-		<location>
-			<x_pos>23</x_pos>
-			<y_pos>23</y_pos>
-			<wlan_id>9</wlan_id>
-			<attractiveness>2</attractiveness>
-		</location>
-		<hosts>
-			<host>
-				<core>16</core>
-				<mips>80000</mips>
-				<ram>16000</ram>
-				<storage>320000</storage>
-				<readRate>525</readRate>
-				<taskProcessingTimeUS>300</taskProcessingTimeUS>
-				<VMs>
-					<VM vmm="Xen">
-						<core>16</core>
-						<mips>80000</mips>
-						<ram>16000</ram>
-						<storage>320000</storage>
-						<readRate>525</readRate>
-						<taskProcessingTimeUS>300</taskProcessingTimeUS>
-					</VM>
-				</VMs>
-			</host>
-		</hosts>
-	</datacenter>
-	<datacenter arch="x86" os="Linux" vmm="Xen">
-		<costPerBw>0.1</costPerBw>
-		<costPerSec>3.0</costPerSec>
-		<costPerMem>0.05</costPerMem>
-		<costPerStorage>0.1</costPerStorage>
-		<location>
-			<x_pos>25</x_pos>
-			<y_pos>25</y_pos>
-			<wlan_id>10</wlan_id>
-			<attractiveness>2</attractiveness>
-		</location>
-		<hosts>
-			<host>
-				<core>16</core>
-				<mips>80000</mips>
-				<ram>16000</ram>
-				<storage>320000</storage>
-				<readRate>525</readRate>
-				<taskProcessingTimeUS>300</taskProcessingTimeUS>
-				<VMs>
-					<VM vmm="Xen">
-						<core>16</core>
-						<mips>80000</mips>
-						<ram>16000</ram>
-						<storage>320000</storage>
-						<readRate>525</readRate>
-						<taskProcessingTimeUS>300</taskProcessingTimeUS>
-					</VM>
-				</VMs>
-			</host>
-		</hosts>
-	</datacenter>
+<!--	<datacenter arch="x86" os="Linux" vmm="Xen">-->
+<!--		<costPerBw>0.1</costPerBw>-->
+<!--		<costPerSec>3.0</costPerSec>-->
+<!--		<costPerMem>0.05</costPerMem>-->
+<!--		<costPerStorage>0.1</costPerStorage>-->
+<!--		<location>-->
+<!--			<x_pos>17</x_pos>-->
+<!--			<y_pos>17</y_pos>-->
+<!--			<wlan_id>6</wlan_id>-->
+<!--			<attractiveness>2</attractiveness>-->
+<!--		</location>-->
+<!--		<hosts>-->
+<!--			<host>-->
+<!--				<core>16</core>-->
+<!--				<mips>80000</mips>-->
+<!--				<ram>16000</ram>-->
+<!--				<storage>80000</storage>-->
+<!--				<readRate>525</readRate>-->
+<!--				<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--				<VMs>-->
+<!--					<VM vmm="Xen">-->
+<!--						<core>16</core>-->
+<!--						<mips>80000</mips>-->
+<!--						<ram>16000</ram>-->
+<!--						<storage>80000</storage>-->
+<!--						<readRate>525</readRate>-->
+<!--						<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--					</VM>-->
+<!--				</VMs>-->
+<!--			</host>-->
+<!--		</hosts>-->
+<!--	</datacenter>-->
+<!--	<datacenter arch="x86" os="Linux" vmm="Xen">-->
+<!--		<costPerBw>0.1</costPerBw>-->
+<!--		<costPerSec>3.0</costPerSec>-->
+<!--		<costPerMem>0.05</costPerMem>-->
+<!--		<costPerStorage>0.1</costPerStorage>-->
+<!--		<location>-->
+<!--			<x_pos>19</x_pos>-->
+<!--			<y_pos>19</y_pos>-->
+<!--			<wlan_id>7</wlan_id>-->
+<!--			<attractiveness>2</attractiveness>-->
+<!--		</location>-->
+<!--		<hosts>-->
+<!--			<host>-->
+<!--				<core>16</core>-->
+<!--				<mips>80000</mips>-->
+<!--				<ram>16000</ram>-->
+<!--				<storage>80000</storage>-->
+<!--				<readRate>525</readRate>-->
+<!--				<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--				<VMs>-->
+<!--					<VM vmm="Xen">-->
+<!--						<core>16</core>-->
+<!--						<mips>80000</mips>-->
+<!--						<ram>16000</ram>-->
+<!--						<storage>80000</storage>-->
+<!--						<readRate>525</readRate>-->
+<!--						<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--					</VM>-->
+<!--				</VMs>-->
+<!--			</host>-->
+<!--		</hosts>-->
+<!--	</datacenter>-->
+<!--	<datacenter arch="x86" os="Linux" vmm="Xen">-->
+<!--		<costPerBw>0.1</costPerBw>-->
+<!--		<costPerSec>3.0</costPerSec>-->
+<!--		<costPerMem>0.05</costPerMem>-->
+<!--		<costPerStorage>0.1</costPerStorage>-->
+<!--		<location>-->
+<!--			<x_pos>21</x_pos>-->
+<!--			<y_pos>21</y_pos>-->
+<!--			<wlan_id>8</wlan_id>-->
+<!--			<attractiveness>2</attractiveness>-->
+<!--		</location>-->
+<!--		<hosts>-->
+<!--			<host>-->
+<!--				<core>16</core>-->
+<!--				<mips>80000</mips>-->
+<!--				<ram>16000</ram>-->
+<!--				<storage>80000</storage>-->
+<!--				<readRate>525</readRate>-->
+<!--				<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--				<VMs>-->
+<!--					<VM vmm="Xen">-->
+<!--						<core>16</core>-->
+<!--						<mips>80000</mips>-->
+<!--						<ram>16000</ram>-->
+<!--						<storage>80000</storage>-->
+<!--						<readRate>525</readRate>-->
+<!--						<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--					</VM>-->
+<!--				</VMs>-->
+<!--			</host>-->
+<!--		</hosts>-->
+<!--	</datacenter>-->
+<!--	<datacenter arch="x86" os="Linux" vmm="Xen">-->
+<!--		<costPerBw>0.1</costPerBw>-->
+<!--		<costPerSec>3.0</costPerSec>-->
+<!--		<costPerMem>0.05</costPerMem>-->
+<!--		<costPerStorage>0.1</costPerStorage>-->
+<!--		<location>-->
+<!--			<x_pos>23</x_pos>-->
+<!--			<y_pos>23</y_pos>-->
+<!--			<wlan_id>9</wlan_id>-->
+<!--			<attractiveness>2</attractiveness>-->
+<!--		</location>-->
+<!--		<hosts>-->
+<!--			<host>-->
+<!--				<core>16</core>-->
+<!--				<mips>80000</mips>-->
+<!--				<ram>16000</ram>-->
+<!--				<storage>80000</storage>-->
+<!--				<readRate>525</readRate>-->
+<!--				<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--				<VMs>-->
+<!--					<VM vmm="Xen">-->
+<!--						<core>16</core>-->
+<!--						<mips>80000</mips>-->
+<!--						<ram>16000</ram>-->
+<!--						<storage>80000</storage>-->
+<!--						<readRate>525</readRate>-->
+<!--						<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--					</VM>-->
+<!--				</VMs>-->
+<!--			</host>-->
+<!--		</hosts>-->
+<!--	</datacenter>-->
+<!--	<datacenter arch="x86" os="Linux" vmm="Xen">-->
+<!--		<costPerBw>0.1</costPerBw>-->
+<!--		<costPerSec>3.0</costPerSec>-->
+<!--		<costPerMem>0.05</costPerMem>-->
+<!--		<costPerStorage>0.1</costPerStorage>-->
+<!--		<location>-->
+<!--			<x_pos>25</x_pos>-->
+<!--			<y_pos>25</y_pos>-->
+<!--			<wlan_id>10</wlan_id>-->
+<!--			<attractiveness>2</attractiveness>-->
+<!--		</location>-->
+<!--		<hosts>-->
+<!--			<host>-->
+<!--				<core>16</core>-->
+<!--				<mips>80000</mips>-->
+<!--				<ram>16000</ram>-->
+<!--				<storage>80000</storage>-->
+<!--				<readRate>525</readRate>-->
+<!--				<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--				<VMs>-->
+<!--					<VM vmm="Xen">-->
+<!--						<core>16</core>-->
+<!--						<mips>80000</mips>-->
+<!--						<ram>16000</ram>-->
+<!--						<storage>80000</storage>-->
+<!--						<readRate>525</readRate>-->
+<!--						<taskProcessingTimeUS>300</taskProcessingTimeUS>-->
+<!--					</VM>-->
+<!--				</VMs>-->
+<!--			</host>-->
+<!--		</hosts>-->
+<!--	</datacenter>-->
 </edge_devices>

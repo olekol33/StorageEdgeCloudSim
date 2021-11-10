@@ -20,10 +20,6 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -85,7 +81,6 @@ public class MainApp {
 		}
 		if(SS.getFileLoggingEnabled()){
 			SimLogger.enableFileLog();
-//			SimUtils.cleanOutputFolder(outputFolder);
 		}
 		SS.checkRunMode();
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -144,7 +139,6 @@ public class MainApp {
 
 							Date ScenarioStartDate = Calendar.getInstance().getTime();
 							now = df.format(ScenarioStartDate);
-//						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
 							// Storage: Generate Redis KV list
 							RedisListHandler.closeConnection();
 							RedisListHandler.createList(objectPlacementPolicy);

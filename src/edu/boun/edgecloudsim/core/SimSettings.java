@@ -39,10 +39,10 @@ public class SimSettings {
 	public static final double CLIENT_ACTIVITY_START_TIME = 10;
 
 	//enumarations for the VM types
-	public static enum VM_TYPES { MOBILE_VM, EDGE_VM, CLOUD_VM }
+	public enum VM_TYPES { MOBILE_VM, EDGE_VM, CLOUD_VM }
 	
 	//enumarations for the VM types
-	public static enum NETWORK_DELAY_TYPES { WLAN_DELAY, MAN_DELAY, WAN_DELAY }
+	public enum NETWORK_DELAY_TYPES { WLAN_DELAY, MAN_DELAY, WAN_DELAY }
 	
 	//predifined IDs for the components.
 	public static final int CLOUD_DATACENTER_ID = 1000;
@@ -78,7 +78,7 @@ public class SimSettings {
     private double LAN_INTERNAL_DELAY; //seconds unit in properties file
     private int BANDWITH_WLAN; //Mbps unit in properties file
     private int BANDWITH_WAN; //Mbps unit in properties file
-    private int BANDWITH_GSM; //Mbps unit in properties file
+//    private int BANDWITH_GSM; //Mbps unit in properties file
 
     private int NUM_OF_HOST_ON_CLOUD_DATACENTER;
     private int NUM_OF_VM_ON_CLOUD_HOST;
@@ -87,10 +87,10 @@ public class SimSettings {
     private int RAM_FOR_CLOUD_VM; //MB
 	private int STORAGE_FOR_CLOUD_VM; //Byte
     
-    private int CORE_FOR_VM;
-    private int MIPS_FOR_VM; //MIPS
-    private int RAM_FOR_VM; //MB
-    private int STORAGE_FOR_VM; //Byte
+//    private int CORE_FOR_VM;
+//    private int MIPS_FOR_VM; //MIPS
+//    private int RAM_FOR_VM; //MB
+//    private int STORAGE_FOR_VM; //Byte
     
     private String[] SIMULATION_SCENARIOS;
     private String[] ORCHESTRATOR_POLICIES;
@@ -112,7 +112,7 @@ public class SimSettings {
 	private String OBJECT_DIST_PLACE;
 	private int CONGESTED_THRESHOLD;
 	private double PARITY_PROB_STEP;
-	private int MAX_CLOUD_REQUESTS;
+//	private int MAX_CLOUD_REQUESTS;
 
 
 	//storage properties
@@ -177,7 +177,7 @@ public class SimSettings {
 	private double yRange;
 	private int numOfExternalTasks;
 
-	public HashMap<Integer, String> getNodesHashVector() {
+/*	public HashMap<Integer, String> getNodesHashVector() {
 		return nodesHashVector;
 	}
 
@@ -187,7 +187,7 @@ public class SimSettings {
 
 	public HashMap<String, String> getObjectsHashVector() {
 		return objectsHashVector;
-	}
+	}*/
 
 	public Vector<StorageDevice> getDevicesVector() {
 		return devicesVector;
@@ -260,8 +260,6 @@ public class SimSettings {
 
 	/**
 	 * Reads configuration file and stores information to local variables
-	 * @param propertiesFile
-	 * @return
 	 */
 	public boolean initialize(String propertiesFile, String edgeDevicesFile, String applicationsFile){
 		boolean result = false;
@@ -292,7 +290,7 @@ public class SimSettings {
 				LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("lan_internal_delay"));
 				BANDWITH_WLAN = 1000 * Integer.parseInt(prop.getProperty("wlan_bandwidth"));
 				BANDWITH_WAN = 1000 * Integer.parseInt(prop.getProperty("wan_bandwidth"));
-				BANDWITH_GSM =  1000 * Integer.parseInt(prop.getProperty("gsm_bandwidth"));
+//				BANDWITH_GSM =  1000 * Integer.parseInt(prop.getProperty("gsm_bandwidth"));
 
 				NUM_OF_HOST_ON_CLOUD_DATACENTER = Integer.parseInt(prop.getProperty("number_of_host_on_cloud_datacenter"));
 				NUM_OF_VM_ON_CLOUD_HOST = Integer.parseInt(prop.getProperty("number_of_vm_on_cloud_host"));
@@ -301,10 +299,10 @@ public class SimSettings {
 				RAM_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("ram_for_cloud_vm"));
 				STORAGE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("storage_for_cloud_vm"));
 
-				RAM_FOR_VM = Integer.parseInt(prop.getProperty("ram_for_mobile_vm"));
-				CORE_FOR_VM = Integer.parseInt(prop.getProperty("core_for_mobile_vm"));
-				MIPS_FOR_VM = Integer.parseInt(prop.getProperty("mips_for_mobile_vm"));
-				STORAGE_FOR_VM = Integer.parseInt(prop.getProperty("storage_for_mobile_vm"));
+//				RAM_FOR_VM = Integer.parseInt(prop.getProperty("ram_for_mobile_vm"));
+//				CORE_FOR_VM = Integer.parseInt(prop.getProperty("core_for_mobile_vm"));
+//				MIPS_FOR_VM = Integer.parseInt(prop.getProperty("mips_for_mobile_vm"));
+//				STORAGE_FOR_VM = Integer.parseInt(prop.getProperty("storage_for_mobile_vm"));
 
 				ORCHESTRATOR_POLICIES = prop.getProperty("orchestrator_policies").split(",");
 
@@ -323,22 +321,22 @@ public class SimSettings {
 				VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 				NUMBER_OF_EDGE_NODES = Integer.parseInt(prop.getProperty("number_of_edge_nodes"));
 
-			GPS_COORDINATES_CONVERSION = Boolean.parseBoolean(prop.getProperty("gps_coordinates_conversion"));
-			EXTERNAL_NODES_INPUT = Boolean.parseBoolean(prop.getProperty("external_nodes_input"));
-			EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
-			EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
-			EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
-			TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
-			NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
-			DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
-			OBJECTS_DIRECT_PATH = prop.getProperty("objects_direct_path");
-			REQUESTS_DIRECT_PATH = prop.getProperty("requests_direct_path");
+				GPS_COORDINATES_CONVERSION = Boolean.parseBoolean(prop.getProperty("gps_coordinates_conversion"));
+				EXTERNAL_NODES_INPUT = Boolean.parseBoolean(prop.getProperty("external_nodes_input"));
+				EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
+				EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
+				EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
+				TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
+				NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
+				DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
+				OBJECTS_DIRECT_PATH = prop.getProperty("objects_direct_path");
+				REQUESTS_DIRECT_PATH = prop.getProperty("requests_direct_path");
 
 				PARAM_SCAN_MODE = false;
 
 
 				NSF_EXPERIMENT = toBoolean(prop.getProperty("nsf"));
-				if(NSF_EXPERIMENT==true) {
+				if(NSF_EXPERIMENT) {
 					RAID = Integer.parseInt(prop.getProperty("raid"));
 					LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
 					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
@@ -359,7 +357,7 @@ public class SimSettings {
 				OBJECT_DIST_PLACE = prop.getProperty("object_dist_place");
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				PARITY_PROB_STEP = Double.parseDouble(prop.getProperty("parityProbStep"));
-				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
+//				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 				RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
 				ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
 				NUM_OF_DATA_OBJECTS = Integer.parseInt(prop.getProperty("num_of_data_objects"));
@@ -559,13 +557,10 @@ public class SimSettings {
 		return BANDWITH_WAN; 
 	}
 
-	/**
-	 * returns GSM bandwidth (in Mbps unit) from properties file
-	 */
-	public int getGsmBandwidth()
+/*	public int getGsmBandwidth()
 	{
 		return BANDWITH_GSM;
-	}
+	}*/
 	
 	/**
 	 * returns the minimum number of the mobile devices used in the simulation
@@ -687,38 +682,7 @@ public class SimSettings {
 	{
 		return STORAGE_FOR_CLOUD_VM;
 	}
-	
-	/**
-	 * returns RAM of the mobile (processing unit) VMs
-	 */
-	public int getRamForMobileVM()
-	{
-		return RAM_FOR_VM;
-	}
-	
-	/**
-	 * returns the number of cores for mobile VMs
-	 */
-	public int getCoreForMobileVM()
-	{
-		return CORE_FOR_VM;
-	}
-	
-	/**
-	 * returns MIPS of the mobile (processing unit) VMs
-	 */
-	public int getMipsForMobileVM()
-	{
-		return MIPS_FOR_VM;
-	}
-	
-	/**
-	 * returns Storage of the mobile (processing unit) VMs
-	 */
-	public int getStorageForMobileVM()
-	{
-		return STORAGE_FOR_VM;
-	}
+
 
 	/**
 	 * returns simulation screnarios as string
@@ -783,9 +747,9 @@ public class SimSettings {
 		return ORBIT_MODE;
 	}
 
-	public HashMap<String, String> getReversedHashVector() {
-		return reversedHashVector;
-	}
+//	public HashMap<String, String> getReversedHashVector() {
+//		return reversedHashVector;
+//	}
 
 	public HashMap<String, Integer> getReversedHashDevicesVector() {
 		return reversedHashDevicesVector;
@@ -851,7 +815,7 @@ public class SimSettings {
 		boolean mode=false;
 		if (isOrbitMode()) {
 			System.out.println("ORBIT Mode");
-			if (mode==false)
+			if (!mode)
 				mode = true;
 			else {
 				System.out.println("ERROR: Multiple modes");
@@ -860,7 +824,7 @@ public class SimSettings {
 		}
 		if (isParamScanMode()) {
 			System.out.println("Param Scan Mode");
-			if (mode==false)
+			if (!mode)
 				mode = true;
 			else {
 				System.out.println("ERROR: Multiple modes");
@@ -869,7 +833,7 @@ public class SimSettings {
 		}
 		if (isNsfExperiment()) {
 			System.out.println("NSF Experiment Mode");
-			if (mode==false)
+			if (!mode)
 				mode = true;
 			else {
 				System.out.println("ERROR: Multiple modes");
@@ -878,14 +842,13 @@ public class SimSettings {
 		}
 		if (isHostFailureScenario()) {
 			System.out.println("Host Failure Mode");
-			if (mode==false)
+			if (!mode)
 				mode = true;
 			else {
 				System.out.println("Multiple modes");
-//				System.exit(0);
 			}
 		}
-		if (mode==false)
+		if (!mode)
 			System.out.println("No special modes");
 
 	}
@@ -986,10 +949,6 @@ public class SimSettings {
 		return PARITY_PROB_STEP;
 	}
 
-	public int getMaxCloudRequests() {
-		return MAX_CLOUD_REQUESTS;
-	}
-
 	public int getRandomSeed() {
 		return RANDOM_SEED;
 	}
@@ -1031,9 +990,9 @@ public class SimSettings {
 		return RAID;
 	}
 
-	public void setRAID(int RAID) {
-		this.RAID = RAID;
-	}
+//	public void setRAID(int RAID) {
+//		this.RAID = RAID;
+//	}
 
 	public int getNumOfStripes() {
 		return NUM_OF_STRIPES;
@@ -1054,7 +1013,8 @@ public class SimSettings {
 
 	private void isAttribtuePresent(Element element, String key) {
         String value = element.getAttribute(key);
-        if (value.isEmpty() || value == null){
+//        if (value.isEmpty() || value == null){
+        if (value.isEmpty()){
         	throw new IllegalArgumentException("Attribure '" + key + "' is not found in '" + element.getNodeName() +"'");
         }
 	}
@@ -1062,7 +1022,8 @@ public class SimSettings {
 	private void isElementPresent(Element element, String key) {
 		try {
 			String value = element.getElementsByTagName(key).item(0).getTextContent();
-	        if (value.isEmpty() || value == null){
+//	        if (value.isEmpty() || value == null){
+	        if (value.isEmpty()){
 	        	throw new IllegalArgumentException("Element '" + key + "' is not found in '" + element.getNodeName() +"'");
 	        }
 		} catch (Exception e) {
@@ -1072,7 +1033,7 @@ public class SimSettings {
 	
 	private void parseApplicatinosXML(String filePath)
 	{
-		Document doc = null;
+		Document doc;
 		try {	
 			File devicesFile = new File(filePath);
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -1125,7 +1086,9 @@ public class SimSettings {
 				}
 				catch (Exception e)
 				{
-					double sampling_method = -1;
+					SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+					e.printStackTrace();
+					System.exit(0);
 				}
 
 			    taskLookUpTable[i][0] = usage_percentage; //usage percentage [0-100]
