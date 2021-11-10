@@ -679,21 +679,13 @@ public class ObjectGenerator {
             currentHost = (currentHost+1)%numOfNodes;
 
         while(1==1) {
-            if(SimSettings.getInstance().getRAID()==4) {
-            if(SimSettings.getInstance().isNsfExperiment())
-                currentHost=2;
-            }
+            if(SimSettings.getInstance().getRAID()==4 && SimSettings.getInstance().isNsfExperiment())
+                    currentHost=2;
             //get name of object by its ID
             if(SimSettings.getInstance().isNsfExperiment())
                 objectName = (String)listOfStripes.get(objectName).get(numOfDataInStripe).get("id");
             //start with host 0, get objects it contains
             String currentHostObjects = (String) hostsContents.get(currentHost).get("objects");
-
-/*            String objects = (String) hostsContents.get(currentHost).get("objects");
-            StringTokenizer st= new StringTokenizer(objects, " "); // Space as delimiter
-            Set<String> objectsSet = new HashSet<String>();
-            while (st.hasMoreTokens())
-                objectsSet.add(st.nextToken());*/
             Set<String> objectsSet = stringTokenizer((String) hostsContents.get(currentHost).get("objects"));
 
             //if object is already in node select another
@@ -1004,7 +996,6 @@ public class ObjectGenerator {
             objectsPlaced.put(lowestNumOfOccurrences+1,new ArrayList<String>());
 
         List<Integer> listOfDataObjectIDs = null;
-        int deadlockCount=0;
         int objectDenied=0;
         if(SimSettings.getInstance().isNsfExperiment()){
             listOfDataObjectIDs = getNumbersInRange(0,SimSettings.getInstance().getNumOfDataObjects());
@@ -1048,7 +1039,6 @@ public class ObjectGenerator {
                     if (objectDenied==0) { //if object is approved
                         dataList.add(dataObjects.get(objectID));
                         listOfObjects.add(objectID);
-                        deadlockCount=0;
                     }
                     else { //try again
                         objectDenied = 0;
