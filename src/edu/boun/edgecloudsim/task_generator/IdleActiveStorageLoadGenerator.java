@@ -1,37 +1,26 @@
 package edu.boun.edgecloudsim.task_generator;
 
-import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.edge_client.Task;
-import edu.boun.edgecloudsim.network.NetworkModel;
-import edu.boun.edgecloudsim.network.StorageNetworkModel;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
-import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937c;
-import org.cloudbus.cloudsim.core.CloudSim;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
-    int taskTypeOfDevices[];
+    int[] taskTypeOfDevices;
     static private int numOfIOTasks;
-    static private int numOfAIOTasks,numOfBIOTasks; //NSF
+//    static private int numOfAIOTasks,numOfBIOTasks; //NSF
     String orchestratorPolicy;
     String objectPlacementPolicy;
 
@@ -50,7 +39,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     Random parityRandom;
     Random failRandom;
 //    Random DynamicZipfRandom;
-    int intervalSize, numOfIntervals;
+//    int numOfIntervals;
     int nZIPF;
     public IdleActiveStorageLoadGenerator(int _numberOfMobileDevices, double _simulationTime, String _simScenario, String _orchestratorPolicy,
                                           String _objectPlacementPolicy) {
@@ -61,8 +50,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         activeCodedIOTasks = new HashMap<>();
         numOfIOTasks=0;
-        numOfAIOTasks = 0;
-        numOfBIOTasks = 0;
+//        numOfAIOTasks = 0;
+//        numOfBIOTasks = 0;
         nZIPF=2;
 /*        if(SimSettings.getInstance().isMMPP()) {
             intervalSize = 1;//sec
@@ -91,7 +80,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     @Override
     public void initializeModel() {
         int ioTaskID=0;
-        double sumPoisson = 0;
+//        double sumPoisson = 0;
         double dataSizeMean = 0;
         Random random = new Random();
         random.setSeed(ObjectGenerator.getSeed());
@@ -101,7 +90,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         failRandom.setSeed(ObjectGenerator.getSeed());
         parityRandom.setSeed(ObjectGenerator.getSeed());
 //        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
-        taskList = new ArrayList<TaskProperty>();
+        taskList = new ArrayList<>();
         ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
 
         //exponential number generator for file input size, file output size and task length
@@ -123,9 +112,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         //Calculate lambdas for NSF experiment
 
         for(int i=0; i<numberOfMobileDevices; i++) {
-            int randomTaskType = -1;
-
-
+            int randomTaskType;
             if(SimSettings.getInstance().isNsfExperiment()) {
                 randomTaskType = i%2;
             }
@@ -143,7 +130,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             double activePeriodStartTime = SimSettings.CLIENT_ACTIVITY_START_TIME + (activePeriod) * random.nextDouble();
             double virtualTime = activePeriodStartTime;
 
-            sumPoisson += poissonMean;
+//            sumPoisson += poissonMean;
 
             //Oleg: random with seed
             ExponentialDistribution rng = new ExponentialDistribution(rand,
@@ -165,11 +152,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     continue;
                 }
 //                requests++;
-                String objectID="";
+                String objectID;
 //                String objectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects");
                 if(SimSettings.getInstance().isNsfExperiment()) {
                     //odd/even tasks will read only odd/even objects
-                    while (1==1){
+                    while (true){
                         objectID = OG.getDataObjectID();
                         int objectNum = Integer.valueOf(objectID.replaceAll("[^\\d.]", ""));
                         if(objectNum%2 == randomTaskType)
@@ -331,12 +318,12 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             double meanRate = numOfIOTasks/SimSettings.getInstance().getSimulationTime(); //Tasks per second
             singleLambda = meanRate / muTotal;
             double overhead = OG.getOverhead();
-            String dist = "";
+            String dist;
             if(SimSettings.getInstance().isMMPP())
                 dist = "MMPP";
             else
                 dist = SimSettings.getInstance().getObjectDistRead();
-            String fail = "";
+            String fail;
             if (SimSettings.getInstance().isHostFailureScenario())
                 fail="WITHFAIL";
             else
@@ -371,9 +358,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     public void exportTaskList() throws IOException {
 
-        File taskListFile = null;
-        FileWriter taskListFW = null;
-        BufferedWriter taskListBW = null;
+        File taskListFile;
+        FileWriter taskListFW;
+        BufferedWriter taskListBW;
         int currentDevice = SimSettings.getInstance().getThisMobileDevice();
         taskListFile = new File("/tmp/TASK_LIST"+Integer.toString(currentDevice)+".txt");
         taskListFW = new FileWriter(taskListFile, false);
@@ -402,9 +389,9 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         return numOfIOTasks;
     }
 
-    public double[] getLambda() {
+/*    public double[] getLambda() {
         return lambda;
-    }
+    }*/
 
     //check if one list is subset of another
     public boolean contains(List<?> list, List<?> sublist) {
@@ -431,7 +418,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     }
 
 
-    //Output demand vector for each object
+/*    //Output demand vector for each object
     private void logMMPPDemand() throws FileNotFoundException {
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         for(int i=0; i<numOfDataObjects;i++){
@@ -452,7 +439,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             }
             out.close();
         }
-    }
+    }*/
 
     //Creates n permutations of size numOfDataObjects
     private void createZipfPermutations(int n){

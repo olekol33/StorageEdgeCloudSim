@@ -4,8 +4,6 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
-import edu.boun.edgecloudsim.utils.SimUtils;
-import org.cloudbus.cloudsim.core.CloudSim;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,7 +42,7 @@ public class StaticRangeMobility extends MobilityModel {
         //initialize tree maps and position of mobile devices
         //places each mobile device at a location of a DC
         for(int i=0; i<numberOfMobileDevices; i++) {
-            treeMapArray.add(i, new TreeMap<Double, Location>());
+            treeMapArray.add(i, new TreeMap<>());
             Location placedDevice;
             if (SimSettings.getInstance().isOrbitMode())
                 placedDevice = orbitPlaceDevice(random);
@@ -68,9 +66,9 @@ public class StaticRangeMobility extends MobilityModel {
         String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_DEVICE_ACCESS.log";
         File f = new File(savestr);
 
-        PrintWriter out = null;
+        PrintWriter out;
         if ( f.exists() && !f.isDirectory() ) {
-            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
+            out = new PrintWriter(new FileOutputStream((savestr), true));
         }
         else {
             out = new PrintWriter(savestr);
