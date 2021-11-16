@@ -5,7 +5,6 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.SampleMobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
-import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
@@ -211,9 +210,12 @@ public class StorageNetworkModel extends SampleNetworkModel {
             Location nearestAccessPoint = staticMobility.getAccessPoint(deviceLocation,accessPointLocation);
             if (nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId())
                 System.out.println("nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId()");
-            //divide by factor //TODO: temp removed
-//            delay /= StaticRangeMobility.getDistanceDegradation(deviceLocation,nearestAccessPoint);
-            delay+=SimSettings.getInstance().getInternalLanDelay(); //TODO: comparing to ORBIT - add to config
+            //additional delay
+            if(SimSettings.getInstance().isSimulateOrbitMode()) //for orbit add only lan delay
+                delay+=SimSettings.getInstance().getInternalLanDelay();
+            else //if not orbit degraded by power law
+                delay /= StaticRangeMobility.getSignalAttenuation(deviceLocation,nearestAccessPoint,100,2);
+
         }
 
         return delay;

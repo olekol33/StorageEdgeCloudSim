@@ -264,7 +264,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             return false;
         int mdObjectIndex;
         String stripeID;
-//        String[] minStripeObjects = new String[0];
+        String[] minStripeObjects = new String[0];
         String[] stripeObjects;
         List<String> dataObjects = null;
         List<String> parityObjects = null;
@@ -278,7 +278,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 int stripeQueueSize = getStripeMaxQueueSize(stripeObjectsList,dataObjectLocation);
                 if(stripeQueueSize<minStripeQueueSize && stripeQueueSize!=-1){ //compare queue size for each stripe
                     minStripeQueueSize=stripeQueueSize;
-//                    minStripeObjects=stripeObjects;
+                    minStripeObjects=stripeObjects;
                 }
             }
             if(minStripeQueueSize == Integer.MAX_VALUE) { //not found parity
@@ -306,6 +306,9 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                     return true;
                 }
             }
+            //get object from stripe with min queue
+            dataObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[0].split(" ")));
+            parityObjects = new ArrayList<String>(Arrays.asList(minStripeObjects[1].split(" ")));
         }
         else { //There are inactive nodes
             boolean stripeFound=false;
@@ -335,7 +338,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             //if data object, skip
             if (objectID.equals(task.getObjectRead()))
                 continue;
-            //if not data, than data of parity
+            //if not data, then data of parity
             //TODO: add delay for queue query
             loadGeneratorModel.getTaskList().add(new TaskProperty(task.getMobileDeviceId(),taskType, CloudSim.clock(),
                     objectID, task.getIoTaskID(), isParity,0,task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getCloudletLength()));

@@ -89,8 +89,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             lambda = new double[2];
         else //permutation controlled by input seed
             createZipfPermutations(1);
-        System.out.println("!");
-
     }
 
     @Override
@@ -247,8 +245,10 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 }
                 else*/
 //                objectID = OG.getDataObjectID();
-                String dist = SimSettings.getInstance().getObjectDistRead();
-                objectID = "d"+String.valueOf(zipfPermutations[0][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects",dist)]);
+                if(!SimSettings.getInstance().isNsfExperiment()) {
+                    String dist = SimSettings.getInstance().getObjectDistRead();
+                    objectID = "d" + String.valueOf(zipfPermutations[0][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(), "objects", dist)]);
+                }
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;
 /*                if(randomTaskType%2==0)
@@ -585,10 +585,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 */
     public static int getNumOfIOTasks() {
         return numOfIOTasks;
-    }
-
-    public double[] getLambda() {
-        return lambda;
     }
 
     //check if one list is subset of another

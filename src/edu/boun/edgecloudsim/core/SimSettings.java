@@ -134,8 +134,10 @@ public class SimSettings {
 	private boolean MMPP;
 	private int VARIABILITY_ITERATIONS;
 
+
 	//ORBIT
 	private boolean ORBIT_MODE;
+	private boolean SIMULATE_ORBIT_MODE;
 	private boolean PARAM_SCAN_MODE;
 	private int NUMBER_OF_EDGE_NODES;
 
@@ -316,6 +318,7 @@ public class SimSettings {
 				HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
 
 				ORBIT_MODE = toBoolean(prop.getProperty("orbit_mode"));
+				SIMULATE_ORBIT_MODE = toBoolean(prop.getProperty("simulate_orbit_mode"));
 				VARIABILITY_RUN = toBoolean(prop.getProperty("variability_run"));
 				MMPP = toBoolean(prop.getProperty("mmpp"));
 				VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
@@ -348,6 +351,9 @@ public class SimSettings {
 					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
 					LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
 				}
+				else{
+					REDUNDANCY_SHARE = Double.parseDouble(prop.getProperty("redundancy_share"));
+				}
 
 
 				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
@@ -364,7 +370,7 @@ public class SimSettings {
 				NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
 				NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
 				NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
-				REDUNDANCY_SHARE = Double.parseDouble(prop.getProperty("redundancy_share"));
+
 
 			}
 			catch (Exception e){
@@ -745,6 +751,11 @@ public class SimSettings {
 
 	public boolean isOrbitMode() {
 		return ORBIT_MODE;
+	}
+
+
+	public boolean isSimulateOrbitMode() {
+		return SIMULATE_ORBIT_MODE;
 	}
 
 //	public HashMap<String, String> getReversedHashVector() {

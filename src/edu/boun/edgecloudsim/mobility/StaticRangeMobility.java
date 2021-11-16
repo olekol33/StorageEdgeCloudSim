@@ -29,7 +29,6 @@ public class StaticRangeMobility extends MobilityModel {
         super(_numberOfMobileDevices, _simulationTime);
     }
 
-    //TODO: changed by Harel
     @Override
     public void initialize() {
         treeMapArray = new ArrayList<TreeMap<Double, Location>>();
@@ -202,16 +201,7 @@ public class StaticRangeMobility extends MobilityModel {
     public List<Integer> checkLegalPlacement(Location deviceLocation) {
         int x_pos = deviceLocation.getXPos();
         int y_pos = deviceLocation.getYPos();
-        //int hostRadius = SimSettings.getInstance().getHostRadius(); - TODO: this is the original line!
-
-        //TODO: delete this line - for testing purposes only!!
-        //TODO: the correct line is the line commented-out above.
-        int hostRadius;
-        if(SimSettings.getInstance().isExternalNodes() && !SimSettings.getInstance().isExternalDevices()) {
-            hostRadius = 100;
-        }else{
-            hostRadius = SimSettings.getInstance().getHostRadius();
-        }
+        int hostRadius = SimSettings.getInstance().getHostRadius();
 
         List<Integer> hosts = new ArrayList<Integer>();
         for (int i = 0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
@@ -232,51 +222,46 @@ public class StaticRangeMobility extends MobilityModel {
         return xDist+yDist;
     }
 
-    //Returns eucledean distance assuming slot size is 100m
-    public static double getEucledeanDistance(Location srcLocation, Location destLocation){
-        //TODO: parametrize
-        //size of box in grid
+    //Returns euclidean distance assuming slot size is 100m
+    public static double getEuclideanDistance(Location srcLocation, Location destLocation){
+/*        //size of box in grid
         double boxSizeMeters = 100; //meters
-        //TODO: define better max grid radius
         double boxSizeGrid = 6; //max box size in grid
         int xDist = Math.abs(srcLocation.getXPos()-destLocation.getXPos());
         int yDist = Math.abs(srcLocation.getYPos()-destLocation.getYPos());
         double xyDistance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2));
         double gridDistanceUnit = boxSizeMeters / boxSizeGrid;
-        return xyDistance*gridDistanceUnit;
+        return xyDistance*gridDistanceUnit;*/
+        int xDist = Math.abs(srcLocation.getXPos()-destLocation.getXPos());
+        int yDist = Math.abs(srcLocation.getYPos()-destLocation.getYPos());
+        double xyDistance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2));
+        return xyDistance;
     }
 
     //according to "Experimental analysis of multipoint-to-point UAV communications with IEEE 802.11 n and 802.11 ac." Hayat et al
     //Calculate by how many % the throughput has decreased as function of distance
     //Worst is 5%
-    //TODO: degradation is 1/r^2
-    public static double getDistanceDegradation(Location srcLocation, Location destLocation){
-        double x0 = 0;
-        double x1 = 100;
-        //devided y by 2 compared to paper
-        double y0 = 100;
-        double y1 = 5;
-        double m = (y0-y1) / (x0-x1);
-        double distance = getEucledeanDistance(srcLocation,destLocation);
-        //return %
-        double degradation = (m * (distance - x0) + y0)/100;
-/*        try {
-            logDistanceDegradation(srcLocation, destLocation, distance, degradation);
+    //Mobile phone operation may use power of n for 1/(r)^n where 3.5<n<5
+    //https://www.electronics-notes.com/articles/antennas-propagation/propagation-overview/radio-signal-path-loss.php
+    //Free-space path loss formula 1/(4*pi*r)^2, r>>1. WE use 1/(r)^n.
+    public static double getSignalAttenuation(Location srcLocation, Location destLocation, double steadySignalRange, double n){
+        double distance = getEuclideanDistance(srcLocation,destLocation);
+        if(distance<steadySignalRange)
+            return 1; //not attenuation
+        else{
+            double r = distance /steadySignalRange;
+            return 1/Math.pow(r,n);
         }
-        catch (Exception e){
-            System.out.println("error");
-        }*/
-        return degradation;
     }
-    public static double getDistance(Location srcLocation, Location destLocation){
+/*    public static double getDistance(Location srcLocation, Location destLocation){
         double x0 = 0;
         double x1 = 100;
         //devided y by 2 compared to paper
         double y0 = 100;
         double y1 = 5;
         double m = (y0-y1) / (x0-x1);
-        return getEucledeanDistance(srcLocation,destLocation);
-    }
+        return getEuclideanDistance(srcLocation,destLocation);
+    }*/
     public static void logDistanceDegradation(Location srcLocation, Location destLocation, double distance, double degradation) throws FileNotFoundException {
         String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_DISTANCE_DEGRADATION.log";
         File f = new File(savestr);
