@@ -26,7 +26,7 @@ public class StorageNode {
         return xPos;
     }
 
-    public void setxPos(double xPos) {
+    public void setxPos(int xPos) {
         this.xPos = xPos;
     }
 
@@ -34,7 +34,7 @@ public class StorageNode {
         return yPos;
     }
 
-    public void setyPos(double yPos) {
+    public void setyPos(int yPos) {
         this.yPos = yPos;
     }
 

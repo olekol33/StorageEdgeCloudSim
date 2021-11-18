@@ -437,7 +437,7 @@ public class ObjectGenerator {
             }
                 parityName += id + "-";
                 int dataObjectSize = Integer.parseInt(KV.get("size"));
-                // Size is as of largest data object
+                // Size is of the largest data object
                 if (dataObjectSize > objectSize)
                     objectSize = dataObjectSize;
             }
@@ -610,7 +610,12 @@ public class ObjectGenerator {
         //go over each object
         for (Map<String,String> KV : dataObjects.values()){
             KV.put("locations", Integer.toString(host));
-            hostsContents.get(host).put("capacity", (int) hostsContents.get(host).get("capacity")-objectSize);
+            int actualObjectSize;
+            if(SimSettings.getInstance().isExternalObjects())
+                actualObjectSize = Integer.valueOf(KV.get("size")) ;
+            else
+                actualObjectSize = objectSize;
+            hostsContents.get(host).put("capacity", (int) hostsContents.get(host).get("capacity")-actualObjectSize);
             hostsContents.get(host).put("objects", addLocation(KV.get("id"), (String) hostsContents.get(host).get("objects")));
             if ((int) hostsContents.get(host).get("capacity")<0)
                 System.out.println("hostStorageCapacity[host]<0");
@@ -657,7 +662,7 @@ public class ObjectGenerator {
         //monitor parity occurrences
         HashMap<Integer,List<String>> objectsPlaced = new HashMap<>();
         List<String> objectList = new ArrayList<String>();
-        for(List<Map> object:listOfStripes.values())
+        for(List<Map> object:listOfStripes.values()) //create list of object names
             objectList.add((String)object.get(numOfDataInStripe).get("id"));
         objectsPlaced.put(0,objectList);
         objectsPlaced.put(1,new ArrayList<String>());
@@ -681,7 +686,8 @@ public class ObjectGenerator {
         NodeList datacenterList = doc.getElementsByTagName("datacenter");
 
         //Get next vacant host
-        while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
+        int realObjectSize = Integer.valueOf((String)listOfStripes.get(objectName).get(numOfDataInStripe).get("size"));
+        while ((int) hostsContents.get(currentHost).get("capacity") < realObjectSize)
             currentHost = (currentHost+1)%numOfNodes;
 
         while(1==1) {
@@ -698,10 +704,13 @@ public class ObjectGenerator {
             if(objectsSet.contains(objectName)) {
                 List<String> lowOccurrenceObjects =objectsPlaced.get(lowestNumOfOccurrences);
                 objectName = lowOccurrenceObjects.get(newObjectRand.nextInt(lowOccurrenceObjects.size()));
+
 //                stripeID = getObjectID(numOfStripes,"stripes",dist);
                 continue;
             }
-
+            realObjectSize = Integer.valueOf((String)listOfStripes.get(objectName).get(numOfDataInStripe).get("size"));
+            while ((int) hostsContents.get(currentHost).get("capacity") < realObjectSize)
+                currentHost = (currentHost+1)%numOfNodes;
             //avoid having parity and data of same stripe in the same host
             boolean flag=false;
 
@@ -754,12 +763,12 @@ public class ObjectGenerator {
             String locations = (String)listOfStripes.get(objectName).get(numOfDataInStripe).get("locations");
             //add new location to coding object (location index = numOfDataInStripe)
             listOfStripes.get(objectName).get(numOfDataInStripe).put("locations",addLocation(Integer.toString(currentHost),locations));
-            hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-objectSize);
+            hostsContents.get(currentHost).put("capacity", (int) hostsContents.get(currentHost).get("capacity")-realObjectSize);
             hostsContents.get(currentHost).put("objects", addLocation(objectName, currentHostObjects));
 
             currentHost = (currentHost+1)%numOfNodes;
             //run until vacant host is found or return
-            while ((int) hostsContents.get(currentHost).get("capacity") < objectSize)
+            while ((int) hostsContents.get(currentHost).get("capacity") < realObjectSize)
             {
                 if(i==numOfNodes) {
                     //check if hosts are full
@@ -768,7 +777,7 @@ public class ObjectGenerator {
                         Element datacenterElement = (Element) datacenterNode;
                         int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
                         objectsSet = stringTokenizer((String) hostsContents.get(j).get("objects"));
-                        if ((objectsSet.size() * objectSize) < hostCapacity)
+                        if ((objectsSet.size() * realObjectSize) < hostCapacity)
                             System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(j));
                     }
                     return; //all are full

@@ -57,7 +57,7 @@ public class ParseStorageRequests {
                     }
                 }
                 if(!checkIfDeviceExists){
-                    throw new Exception("The request is trying to access a non-existing Node!! error in line " +
+                    throw new Exception("The request is trying to access a non-existing device!! error in line " +
                             lineCounter + "\n" + "The node " + objects[REQUEST_DEVICE_NAME] + " does not exist!!");
                 }
 

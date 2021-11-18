@@ -1,7 +1,5 @@
 package edu.boun.edgecloudsim.storage;
 
-import edu.boun.edgecloudsim.core.SimSettings;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +15,10 @@ public class ParseStorageNodes {
     private final int NODE_SERVICE_CLASS = 3; // object[3]
     private final int NODE_CAPACITY = 4; // object[4]
     private final int NODE_SERVICE_RATE = 5; // object[5]
-    private double xMin;
-    private double yMin;
-    private double xRange;
-    private double yRange;
+    private int xMin;
+    private int yMin;
+    private int xRange;
+    private int yRange;
 
 
     /**
@@ -37,54 +35,38 @@ public class ParseStorageNodes {
             int vecIndex = 0;
             while(vecIndex < nodesVector.size()) {
                 StorageNode s = nodesVector.get(vecIndex++);
-                if(!SimSettings.getInstance().isItIntTest()) {
-                    writer.write("\t<datacenter arch=\"x86\" os=\"Linux\" vmm=\"Xen\">\n" +
-                            "\t\t<costPerBw>0.1</costPerBw>\n" +
-                            "\t\t<costPerSec>3.0</costPerSec>\n" +
-                            "\t\t<costPerMem>0.05</costPerMem>\n" +
-                            "\t\t<costPerStorage>0.1</costPerStorage>\n" +
-                            "\t\t<location>\n" +
-                            "\t\t\t<x_pos>" + s.getxPos() + "</x_pos>\n" +
-                            "\t\t\t<y_pos>" + s.getyPos() + "</y_pos>\n" +
-                            "\t\t\t<wlan_id>" + s.getNodeName() + "</wlan_id>\n" +
-                            "\t\t\t<attractiveness>1</attractiveness>\n" +
-                            "\t\t</location>\n" +
-                            "\t\t<hosts>\n" +
-                            "\t\t\t<host>\n");
-                }else{//TODO: delete this section - for testing purposes only
-                    writer.write("\t<datacenter arch=\"x86\" os=\"Linux\" vmm=\"Xen\">\n" +
-                            "\t\t<costPerBw>0.1</costPerBw>\n" +
-                            "\t\t<costPerSec>3.0</costPerSec>\n" +
-                            "\t\t<costPerMem>0.05</costPerMem>\n" +
-                            "\t\t<costPerStorage>0.1</costPerStorage>\n" +
-                            "\t\t<location>\n" +
-                            "\t\t\t<x_pos>" + (int) s.getxPos() + "</x_pos>\n" +
-                            "\t\t\t<y_pos>" + (int) s.getyPos() + "</y_pos>\n" +
-                            "\t\t\t<wlan_id>" + s.getNodeName() + "</wlan_id>\n" +
-                            "\t\t\t<attractiveness>1</attractiveness>\n" +
-                            "\t\t</location>\n" +
-                            "\t\t<hosts>\n" +
-                            "\t\t\t<host>\n");
-                }
-                writer.write("\t\t\t\t<core>16</core>\n"+
-                                "\t\t\t\t<mips>80000</mips>\n"+
-                                "\t\t\t\t<ram>16000</ram>\n"+
-                                "\t\t\t\t<storage>" + s.getCapacity() + "</storage>\n"+
-                                "\t\t\t\t<readRate>" + s.getServiceRate() + "</readRate>\n"+
-                                "\t\t\t\t<taskProcessingTimeUS>300</taskProcessingTimeUS>"+
-                                "\t\t\t\t<VMs>\n"+
-                                "\t\t\t\t\t<VM vmm=\"Xen\">\n"+
-                                "\t\t\t\t\t\t<core>16</core>\n"+
-                                "\t\t\t\t\t\t<mips>80000</mips>\n"+
-                                "\t\t\t\t\t\t<ram>16000</ram>\n"+
-                                "\t\t\t\t\t\t<storage>" + s.getCapacity() + "</storage>\n"+
-                                "\t\t\t\t\t\t<readRate>" + s.getServiceRate() + "</readRate>\n"+
-                                "\t\t\t\t\t\t<taskProcessingTimeUS>300</taskProcessingTimeUS>"+
-                                "\t\t\t\t\t</VM>\n"+
-                                "\t\t\t\t</VMs>\n"+
-                                "\t\t\t</host>\n"+
-                                "\t\t</hosts>\n"+
-                                "\t</datacenter>\n");
+                writer.write("\t<datacenter arch=\"x86\" os=\"Linux\" vmm=\"Xen\">\n" +
+                        "\t\t<costPerBw>0.1</costPerBw>\n" +
+                        "\t\t<costPerSec>3.0</costPerSec>\n" +
+                        "\t\t<costPerMem>0.05</costPerMem>\n" +
+                        "\t\t<costPerStorage>0.1</costPerStorage>\n" +
+                        "\t\t<location>\n" +
+                        "\t\t\t<x_pos>" + (int)s.getxPos() + "</x_pos>\n" +
+                        "\t\t\t<y_pos>" + (int)s.getyPos() + "</y_pos>\n" +
+                        "\t\t\t<wlan_id>" + s.getNodeName() + "</wlan_id>\n" +
+                        "\t\t\t<attractiveness>1</attractiveness>\n" +
+                        "\t\t</location>\n" +
+                        "\t\t<hosts>\n" +
+                        "\t\t\t<host>\n"+
+                        "\t\t\t\t<core>16</core>\n"+
+                        "\t\t\t\t<mips>80000</mips>\n"+
+                        "\t\t\t\t<ram>16000</ram>\n"+
+                        "\t\t\t\t<storage>" + s.getCapacity() + "</storage>\n"+
+                        "\t\t\t\t<readRate>" + s.getServiceRate() + "</readRate>\n"+
+                        "\t\t\t\t<taskProcessingTimeUS>300</taskProcessingTimeUS>\n"+
+                        "\t\t\t\t<VMs>\n"+
+                        "\t\t\t\t\t<VM vmm=\"Xen\">\n"+
+                        "\t\t\t\t\t\t<core>16</core>\n"+
+                        "\t\t\t\t\t\t<mips>80000</mips>\n"+
+                        "\t\t\t\t\t\t<ram>16000</ram>\n"+
+                        "\t\t\t\t\t\t<storage>" + s.getCapacity() + "</storage>\n"+
+                        "\t\t\t\t\t\t<readRate>" + s.getServiceRate() + "</readRate>\n"+
+                        "\t\t\t\t\t\t<taskProcessingTimeUS>300</taskProcessingTimeUS>\n"+
+                        "\t\t\t\t\t</VM>\n"+
+                        "\t\t\t\t</VMs>\n"+
+                        "\t\t\t</host>\n"+
+                        "\t\t</hosts>\n"+
+                        "\t</datacenter>\n");
             }
             writer.write("</edge_devices>\n");
             writer.close();
@@ -140,8 +122,8 @@ public class ParseStorageNodes {
                 lineCounter++;
 
                 //create new storageNode and add it to the nodes vector
-                StorageNode sNode = new StorageNode(mapIndex-1,Double.parseDouble(objects[NODE_X_POSE]),
-                        Double.parseDouble(objects[NODE_Y_POSE]),Integer.parseInt(objects[NODE_SERVICE_CLASS]),
+                StorageNode sNode = new StorageNode(mapIndex-1,Double.valueOf(objects[NODE_X_POSE]),
+                        Double.valueOf(objects[NODE_Y_POSE]),Integer.parseInt(objects[NODE_SERVICE_CLASS]),
                         Integer.parseInt(objects[NODE_CAPACITY]),Integer.parseInt(objects[NODE_SERVICE_RATE]));
                 nodesVector.add(sNode);
 
@@ -162,45 +144,34 @@ public class ParseStorageNodes {
                 minX = Math.min(minX, x);
                 minY = Math.min(minY, y);
             }
+
             System.out.println("The nodes' vector successfully created!!!");
-
-            /*
-            System.out.println("Displaying HashMap:");
-            for(Map.Entry m: map.entrySet()){
-                System.out.println(m.getKey() +" "+m.getValue());
-            }*/
-
             //expand the limits of the grid by host radius (for devices with negative location on the aligned grid).
-            minX -= SimSettings.getInstance().getHostRadius();
-            minY -= SimSettings.getInstance().getHostRadius();
-
+//            minX -= SimSettings.getInstance().getHostRadius();
+//            minY -= SimSettings.getInstance().getHostRadius();
 
             //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
-            if(SimSettings.getInstance().isGpsConversionRequired()) { //check the GPS conversion flag
-                for (StorageNode temp : nodesVector) {
-                    //TODO: delete this section - for testing purposes only
-                    if (SimSettings.getInstance().isItIntTest()) {
-                        //temp.setxPos((int) ((temp.getxPos() - minX) * 100));
-                        //temp.setyPos((int) ((temp.getyPos() - minY) * 100));
-                    } else {
-                        temp.setxPos(temp.getxPos() - minX);
-                        temp.setyPos(temp.getyPos() - minY);
-                    }
-                }
-                //maxX = maxX - minX + 2 * SimSettings.getInstance().getHostRadius();
-                //maxY = maxY - minY + 2 * SimSettings.getInstance().getHostRadius();
-                if(SimSettings.getInstance().isExternalNodes()){
-                    for(StorageNode temp : nodesVector){
-                        maxX = Math.max(maxX, temp.getxPos());
-                        maxY = Math.max(maxY, temp.getyPos());
-                    }
-                }
-            }
+            for (StorageNode temp : nodesVector) {
+                int[] coord = latlonToMeters(temp.getxPos(),temp.getyPos(),minX ,minY);
+                temp.setxPos(coord[0]);
+                temp.setyPos(coord[1]);
 
-            xMin = minX;
-            yMin = minY;
-            xRange = maxX;
-            yRange = maxY;
+            }
+            int[] coord = latlonToMeters(maxX,maxY, minX, minY);
+            xMin = 0;
+            yMin = 0;
+            xRange = coord[0];
+            yRange = coord[1];
+            //maxX = maxX - minX + 2 * SimSettings.getInstance().getHostRadius();
+            //maxY = maxY - minY + 2 * SimSettings.getInstance().getHostRadius();
+/*            if(SimSettings.getInstance().isExternalNodes()){
+                for(StorageNode temp : nodesVector){
+                    maxX = Math.max(maxX, temp.getxPos());
+                    maxY = Math.max(maxY, temp.getyPos());
+                }
+            }*/
+
+
 
             //write the HashMap to a csv file
             CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Nodes_Hash.csv");
@@ -217,19 +188,41 @@ public class ParseStorageNodes {
 
     }// end of prepareNodesHashVector
 
-    public double getxMin() {
+    /*Return distance in meters between two coordinates in longitude and latitude*/
+    private int distanceBetweenCoordinates(double lat1, double lon1, double lat2, double lon2){  // generally used geo measurement function
+        var R = 6378.137; // Radius of earth in KM
+        var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+        var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        var d = R * c;
+        return (int)(d * 1000); // meters
+    }
+
+    /*Returns x,y coordinates in meters on grid*/
+    public int[] latlonToMeters(double lat, double lon, double xMin, double yMin){
+        int[] coordinates = new int[2];
+        coordinates[0] = distanceBetweenCoordinates(xMin, yMin,lat, yMin); //get x distance
+        coordinates[1] = distanceBetweenCoordinates(xMin, yMin, xMin,lon); //get y distance
+        return coordinates;
+    }
+
+
+    public int getxMin() {
         return xMin;
     }
 
-    public double getyMin() {
+    public int getyMin() {
         return yMin;
     }
 
-    public double getxRange() {
+    public int getxRange() {
         return xRange;
     }
 
-    public double getyRange() {
+    public int getyRange() {
         return yRange;
     }
 

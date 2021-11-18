@@ -173,10 +173,10 @@ public class SimSettings {
 	private Vector<StorageDevice> devicesVector;
 	private Vector<StorageObject> objectsVector;
 	private Vector<StorageRequest> storageRequests;
-	private double minXpos;
-	private double minYpos;
-	private double xRange;
-	private double yRange;
+	private int minXpos;
+	private int minYpos;
+	private int xRange;
+	private int yRange;
 	private int numOfExternalTasks;
 
 /*	public HashMap<Integer, String> getNodesHashVector() {
@@ -207,7 +207,7 @@ public class SimSettings {
 		return minYpos;
 	}
 
-	public double getxRange() {
+	public int getxRange() {
 		return xRange;
 	}
 
