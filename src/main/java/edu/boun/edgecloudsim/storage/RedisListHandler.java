@@ -3,6 +3,7 @@ package edu.boun.edgecloudsim.storage;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.utils.SimLogger;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -61,14 +62,19 @@ public class RedisListHandler {
 
     //Generate list of all object locations in the system for orchestration
     private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
+        String tmpFolder = "";
+        if(SystemUtils.IS_OS_WINDOWS)
+            tmpFolder = SimSettings.getInstance().getOutputFolder();
+        else
+            tmpFolder = "/tmp/";
         Path pLoc = Paths.get("/tmp/Object_Locations.txt");
         Path pDist = Paths.get("/tmp/OBJECT_DISTRIBUTION.txt");
-        if(Files.exists(pLoc) && Files.exists(pDist)){
+        if(Files.exists(pLoc) && Files.exists(pDist) && SystemUtils.IS_OS_LINUX){
             SimLogger.print("Object locations and distribution files exist"+"\n");
             return;
         }
-        File objectFile = new File("/tmp/Object_Locations.txt");
-        File objectDistFile = new File("/tmp/OBJECT_DISTRIBUTION.txt");
+        File objectFile = new File(tmpFolder,"Object_Locations.txt");
+        File objectDistFile = new File(tmpFolder,"OBJECT_DISTRIBUTION.txt");
         FileWriter objectFW = new FileWriter(objectFile, false),
                 objectDistFW = new FileWriter(objectDistFile, false);
         BufferedWriter objectBW = new BufferedWriter(objectFW),

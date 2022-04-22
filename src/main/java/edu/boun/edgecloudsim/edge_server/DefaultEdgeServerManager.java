@@ -37,6 +37,8 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.utils.Location;
 
+import static edu.boun.edgecloudsim.task_generator.LoadGeneratorModel.DATA_DOWNLOAD;
+
 public class DefaultEdgeServerManager extends EdgeServerManager{
 	private int hostIdCounter;
 
@@ -81,22 +83,34 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 				Node hostNode = hostNodeList.item(j);
 				Element hostElement = (Element) hostNode;
 				NodeList vmNodeList = hostElement.getElementsByTagName("VM");
-				for (int k = 0; k < vmNodeList.getLength(); k++) {
-					Node vmNode = vmNodeList.item(k);					
+				//Oleg: single VM in host
+//				for (int k = 0; k < vmNodeList.getLength(); k++) {
+				for (int k = 0; k < 1; k++) {
+					Node vmNode = vmNodeList.item(k);
 					Element vmElement = (Element) vmNode;
 
-					String vmm = vmElement.getAttribute("vmm");
-					int numOfCores = Integer.parseInt(vmElement.getElementsByTagName("core").item(0).getTextContent());
-					double mips = Double.parseDouble(vmElement.getElementsByTagName("mips").item(0).getTextContent());
-					int ram = Integer.parseInt(vmElement.getElementsByTagName("ram").item(0).getTextContent());
-					int readRate = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
-					int taskProcessingTimeUS = Integer.parseInt(vmElement.getElementsByTagName("taskProcessingTimeUS").item(0).getTextContent());
-					long storage = Long.parseLong(vmElement.getElementsByTagName("storage").item(0).getTextContent());
+//					String vmm = vmElement.getAttribute("vmm");
+//					int numOfCores = Integer.parseInt(vmElement.getElementsByTagName("core").item(0).getTextContent());
+//					double mips = Double.parseDouble(vmElement.getElementsByTagName("mips").item(0).getTextContent());
+//					int ram = Integer.parseInt(vmElement.getElementsByTagName("ram").item(0).getTextContent());
+//					int readRate = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
+//					int taskProcessingTimeUS = Integer.parseInt(vmElement.getElementsByTagName("taskProcessingTimeUS").item(0).getTextContent());
+//					int readRate = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
+//					long storage = Long.parseLong(vmElement.getElementsByTagName("storage").item(0).getTextContent());
+//					long bandwidth = SimSettings.getInstance().getWlanBandwidth() / (hostNodeList.getLength()+vmNodeList.getLength());
+					int numOfCores = 1;
+					double mips = 1;
+					int ram = 1;
+					String vmm = null;
+					int taskProcessingMbps = Integer.parseInt(hostElement.getElementsByTagName("taskProcessingMbps").item(0).getTextContent());
+					int readRate = Integer.parseInt(hostElement.getElementsByTagName("readRate").item(0).getTextContent());
+					long storage = Long.parseLong(hostElement.getElementsByTagName("storage").item(0).getTextContent());
 					long bandwidth = SimSettings.getInstance().getWlanBandwidth() / (hostNodeList.getLength()+vmNodeList.getLength());
 					
 					//VM Parameters		
-					EdgeVM vm = new EdgeVM(vmCounter, brockerId, mips, numOfCores, ram, readRate, taskProcessingTimeUS,
+					EdgeVM vm = new EdgeVM(vmCounter, brockerId, mips, numOfCores, ram, readRate, taskProcessingMbps,
 							bandwidth, storage, vmm, new CloudletSchedulerTimeShared());
+					vm.setHost(this.getDatacenterList().get(hostCounter).getHostList().get(0)); //Oleg: added since removed VMs
 					vmList.get(hostCounter).add(vm);
 					vmCounter++;
 				}
@@ -138,10 +152,14 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 		String arch = datacenterElement.getAttribute("arch");
 		String os = datacenterElement.getAttribute("os");
 		String vmm = datacenterElement.getAttribute("vmm");
-		double costPerBw = Double.parseDouble(datacenterElement.getElementsByTagName("costPerBw").item(0).getTextContent());
-		double costPerSec = Double.parseDouble(datacenterElement.getElementsByTagName("costPerSec").item(0).getTextContent());
-		double costPerMem = Double.parseDouble(datacenterElement.getElementsByTagName("costPerMem").item(0).getTextContent());
-		double costPerStorage = Double.parseDouble(datacenterElement.getElementsByTagName("costPerStorage").item(0).getTextContent());
+//		double costPerBw = Double.parseDouble(datacenterElement.getElementsByTagName("costPerBw").item(0).getTextContent());
+//		double costPerSec = Double.parseDouble(datacenterElement.getElementsByTagName("costPerSec").item(0).getTextContent());
+//		double costPerMem = Double.parseDouble(datacenterElement.getElementsByTagName("costPerMem").item(0).getTextContent());
+//		double costPerStorage = Double.parseDouble(datacenterElement.getElementsByTagName("costPerStorage").item(0).getTextContent());
+		double costPerBw = 0;
+		double costPerSec = 0;
+		double costPerMem = 0;
+		double costPerStorage = 0;
 		
 		List<EdgeHost> hostList=createHosts(datacenterElement);
 		
@@ -173,7 +191,8 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 		List<EdgeHost> hostList = new ArrayList<EdgeHost>();
 		
 		Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
-		String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+//		String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+		String attractiveness = "0";
 		int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
 		int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
 		int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
@@ -184,9 +203,12 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 			Node hostNode = hostNodeList.item(j);
 			
 			Element hostElement = (Element) hostNode;
-			int numOfCores = Integer.parseInt(hostElement.getElementsByTagName("core").item(0).getTextContent());
-			double mips = Double.parseDouble(hostElement.getElementsByTagName("mips").item(0).getTextContent());
-			int ram = Integer.parseInt(hostElement.getElementsByTagName("ram").item(0).getTextContent());
+//			int numOfCores = Integer.parseInt(hostElement.getElementsByTagName("core").item(0).getTextContent());
+//			double mips = Double.parseDouble(hostElement.getElementsByTagName("mips").item(0).getTextContent());
+//			int ram = Integer.parseInt(hostElement.getElementsByTagName("ram").item(0).getTextContent());
+			int numOfCores = 1;
+			double mips = 1;
+			int ram = 1;
 			long storage = Long.parseLong(hostElement.getElementsByTagName("storage").item(0).getTextContent());
 			long bandwidth = SimSettings.getInstance().getWlanBandwidth() / hostNodeList.getLength();
 			

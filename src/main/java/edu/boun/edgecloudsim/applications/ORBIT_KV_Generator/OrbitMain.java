@@ -21,8 +21,12 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -34,7 +38,7 @@ public class OrbitMain {
 	/**
 	 * Creates main() to run this example
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParserConfigurationException, IOException, TransformerException, SAXException {
 		//disable console output of cloudsim library
 		Log.disable();
 		
@@ -54,17 +58,14 @@ public class OrbitMain {
 
 		runType = args[0];
 		if (runType.equals("host")){
-//			runType = args[0];
 			currentHost = Integer.valueOf(args[1]);
-//			currentTime = Long.valueOf(args[2]);
-			currentTime = Instant.now().toEpochMilli();
 		}
 		else {
 //			runType = "client";
 			currentHost = 0;
 			currentClient = Integer.valueOf(args[1]);
-			currentTime = Instant.now().toEpochMilli();
 		}
+		currentTime = Instant.now().toEpochMilli();
 
 
 
@@ -100,6 +101,7 @@ public class OrbitMain {
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
+		SS.setOutputFolder(outputFolder);
 		SS.setThisMobileDevice(currentClient);
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
@@ -107,88 +109,90 @@ public class OrbitMain {
 		SimLogger.printLine("Simulation started at " + now);
 		SimLogger.printLine("----------------------------------------------------------------------");
 
-		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
-		{
-			for(int k=0; k<SS.getSimulationScenarios().length; k++)
-			{
-				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
-				{
-					for(int p=0; p<SS.getObjectPlacement().length; p++) {
 
-						String objectPlacementPolicy  = SS.getObjectPlacement()[p];
-						String simScenario = SS.getSimulationScenarios()[k];
-						String orchestratorPolicy = SS.getOrchestratorPolicies()[i];
-						Date ScenarioStartDate = Calendar.getInstance().getTime();
-						now = df.format(ScenarioStartDate);
-						// Storage: Generate Redis KV list on hosts
-						if (runType.equals("host")) {
-							RedisListHandler.closeConnection();
-							RedisListHandler.orbitCreateList(objectPlacementPolicy, String.valueOf(currentHost));
-							System.out.println("Objects placed on host " + currentHost);
-							System.exit(0);
-						}
-						//place metadata on clients
-						else {
+//		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
+//		{
+//			for(int k=0; k<SS.getSimulationScenarios().length; k++)
+//			{
+//				for(int i=0; i<SS.getOrchestratorPolicies().length; i++)
+//				{
+//					for(int p=0; p<SS.getObjectPlacement().length; p++) {
+
+		String objectPlacementPolicy  = SS.getObjectPlacement()[0];
+		String simScenario = SS.getSimulationScenarios()[0];
+		String orchestratorPolicy = SS.getOrchestratorPolicies()[0];
+		int j=SS.getMinNumOfMobileDev();
+		Date ScenarioStartDate = Calendar.getInstance().getTime();
+		now = df.format(ScenarioStartDate);
+		// Storage: Generate Redis KV list on hosts
+		if (runType.equals("host")) {
+			RedisListHandler.closeConnection();
+			RedisListHandler.orbitCreateList(objectPlacementPolicy, String.valueOf(currentHost));
+			System.out.println("Objects placed on host " + currentHost);
+			System.exit(0);
+		}
+		//place metadata on clients
+		else {
 /*							ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
-							RedisListHandler.orbitPlaceMetadata();*/
-						}
+			RedisListHandler.orbitPlaceMetadata();*/
+		}
 
-						String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
+		String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy};
 
-						SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
+		SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
 
 
-						SimLogger.printLine("Scenario started at " + now);
-						SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy +  " - Placement: " + objectPlacementPolicy +
-								" - #iteration: " + iterationNumber);
-						SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
-								SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
+		SimLogger.printLine("Scenario started at " + now);
+		SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy +  " - Placement: " + objectPlacementPolicy +
+				" - #iteration: " + iterationNumber);
+		SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
+				SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + j);
 //						SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
 //								"_" + objectPlacementPolicy + "_" + j + "DEVICES");
-						SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
-								"_" + objectPlacementPolicy + "_" + j + "DEVICES",runType,currentHost,currentTime);
+		SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
+				"_" + objectPlacementPolicy + "_" + j + "DEVICES",runType,currentHost,currentTime);
 
-						try {
-							// First step: Initialize the CloudSim package. It should be called
-							// before creating any entities.
-							int num_user = 2;   // number of grid users
-							Calendar calendar = Calendar.getInstance();
-							boolean trace_flag = false;  // mean trace events
+		try {
+			// First step: Initialize the CloudSim package. It should be called
+			// before creating any entities.
+			int num_user = 2;   // number of grid users
+			Calendar calendar = Calendar.getInstance();
+			boolean trace_flag = false;  // mean trace events
 
-							// Initialize the CloudSim library
-							CloudSim.init(num_user, calendar, trace_flag, 0.01);
+			// Initialize the CloudSim library
+			CloudSim.init(num_user, calendar, trace_flag, 0.01);
 
-							// Generate EdgeCloudsim Scenario Factory
-							ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario,
-									objectPlacementPolicy);
+			// Generate EdgeCloudsim Scenario Factory
+			ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(), orchestratorPolicy, simScenario,
+					objectPlacementPolicy);
 
 
-							// Generate EdgeCloudSim Simulation Manager
-							SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy,objectPlacementPolicy);
+			// Generate EdgeCloudSim Simulation Manager
+			SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy,objectPlacementPolicy);
 
-							// Start simulation
-							if (runType.equals("client")) {
-								OrbitReader orbitClient = new OrbitReader(currentHost);
-								orbitClient.clientRun();
-								RedisListHandler.closeConnection();
-							}
+			// Start simulation - TODO remove?
+			if (runType.equals("client")) {
+				OrbitReader orbitClient = new OrbitReader(currentHost);
+				orbitClient.clientRun();
+				RedisListHandler.closeConnection();
+			}
 
 //								manager.startSimulation();
 
-						} catch (Exception e) {
-							SimLogger.printLine("The simulation has been terminated due to an unexpected error");
-							e.printStackTrace();
-							System.exit(0);
-						}
+		} catch (Exception e) {
+			SimLogger.printLine("The simulation has been terminated due to an unexpected error");
+			e.printStackTrace();
+			System.exit(0);
+		}
 
-						Date ScenarioEndDate = Calendar.getInstance().getTime();
-						now = df.format(ScenarioEndDate);
-						SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
-						SimLogger.printLine("----------------------------------------------------------------------");
-					}//End of placement policies loop
-				}//End of orchestrators loop
-			}//End of scenarios loop
-		}//End of mobile devices loop
+		Date ScenarioEndDate = Calendar.getInstance().getTime();
+		now = df.format(ScenarioEndDate);
+		SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
+		SimLogger.printLine("----------------------------------------------------------------------");
+//					}//End of placement policies loop
+//				}//End of orchestrators loop
+//			}//End of scenarios loop
+//		}//End of mobile devices loop
 		// Remove KV list
 		RedisListHandler.closeConnection();
 		Date SimulationEndDate = Calendar.getInstance().getTime();

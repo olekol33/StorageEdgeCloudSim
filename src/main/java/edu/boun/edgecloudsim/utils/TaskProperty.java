@@ -52,12 +52,13 @@ public class TaskProperty {
     	
     	inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
     	outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
-    	length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
-    	pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+//    	length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
+    	length = 0;
+//    	pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+    	pesNumber = 0;
 	}
 
 	//Storage
-	//TODO: create new constructor
 	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
 						int _isParity, ExponentialDistribution[][] expRngList) {
 		mobileDeviceId=_mobileDeviceId;
@@ -68,12 +69,20 @@ public class TaskProperty {
 		paritiesToRead = 0;
 		isParity = _isParity;
 
-		inputFileSize = (long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
+		try {
+			inputFileSize = (long) expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
+		}
+		catch (Exception e){
+			inputFileSize = 0;
+		}
+
 //		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].sample();
 		outputFileSize =(long)expRngList[_taskType][LoadGeneratorModel.LIST_DATA_DOWNLOAD].getMean();
-		length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
+//		length = (long)expRngList[_taskType][LoadGeneratorModel.LIST_TASK_LENGTH].sample();
+		length = 0;
 
-		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+//		pesNumber = (int)SimSettings.getInstance().getTaskLookUpTable()[_taskType][LoadGeneratorModel.REQUIRED_CORE];
+		pesNumber = 0;
 	}
 
 	//Storage

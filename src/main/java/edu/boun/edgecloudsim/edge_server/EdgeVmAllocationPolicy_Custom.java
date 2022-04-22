@@ -67,7 +67,8 @@ public class EdgeVmAllocationPolicy_Custom extends VmAllocationPolicy {
 					Node hostNode = hostNodeList.item(j);
 					Element hostElement = (Element) hostNode;
 					NodeList vmNodeList = hostElement.getElementsByTagName("VM");
-					for (int k = 0; (!vmFound && k < vmNodeList.getLength()); k++) {
+//					for (int k = 0; (!vmFound && k < vmNodeList.getLength()); k++) {
+					for (int k = 0; (!vmFound && k < 1); k++) { //Oleg: assume one VM
 
 						if(vmCounter == vm.getId()){
 							dataCenterIndex = i;

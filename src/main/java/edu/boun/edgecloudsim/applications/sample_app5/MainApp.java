@@ -18,8 +18,12 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -31,7 +35,7 @@ public class MainApp {
 	/**
 	 * Creates main() to run this example
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParserConfigurationException, IOException, TransformerException, SAXException {
 		//disable console output of cloudsim library
 		Log.disable();
 		

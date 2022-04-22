@@ -117,7 +117,7 @@ public class SimLogger {
 		return taskMap;
 	}
 
-	public void appendToFile(BufferedWriter bw, String line) throws IOException {
+	public static void appendToFile(BufferedWriter bw, String line) throws IOException {
 		bw.write(line);
 		bw.newLine();
 	}

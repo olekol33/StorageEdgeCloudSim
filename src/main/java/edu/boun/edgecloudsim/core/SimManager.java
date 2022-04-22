@@ -248,7 +248,7 @@ public class SimManager extends SimEntity {
 			}
 		}
 		
-		for(int i= 0; i<SimSettings.getInstance().getNumOfCoudHost(); i++) {
+		for(int i = 0; i<SimSettings.getInstance().getNumOfCloudHost(); i++) {
 			mobileDeviceManager.submitVmList(cloudServerManager.getVmList(i));
 		}
 
@@ -288,9 +288,21 @@ public class SimManager extends SimEntity {
 			case CREATE_TASK:
 				try {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
+					int ioTaskID = edgeTask.getIoTaskID();
 					//remove head of list once read - to reduce heap size
-					loadGeneratorModel.getTaskList().set(0,null);
-					loadGeneratorModel.getTaskList().remove(0);
+					if(edgeTask.getIsParity()==0) { //if not parity - next task is in head of list
+						if (ioTaskID != loadGeneratorModel.getTaskList().get(0).getIoTaskID()) //in case not parity
+							throw new IllegalStateException("Served task cannot be removed");
+						loadGeneratorModel.getTaskList().set(0, null);
+						loadGeneratorModel.getTaskList().remove(0);
+					}
+					else { //in case is parity - parity task is added last
+						int lastTaskIndex = loadGeneratorModel.getTaskList().size()-1;
+						if (ioTaskID != loadGeneratorModel.getTaskList().get(lastTaskIndex).getIoTaskID())
+							throw new IllegalStateException("Served task cannot be removed");
+						loadGeneratorModel.getTaskList().set(lastTaskIndex, null);
+						loadGeneratorModel.getTaskList().remove(lastTaskIndex);
+					}
 					//storage
 					///Send task for each object read
 /*					System.out.println("At " + CloudSim.clock() + " Submitting ioTaskID = " + edgeTask.getIoTaskID() +
@@ -307,10 +319,11 @@ public class SimManager extends SimEntity {
 				break;
 			case CHECK_ALL_VM:
 				int totalNumOfVm = SimSettings.getInstance().getNumOfEdgeVMs();
-				if(EdgeVmAllocationPolicy_Custom.getCreatedVmNum() != totalNumOfVm){
+				//Oleg: no use of VMs
+/*				if(EdgeVmAllocationPolicy_Custom.getCreatedVmNum() != totalNumOfVm){
 					SimLogger.printLine("All VMs cannot be created! Terminating simulation...");
 					System.exit(0);
-				}
+				}*/
 				break;
 			case GET_LOAD_LOG:
 				SimLogger.getInstance().addVmUtilizationLog(

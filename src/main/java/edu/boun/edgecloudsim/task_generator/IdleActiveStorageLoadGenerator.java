@@ -11,6 +11,7 @@ import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.storage.StorageRequest;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.TaskProperty;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -69,26 +70,10 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         numOfAIOTasks = 0;
         numOfBIOTasks = 0;
         nZIPF=2;
-/*        if(SimSettings.getInstance().isMMPP()) {
-            intervalSize = 1;//sec
-            numOfIntervals = (int)(SimSettings.getInstance().getSimulationTime() / intervalSize);
-            MMPPObjectDemand = new int[SimSettings.getInstance().getNumOfDataObjects()][numOfIntervals];
-//            createMMPPDemandArray();
-        }
-        if(SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPF")){
-//            numOfZipfPermutations = numberOfMobileDevices/SimSettings.getInstance().getNumOfEdgeHosts();
-            numOfZipfPermutations = SimSettings.getInstance().getNumOfEdgeHosts()/2;
-//            numOfZipfPermutations = 10;
-            createZipfPermutations(numOfZipfPermutations);
-        }
-        if(SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPFN")){
-            numOfZipfPermutations = nZIPF*SimSettings.getInstance().getNumOfEdgeHosts()/2;
-            createZipfPermutations(numOfZipfPermutations);
-        }*/
         if(SimSettings.getInstance().isNsfExperiment())
             lambda = new double[2];
         else //permutation controlled by input seed
-            createZipfPermutations(1);
+            createZipfPermutations(SimSettings.getInstance().getServiceRateIterations());
     }
 
     @Override
@@ -98,18 +83,21 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             return;
         }
         int ioTaskID=0;
-        double sumPoisson = 0;
+//        double sumPoisson = 0;
         double dataSizeMean = 0;
         Random random = new Random();
         random.setSeed(ObjectGenerator.getSeed());
         parityRandom = new Random();
-//        DynamicZipfRandom = new Random();
         failRandom = new Random();
         failRandom.setSeed(ObjectGenerator.getSeed());
         parityRandom.setSeed(ObjectGenerator.getSeed());
-//        DynamicZipfRandom.setSeed(ObjectGenerator.getSeed());
         taskList = new ArrayList<TaskProperty>();
+
         ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+
+        //Count number of requests for each object after warm up period
+        double[] objectRequests = new double[SimSettings.getInstance().getNumOfDataObjects()];
+        Arrays.fill(objectRequests, 0);
 
         //exponential number generator for file input size, file output size and task length
         ExponentialDistribution[][] expRngList = new ExponentialDistribution[SimSettings.getInstance().getTaskLookUpTable().length][ACTIVE_PERIOD];
@@ -118,15 +106,15 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         for(int i=0; i<SimSettings.getInstance().getTaskLookUpTable().length; i++) {
             if(SimSettings.getInstance().getTaskLookUpTable()[i][USAGE_PERCENTAGE] ==0)
                 continue;
-            expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
             expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
-            expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
             dataSizeMean+=SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD];
         }
         dataSizeMean /= SimSettings.getInstance().getTaskLookUpTable().length;
 
         //Each mobile device utilizes an app type (task type)
         taskTypeOfDevices = new int[numberOfMobileDevices];
+
+        OG.resetNewObjectRandomGenerator(SimSettings.getInstance().getCurrentServiceRateIteration());
         //Calculate lambdas for NSF experiment
 
         for(int i=0; i<numberOfMobileDevices; i++) {
@@ -136,21 +124,18 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             if(SimSettings.getInstance().isNsfExperiment()) {
                 randomTaskType = i%2;
             }
-            else //TODO: currently select random task, not by weight
+            else
                 randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
             taskTypeOfDevices[i] = randomTaskType;
 
             double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][POISSON_INTERARRIVAL];
             double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][ACTIVE_PERIOD];
             double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][IDLE_PERIOD];
-/*            double activePeriodStartTime = SimUtils.getRandomDoubleNumber(
-                    SimSettings.CLIENT_ACTIVITY_START_TIME,
-                    SimSettings.CLIENT_ACTIVITY_START_TIME + activePeriod);  //active period starts shortly after the simulation started (e.g. 10 seconds)*/
             //random start time with seed
             double activePeriodStartTime = SimSettings.CLIENT_ACTIVITY_START_TIME + (activePeriod) * random.nextDouble();
             double virtualTime = activePeriodStartTime;
 
-            sumPoisson += poissonMean;
+//            sumPoisson += poissonMean;
 
             //Oleg: random with seed
             ExponentialDistribution rng = new ExponentialDistribution(rand,
@@ -160,7 +145,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 double interval;
                 interval = rng.sample();
                 if(interval <= 0){
-                    SimLogger.printLine("Impossible is occured! interval is " + interval + " for device " + i + " time " + virtualTime);
+                    SimLogger.printLine("Impossible has occurred! interval is " + interval + " for device " + i + " time " + virtualTime);
                     continue;
                 }
                 //SimLogger.printLine(virtualTime + " -> " + interval + " for device " + i + " time ");
@@ -183,84 +168,50 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                             break;
                     }
                 }
-                //for MMPP take object with max requests in interval
- /*               else if(SimSettings.getInstance().isMMPP()){
-                    int curInterval=(int)(virtualTime/intervalSize);
-                    if (virtualTime>SimSettings.getInstance().getSimulationTime())
-                        continue;
-                    int maxRequests=50; //Above this threshold address as burst
-                    List<Integer> maxID= new ArrayList<>();
-                    for(int id=0;id<SimSettings.getInstance().getNumOfDataObjects();id++){
-                        if (MMPPObjectDemand[id][curInterval]>maxRequests) {
-                            //if object has more requests, empty previous list
-//                            maxID.removeAll(maxID);
-                            maxID.add(id); //add to list of high request objects
-//                            maxRequests=MMPPObjectDemand[id][curInterval];
-                        }
-                        //list of objects with the same popularity
-*//*                        else if (MMPPObjectDemand[id][curInterval]==maxRequests)
-                            maxID.add(id);*//*
-                    }
-                    //randomly select object with top popularity
-                    //TODO: double use of this value (for parity as well) - this is incorrect
-                    double prob = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][PROB_CLOUD_SELECTION];
-                    //Load distribution - to avoid same object requested in each interval
-                    //with probability prob proceed with original distribution
-                    //if no bursty behavior also process with original distribution
-                    if (random.nextInt(100)<=prob || maxID.size()==0)
-                        objectID = OG.getDataObjectID();
-                    else{
-                        int rnd = random.nextInt(maxID.size());
-                        objectID = OG.getDataObjectID(maxID.get(rnd));
-                    }
 
-                }
-                else if (SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPF")){
-                    int permutationIntervalSize = (int)SimSettings.getInstance().getSimulationTime()/numOfZipfPermutations;
-                    //Get object rank
-                    int intObjectID = OG.getObjectIDForLoad(SimSettings.getInstance().getNumOfDataObjects(),"MULTIZIPF");
-//                    int permutation = i%numOfZipfPermutations;
-                    int permutation = (int)virtualTime/permutationIntervalSize;
-
-                    if (virtualTime>SimSettings.getInstance().getSimulationTime())
-                        continue;
-                    //use rank as index of permutation
-                    intObjectID = zipfPermutations[permutation][intObjectID];
-                    objectID = OG.getDataObjectID(intObjectID);
-
-                }
-                else if (SimSettings.getInstance().getObjectDistRead().equals("MULTIZIPFN")){ //divide load by 2
-                    int permutationIntervalSize = nZIPF*((int)SimSettings.getInstance().getSimulationTime()/numOfZipfPermutations);
-                    //Get object rank
-                    int intObjectID = OG.getObjectIDForLoad(SimSettings.getInstance().getNumOfDataObjects(),"MULTIZIPF");
-                    int permutation = (int)virtualTime/permutationIntervalSize;
-
-                    if (virtualTime>SimSettings.getInstance().getSimulationTime())
-                        continue;
-                    int remainder = i%nZIPF;
-                    //use rank as index of permutation
-                    intObjectID = zipfPermutations[nZIPF*permutation+remainder][intObjectID];
-                    objectID = OG.getDataObjectID(intObjectID);
-
-                }
-                else*/
-//                objectID = OG.getDataObjectID();
                 if(!SimSettings.getInstance().isNsfExperiment()) {
                     String dist = SimSettings.getInstance().getObjectDistRead();
-                    objectID = "d" + String.valueOf(zipfPermutations[0][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(), "objects", dist)]);
+                    int currentIteration = SimSettings.getInstance().getCurrentServiceRateIteration();
+                    int objectNum = zipfPermutations[currentIteration][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(), "objects", dist)];
+                    objectID = "d" + String.valueOf(objectNum);
+
+                    //count
+                    if(virtualTime>=SimSettings.getInstance().getWarmUpPeriod()){
+                        objectRequests[objectNum]++;
+                    }
                 }
                 taskList.add(new TaskProperty(i,randomTaskType, virtualTime, objectID, ioTaskID, 0,expRngList));
                 ioTaskID++;
-/*                if(randomTaskType%2==0)
-                    numOfAIOTasks++;
-                else
-                    numOfBIOTasks++;*/
             }
 //            System.out.println("Device: " + i + " prdocued request: " + requests);
         }
         numOfIOTasks = ioTaskID;
+        //sort since each user has a different start time
+        taskList.sort(Comparator.comparing(TaskProperty::getStartTime));
 
-        checkModeAfterInit(dataSizeMean, OG.getOverhead());// TODO: mark as changed - Harel
+
+
+        ////Analyze request rate on the fly
+        //normalize to mu
+        int servedReqsPerSec = SimSettings.getInstance().getServedReqsPerSec();
+        double measuredDuration = SimSettings.getInstance().getSimulationTime() - SimSettings.getInstance().getWarmUpPeriod();
+        int totalReqsPerSec = 0;
+        for(int a = 0; a < objectRequests.length; a++)
+        {
+            totalReqsPerSec += objectRequests[a];
+            objectRequests[a] = objectRequests[a]/(servedReqsPerSec*measuredDuration);
+        }
+        totalReqsPerSec /= measuredDuration;
+        double objectRequestsSum = Arrays.stream(objectRequests).sum();
+        double objectRequestsAvg = objectRequestsSum / objectRequests.length;
+        double dataObjectsInNodes = (double)SimSettings.getInstance().getNumOfDataObjects() / SimSettings.getInstance().getNumOfEdgeDatacenters();
+        System.out.println("Avg object request rate: " +String.valueOf(objectRequestsAvg) + "  mu for " +
+                String.valueOf(dataObjectsInNodes) + " objects in node");
+        double objectRequestsMax = Arrays.stream(objectRequests).max().getAsDouble();
+        System.out.println("Max object request rate: " +String.valueOf(objectRequestsMax) + "  mu");
+        SimSettings.getInstance().setObjectRequestRateArray(objectRequests);
+
+        checkModeAfterInit(dataSizeMean, OG.getOverhead());
     }
 
     //TODO: created by Harel
@@ -290,7 +241,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 continue;
             expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
             expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
-            expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
+//            expRngList[i][LIST_TASK_LENGTH] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][TASK_LENGTH]);
             dataSizeMean+=SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD];
         }
         dataSizeMean /= SimSettings.getInstance().getTaskLookUpTable().length;
@@ -313,7 +264,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         checkModeAfterInit(dataSizeMean, OG.getOverhead());
     }
 
-    //TODO: the rest of initialize
+    // Remaining part of init
     private void checkModeAfterInit(double dataSizeMean, double overhead){
         if(SimSettings.getInstance().isNsfExperiment()) {
             for(int i=0; i<2; i++) {
@@ -329,6 +280,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 Node vmNode = vmNodeList.item(0);
                 Element vmElement = (Element) vmNode;
 
+//                readRate = (readRate*(int)(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]))/1000; //reqs to MB
                 int bandwidth = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
 
                 double mu = bandwidth * 1000 / SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][DATA_DOWNLOAD];
@@ -346,6 +298,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 rate = rate/SimSettings.getInstance().getSimulationTime(); //Tasks per second*/
                 lambda[randomTaskType] = rate / mu;
                 System.out.println("\nLambda " + i + ": " + lambda[randomTaskType] + " mu");
+                throw new IllegalStateException("Oleg:Fix readRate setting");
             }
 
 //        }
@@ -357,6 +310,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     simScenario + "_" + orchestratorPolicy +
                     "_" + objectPlacementPolicy + "_" + numberOfMobileDevices + "DEVICES");
         }
+
         if(SimSettings.getInstance().isOrbitMode()) {
             try {
                 exportTaskList();
@@ -383,6 +337,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 Node vmNode = vmNodeList.item(0);
                 Element vmElement = (Element) vmNode;
                 muTotal += Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
+                throw new IllegalStateException("Oleg:Fix readRate setting");
             }
 
 //            double muMean = muTotal/datacenterList.getLength();
@@ -424,19 +379,21 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
 
         }
-
-
-
         parityReadStarted = new boolean[numOfIOTasks];
         parityReadFinished = new boolean[numOfIOTasks];
     }
 
     public void exportTaskList() throws IOException {
+        String tmpFolder = "";
+        if(SystemUtils.IS_OS_WINDOWS)
+            tmpFolder = SimSettings.getInstance().getOutputFolder();
+        else
+            tmpFolder = "/tmp/";
         File taskListFile = null;
         FileWriter taskListFW = null;
         BufferedWriter taskListBW = null;
         int currentDevice = SimSettings.getInstance().getThisMobileDevice();
-        taskListFile = new File("/tmp/TASK_LIST"+Integer.toString(currentDevice)+".txt");
+        taskListFile = new File(tmpFolder,"TASK_LIST"+Integer.toString(currentDevice)+".txt");
         taskListFW = new FileWriter(taskListFile, false);
         taskListBW = new BufferedWriter(taskListFW);
         taskListBW.write("startTime,outputFileSize,mobileDeviceId,objectRead,ioTaskID");
@@ -452,6 +409,22 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         }
         taskListBW.close();
         System.out.println("Task list generated for client "+ Integer.toString(currentDevice));
+        if(SimSettings.getInstance().isServiceRateScan()){
+            File serviceRateFile = new File(tmpFolder, "service_rate.txt");
+            FileWriter serviceRateFileFW = new FileWriter(serviceRateFile, false);
+            BufferedWriter serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
+            String policy = "";
+            if(objectPlacementPolicy.equals("CODING_PLACE"))
+                policy="coding";
+            else
+                policy="replication";
+            double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[0][POISSON_INTERARRIVAL];
+            poissonMean = 1/ poissonMean;
+            SimLogger.appendToFile(serviceRateFileBW, SimSettings.getInstance().getObjectRequestRateArray() + "," + policy + "," +
+                    String.valueOf((int)poissonMean) + "," + SimSettings.getInstance().getServedReqsPerSec());
+            System.out.println("Service rate output generated for client "+ Integer.toString(currentDevice));
+            serviceRateFileBW.close();
+        }
     }
 
     @Override
@@ -637,10 +610,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     //Creates n permutations of size numOfDataObjects
     private void createZipfPermutations(int n){
+        if(n==0)
+            n++;
         Random DynamicZipfRandom = new Random();
         DynamicZipfRandom.setSeed(SimSettings.getInstance().getRandomSeed());
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
         zipfPermutations = new int[n][numOfDataObjects];
+
         for (int i=0;i<n;i++){
             List<Integer> numbers = new ArrayList<>();
             //List of size numOfDataObjects

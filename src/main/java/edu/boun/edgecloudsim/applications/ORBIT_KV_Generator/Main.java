@@ -3,9 +3,13 @@ package edu.boun.edgecloudsim.applications.ORBIT_KV_Generator;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.utils.SimLogger;
+import org.xml.sax.SAXException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.MigrateParams;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,7 +17,7 @@ import java.util.Date;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParserConfigurationException, IOException, TransformerException, SAXException {
         //TESTING
         //load settings from configuration file
         int currentHost=-1;

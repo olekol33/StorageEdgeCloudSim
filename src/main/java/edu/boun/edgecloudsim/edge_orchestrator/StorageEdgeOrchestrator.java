@@ -128,7 +128,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         if (task.getIsParity()==1){
             //remove host of data if other options exist
             if (objectLocations.size()>1)
-                objectLocations.remove(String.valueOf(task.getHostID()));
+                objectLocations.remove(String.valueOf(task.getSubmittedLocation().getServingWlanId()));
         }
         for (String s : objectLocations)
         {

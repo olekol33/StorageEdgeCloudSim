@@ -48,7 +48,7 @@ public class CpuUtilizationModel_Custom implements UtilizationModel {
 	}
 	
 	public double predictUtilization(SimSettings.VM_TYPES _vmType){
-		int index = 0;
+/*		int index = 0;
 		if(_vmType == SimSettings.VM_TYPES.EDGE_VM)
 			index = LoadGeneratorModel.VM_UTILIZATION_ON_EDGE;
 		else if(_vmType == SimSettings.VM_TYPES.CLOUD_VM)
@@ -59,6 +59,7 @@ public class CpuUtilizationModel_Custom implements UtilizationModel {
 			SimLogger.printLine("Unknown VM Type! Terminating simulation...");
 			System.exit(0);
 		}
-		return SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][index];
+		return SimSettings.getInstance().getTaskLookUpTable()[task.getTaskType()][index];*/
+		return 0;
 	}
 }

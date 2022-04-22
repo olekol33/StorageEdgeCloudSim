@@ -19,7 +19,10 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -32,7 +35,7 @@ public class NSFMainApp {
 	/**
 	 * Creates main() to run this example
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParserConfigurationException, IOException, TransformerException, SAXException {
 		//disable console output of cloudsim library
 		Log.disable();
 		

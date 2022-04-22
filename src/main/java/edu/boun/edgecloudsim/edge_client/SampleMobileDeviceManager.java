@@ -54,7 +54,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 	static final int REQUEST_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_NEIGHBOR = BASE + 5;
 	static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 6;
 	static final int RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE = BASE + 7;
-	protected static final double MM1_QUEUE_MODEL_UPDATE_INTEVAL = 0.1; //seconds
+	protected static final double MM1_QUEUE_MODEL_UPDATE_INTERVAL = SimSettings.getInstance().getMm1QueueModelUpdateInterval(); //seconds
 	
 	private int taskIdCounter=0;
 	
@@ -74,7 +74,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 	public void startEntity() {
 		super.startEntity();
 		schedule(getId(), SimSettings.CLIENT_ACTIVITY_START_TIME +
-				MM1_QUEUE_MODEL_UPDATE_INTEVAL, UPDATE_MM1_QUEUE_MODEL);
+				MM1_QUEUE_MODEL_UPDATE_INTERVAL, UPDATE_MM1_QUEUE_MODEL);
 	}
 	
 	/**
@@ -177,7 +177,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 			case UPDATE_MM1_QUEUE_MODEL:
 			{
 				((SampleNetworkModel)networkModel).updateMM1QueeuModel();
-				schedule(getId(), MM1_QUEUE_MODEL_UPDATE_INTEVAL, UPDATE_MM1_QUEUE_MODEL);
+				schedule(getId(), MM1_QUEUE_MODEL_UPDATE_INTERVAL, UPDATE_MM1_QUEUE_MODEL);
 	
 				break;
 			}
@@ -393,6 +393,6 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 	}
 
 	public static double getMm1QueueModelUpdateInterval() {
-		return MM1_QUEUE_MODEL_UPDATE_INTEVAL;
+		return MM1_QUEUE_MODEL_UPDATE_INTERVAL;
 	}
 }
