@@ -70,7 +70,7 @@ public class TaskProperty {
 		isParity = _isParity;
 
 		try {
-			inputFileSize = (long) expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].sample();
+			inputFileSize = (long) expRngList[_taskType][LoadGeneratorModel.LIST_DATA_UPLOAD].getMean();
 		}
 		catch (Exception e){
 			inputFileSize = 0;

@@ -48,4 +48,5 @@ public abstract class NetworkModel {
 	public abstract void uploadFinished(Location accessPointLocation, int destDeviceId);
 	public abstract void downloadStarted(Location accessPointLocation, int sourceDeviceId);
 	public abstract void downloadFinished(Location accessPointLocation, int sourceDeviceId);
+	public abstract double getUploadDelay(int sourceDeviceId, int destDeviceId, int uploadType, Task task);
 }

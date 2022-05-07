@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 
 import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
+import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -47,6 +48,7 @@ public class SimManager extends SimEntity {
 	private int numOfMobileDevice;
 	private NetworkModel networkModel;
 	private MobilityModel mobilityModel;
+	private ObjectGenerator objectGenerator;
 	private ScenarioFactory scenarioFactory;
 	private EdgeOrchestrator edgeOrchestrator;
 	private EdgeServerManager edgeServerManager;
@@ -106,11 +108,15 @@ public class SimManager extends SimEntity {
 	public SimManager(ScenarioFactory _scenarioFactory, int _numOfMobileDevice, String _simScenario,
 					  String _orchestratorPolicy, String _objectPlacementPolicy) throws Exception {
 		super("SimManager");
+
+		instance = this;
 		simScenario = _simScenario;
 		scenarioFactory = _scenarioFactory;
 		numOfMobileDevice = _numOfMobileDevice;
 		orchestratorPolicy = _orchestratorPolicy;
 		objectPlacementPolicy = _objectPlacementPolicy;
+
+		objectGenerator = new ObjectGenerator(objectPlacementPolicy);
 
 		SimLogger.print("Creating tasks...");
 		loadGeneratorModel = scenarioFactory.getLoadGeneratorModel();
@@ -146,7 +152,6 @@ public class SimManager extends SimEntity {
 		mobileDeviceManager = scenarioFactory.getMobileDeviceManager();
 		mobileDeviceManager.initialize();
 
-		instance = this;
 	}
 
 	
@@ -211,7 +216,12 @@ public class SimManager extends SimEntity {
 	public MobilityModel getMobilityModel(){
 		return mobilityModel;
 	}
-	
+
+	public ObjectGenerator getObjectGenerator() {
+		return objectGenerator;
+	}
+
+
 	public EdgeOrchestrator getEdgeOrchestrator(){
 		return edgeOrchestrator;
 	}
@@ -256,10 +266,12 @@ public class SimManager extends SimEntity {
 			if(mobileServerManager.getVmList(i) != null)
 				mobileDeviceManager.submitVmList(mobileServerManager.getVmList(i));
 		}
-		
+		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
 		//Creation of tasks are scheduled here!
-		for(int i=0; i< loadGeneratorModel.getTaskList().size(); i++)
-			schedule(getId(), loadGeneratorModel.getTaskList().get(i).getStartTime(), CREATE_TASK, loadGeneratorModel.getTaskList().get(i));//TODO: Harel - check HERE!!!
+		for(int i=0; i< taskList.size(); i++) {
+			TaskProperty taskProperty = taskList.get(i);
+			schedule(getId(), taskProperty.getStartTime(), CREATE_TASK, taskProperty);
+		}
 		
 		//Periodic event loops starts from here!
 		schedule(getId(), 5, CHECK_ALL_VM);
@@ -288,28 +300,25 @@ public class SimManager extends SimEntity {
 			case CREATE_TASK:
 				try {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
+/*					List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
 					int ioTaskID = edgeTask.getIoTaskID();
 					//remove head of list once read - to reduce heap size
 					if(edgeTask.getIsParity()==0) { //if not parity - next task is in head of list
-						if (ioTaskID != loadGeneratorModel.getTaskList().get(0).getIoTaskID()) //in case not parity
+						if (ioTaskID != taskList.get(0).getIoTaskID()) //in case not parity
 							throw new IllegalStateException("Served task cannot be removed");
-						loadGeneratorModel.getTaskList().set(0, null);
-						loadGeneratorModel.getTaskList().remove(0);
+//						taskList.set(0, null);
+//						taskList.remove(0);
 					}
 					else { //in case is parity - parity task is added last
-						int lastTaskIndex = loadGeneratorModel.getTaskList().size()-1;
-						if (ioTaskID != loadGeneratorModel.getTaskList().get(lastTaskIndex).getIoTaskID())
+						int lastTaskIndex = taskList.size()-1;
+						if (ioTaskID != taskList.get(lastTaskIndex).getIoTaskID())
 							throw new IllegalStateException("Served task cannot be removed");
-						loadGeneratorModel.getTaskList().set(lastTaskIndex, null);
-						loadGeneratorModel.getTaskList().remove(lastTaskIndex);
+						taskList.set(lastTaskIndex, null);
+						taskList.remove(lastTaskIndex);
 					}
-					//storage
-					///Send task for each object read
-/*					System.out.println("At " + CloudSim.clock() + " Submitting ioTaskID = " + edgeTask.getIoTaskID() +
-							", of time: " + edgeTask.getStartTime() +", isParity = " + edgeTask.getIsParity());*/
 					if (SimSettings.getInstance().isOrbitMode())
 						((StorageMobileDeviceManager) mobileDeviceManager).submitOrbitTask(edgeTask);
-					else
+					else*/
 						mobileDeviceManager.submitTask(edgeTask);
 
 				} catch (Exception e) {

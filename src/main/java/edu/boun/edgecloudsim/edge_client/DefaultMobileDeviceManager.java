@@ -157,7 +157,7 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 				else if(task.getAssociatedDatacenterId() != SimSettings.MOBILE_DATACENTER_ID)
 					networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
 				
-				SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+				SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock(), task);
 				break;
 			}
 			default:

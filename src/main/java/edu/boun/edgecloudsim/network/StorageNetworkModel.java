@@ -20,6 +20,9 @@ import java.util.List;
 
 public class StorageNetworkModel extends SampleNetworkModel {
 
+    EdgeQueue wlanQueue;
+    EdgeQueue manQueue;
+
     protected double[] hostManPoissonMeanForDownload; //seconds
     protected double[] hostAvgManTaskOutputSize; //bytes
     protected double[] hostTotalManTaskOutputSize;
@@ -72,11 +75,18 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
     @Override
     public void initialize() {
+        //assuming all sizes in vms are equal
+
+        //mbps to byte
+        long manMu = (SimSettings.getInstance().getTaskProcessingMbps()/8) * 1000 *1000;
+        wlanQueue = new EdgeQueue(SimSettings.getInstance().getREADRATE(),true);
+        manQueue = new EdgeQueue(manMu,false);
         int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
         wanClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
         wlanClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
         manHostClients = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
         hostOperativity = new int[numOfEdgeDatacenters];  //we have one access point for each datacenter
+        
 
         //Man
         hostManPoissonMeanForDownload = new double[numOfEdgeDatacenters];
@@ -159,15 +169,81 @@ public class StorageNetworkModel extends SampleNetworkModel {
         numOfWlanTaskForUpload = 0;
     }
 
+
+    @Override
+    public double getUploadDelay(int sourceDeviceId, int destDeviceId, int uploadType, Task task) {
+        long dataSize = task.getCloudletFileSize();
+        double delay = 0;
+        int srcID=-1,dstID=destDeviceId;
+        String operationType = "";
+
+        //special case for man communication
+        if(uploadType == SimSettings.EDGE_TO_EDGE){
+			delay = getManUploadDelay(sourceDeviceId,dataSize);
+            srcID = task.getSubmittedLocation().getServingWlanId();
+            operationType="UPLOAD_MAN_EDGE_TO_EDGE";
+        }
+        else if(uploadType == SimSettings.DEVICE_TO_LOCAL_EDGE){
+            delay = getWlanUploadDelay(destDeviceId, dataSize);
+            operationType="UPLOAD_WLAN_DEVICE_TO_EDGE";
+        }
+        else if(uploadType == SimSettings.LOCAL_EDGE_TO_REMOTE_EDGE){
+            delay = getWlanUploadDelay(destDeviceId,dataSize );
+            srcID = task.getSubmittedLocation().getServingWlanId();
+            operationType="UPLOAD_WLAN_EDGE_TO_EDGE";
+        }
+        else if(uploadType == SimSettings.REMOTE_EDGE_TO_LOCAL_EDGE){
+            delay = getWlanUploadDelay(destDeviceId,dataSize );
+            srcID = task.getAssociatedHostId();
+            dstID = task.getSubmittedLocation().getServingWlanId();
+            operationType="DOWNLOAD_WLAN_EDGE_TO_DEVICE";
+        }
+        else{
+            throw new IllegalStateException("No matching upload type");
+        }
+
+        logRequestPathInQueues(task, operationType, srcID, dstID, dataSize, delay);
+
+        return delay;
+
+/*        Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(sourceDeviceId,CloudSim.clock());
+
+        //mobile device to cloud server
+        if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+//            delay = getWanUploadDelay(accessPointLocation, task.getCloudletFileSize());
+        }
+        //mobile device to edge device (wifi access point)
+        else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+            delay = getWlanUploadDelay(sourceDeviceId, task.getCloudletFileSize());
+        }
+
+        return delay;*/
+    }
+
+    //wlan upload and download delay is symmetric in this model
+    private double getWlanUploadDelay(int sourceDeviceId, double dataSize) {
+        return wlanQueue.getQueueDownloadDelay(sourceDeviceId, dataSize,0);
+    }
+
+    //upload and download delay is symmetric in this model
+    private double getManUploadDelay(int sourceDeviceId, double dataSize) {
+        return manQueue.getQueueDownloadDelay(sourceDeviceId, dataSize,1);
+    }
+
     @Override
     //Download from edge (sourceDevice) to device (destDevice)
     public double getDownloadDelay(int sourceDeviceId, int destDeviceId, Task task) {
+        long dataSize = task.getCloudletOutputSize();
         double delay = 0;
         //special case for man communication
         // When communication is between edge nodes(on grid)
         if(destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
 //            return delay = getManDownloadDelay();
-            return delay = getManDownloadDelay(task.getAssociatedHostId(),1);
+            delay = manQueue.getQueueDownloadDelay(task.getAssociatedHostId(),dataSize,1);
+            logRequestPathInQueues(task, "DOWNLOAD_MAN_EDGE_TO_EDGE", task.getAssociatedHostId(),
+                    task.getSubmittedLocation().getServingWlanId(), dataSize, delay);
+            return delay;
+//            return delay = getManDownloadDelay(task.getAssociatedHostId(),1);
         }
 /*        else if(sourceDeviceId == destDeviceId && sourceDeviceId != SimSettings.GENERIC_EDGE_DEVICE_ID) {
             delay = getManDownloadDelay(task.getAssociatedHostId(), 0);
@@ -176,7 +252,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         }*/
         StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
 
-        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getSubmittedLocation().getServingWlanId(), CloudSim.clock());
+        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
 //        Location accessPointLocation = (StaticRangeMobility)SimManager.getInstance().getMobilityModel().getDCLocation(deviceLocation.getServingWlanId());
         Location accessPointLocation = staticMobility.getDCLocation(deviceLocation.getServingWlanId());;
 //        Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
@@ -197,7 +273,10 @@ public class StorageNetworkModel extends SampleNetworkModel {
             int accessLocation = deviceLocation.getServingWlanId();
             if(destDeviceId == 100007) //RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE
                 accessLocation = sourceDeviceId;
-            double wlanDelay = getWlanDownloadDelay(accessLocation);
+//            double wlanDelay = getWlanDownloadDelay(accessLocation,dataSize);
+            double wlanDelay = wlanQueue.getQueueDownloadDelay(sourceDeviceId,dataSize,0);
+            logRequestPathInQueues(task, "DOWNLOAD_WLAN_EDGE_NODE", task.getAssociatedHostId(),
+                    task.getSubmittedLocation().getServingWlanId(), dataSize, wlanDelay);
             delay += wlanDelay;
             //In case something went wrong
             if (wlanDelay==0)
@@ -247,6 +326,38 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //System.out.println("--> " + numOfWanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
 
         return result;
+    }
+
+    private void logRequestPathInQueues(Task task, String operationType, int srcID, int dstID, long dataSize, double delay){
+        if(!SimSettings.getInstance().getDeepFileLoggingEnabled())
+            return;
+        String filepath = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_REQS_PATH.log";
+        File f = new File(filepath);
+        PrintWriter out = null;
+        try {
+            if (f.exists() && !f.isDirectory()) {
+                out = new PrintWriter(new FileOutputStream(f, true));
+            } else {
+                out = new PrintWriter(filepath);
+                out.append("Time;ioTaskID;delay;srcID;dstID;dataSize;type;object");
+                out.append("\n");
+            }
+        }
+        catch (Exception e){
+            System.out.println("Failed logRequestPathInQueues");
+            System.exit(1);
+        }
+        DecimalFormat df6 = new DecimalFormat();
+        df6.setMaximumFractionDigits(6);
+        DecimalFormat df3 = new DecimalFormat();
+        df3.setMaximumFractionDigits(3);
+        out.append(df6.format(CloudSim.clock()) + SimSettings.DELIMITER + Integer.toString(task.getIoTaskID()) + SimSettings.DELIMITER +
+                df6.format(delay)   + SimSettings.DELIMITER + Integer.toString(srcID) + SimSettings.DELIMITER +
+                Integer.toString(dstID)+ SimSettings.DELIMITER + Long.toString(dataSize) + SimSettings.DELIMITER + operationType
+                + SimSettings.DELIMITER + task.getObjectRead());
+        out.append("\n");
+
+        out.close();
     }
 
     //Logs queue in all hosts in each interval
@@ -333,6 +444,11 @@ public class StorageNetworkModel extends SampleNetworkModel {
                 }
             }
         }
+        
+        wlanQueue.updateMM1QueueModel();
+        manQueue.updateMM1QueueModel();
+        
+        
 //        System.out.println("Time: " + CloudSim.clock() + ", Tasks: " + numOfManTaskForDownload);
         //Update for this interval for numOfManTaskForDownload tasks
         if(numOfManTaskForDownload != 0){
@@ -450,8 +566,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
         return result;
     }
 
-    double getWlanDownloadDelay(int hostIndex) {
+    double getWlanDownloadDelay(int hostIndex, double dataSize) {
         int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
+        double sim2orbitConst = SimSettings.getInstance().getSim2orbitReadrateRatio();
         if (hostIndex>=numOfEdgeDatacenters)
             System.out.println("ERROR: Illegal host id " + hostIndex);
         List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(hostIndex);
@@ -462,12 +579,13 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //need small sized Mm1QueueModelUpdateInterval to update frequently
 //        double mu = procMbps2NumOfTasks(intervalsInSec*vmArray.get(0).getReadRate()*8); //tasks
         double mu = SimSettings.getInstance().getServedReqsPerSec()*intervalsInSec*SimSettings.getInstance().getSim2orbitReadrateRatio();
-//        double mu = vmArray.get(0).getReadRate()*1000*SimSettings.getInstance().getMm1QueueModelUpdateInterval();//tasks
+//        double mu = vmArray.get(0).getReadRate()*intervalsInSec*sim2orbitConst;
 
         //count for interval
         wlanHostClients[hostIndex]++;
         hostNumOfWlanTaskForDownload[hostIndex] = wlanHostClients[hostIndex];
-        hostTotalWlanTaskOutputSize[hostIndex] += hostAvgWlanTaskOutputSize[hostIndex];
+//        hostTotalWlanTaskOutputSize[hostIndex] += hostAvgWlanTaskOutputSize[hostIndex];
+        hostTotalWlanTaskOutputSize[hostIndex] += dataSize;
 
         //initialization
         if (previousHostAvgWlanTaskOutputSize[hostIndex]==0)
@@ -477,15 +595,17 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
 
         //check for overflow on the fly
-        if (wlanHostClients[hostIndex] >mu ) {
+        if (hostTotalWlanTaskOutputSize[hostIndex] >mu ) {
             wlanHostClients[hostIndex]--;
-            hostTotalWlanTaskOutputSize[hostIndex] -= hostAvgWlanTaskOutputSize[hostIndex];
+            hostTotalWlanTaskOutputSize[hostIndex] -= dataSize;
+//            hostTotalWlanTaskOutputSize[hostIndex] -= hostAvgWlanTaskOutputSize[hostIndex];
             return -1;
         }
         //Use existing function. arrival rate is previousWlanHostClients, service rate is 1/taskProcessingTimeS
         double result = calculateMM1(0,
                 mu,
-                previousWlanHostClients[hostIndex]);
+                wlanPoissonMeanForDownload);
+//                previousWlanHostClients[hostIndex]);
         wlanLatestDelay[hostIndex]=result;
         totalWlanTaskOutputSize += avgWlanTaskOutputSize;
         numOfWlanTaskForDownload++;
@@ -549,6 +669,16 @@ public class StorageNetworkModel extends SampleNetworkModel {
     public int getManQueueSize(int hostID) {
         return manHostClients[hostID];
     }
+
+    /** Get queue size in input to remote edge node
+     * No need to check MAN delay because it's on node output -> identical to all sent requests
+     * Calculate by current queue size (and not previous) to get more updated result
+     * @param hostID
+     * @return
+     */
+    public double getEdge2EdgeDelay(int hostID){
+        return wlanQueue.getHostTotalTaskSize(hostID);
+    }
     public List<String> getNonOperativeHosts() {
         List<String> nonOperativeHosts = new ArrayList<>();
         for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
@@ -557,4 +687,82 @@ public class StorageNetworkModel extends SampleNetworkModel {
         }
         return nonOperativeHosts;
     }
+}
+
+class EdgeQueue{
+    protected double[] hostTotalTaskSize;
+    protected int[] hostOperativity;
+
+    protected double[] previousHostTotalTaskSize;
+    protected double numOfTasks;
+    double mu;
+
+    public EdgeQueue(long readRate, boolean applySim2OrbitConst) {
+        initialize(readRate, applySim2OrbitConst);
+        
+    }
+    
+    private void initialize(long readRate, boolean applySim2OrbitConst){
+        int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
+        double intervalsInSec=SampleMobileDeviceManager.getMm1QueueModelUpdateInterval();
+        double sim2orbitConst=1;
+        previousHostTotalTaskSize = new double[numOfEdgeDatacenters];
+        hostTotalTaskSize = new double[numOfEdgeDatacenters];
+
+        if(applySim2OrbitConst)
+            sim2orbitConst = SimSettings.getInstance().getSim2orbitReadrateRatio();
+        mu = readRate*intervalsInSec*sim2orbitConst;
+
+        for(int host=0; host<numOfEdgeDatacenters; host++) {
+            hostTotalTaskSize[host] = 0;
+//            hostOperativity[host] = 1;
+
+        }
+        numOfTasks = 0;
+    }
+
+    public double getHostTotalTaskSize(int hostID) {
+        return hostTotalTaskSize[hostID];
+    }
+
+    public double getMu() {
+        return mu;
+    }
+
+    double getQueueDownloadDelay(int hostIndex, double dataSize, int readOnGrid) {
+        double propogationDelay = 2*readOnGrid * SimSettings.getInstance().getInternalLanDelay();
+
+        hostTotalTaskSize[hostIndex] += dataSize;
+
+        //check for overflow on the fly
+        if (hostTotalTaskSize[hostIndex] >mu ) {
+//            HostClients[hostIndex]--;
+            hostTotalTaskSize[hostIndex] -= dataSize;
+            return -1;
+        }
+        //Use existing function. arrival rate is previousHostClients, service rate is 1/taskProcessingTimeS
+        double result = SampleNetworkModel.calculateMM1(propogationDelay,
+                mu,
+                previousHostTotalTaskSize[hostIndex]);
+        numOfTasks++;
+
+
+        if (result < 0){
+            hostTotalTaskSize[hostIndex] -= dataSize;
+        }
+        return result;
+    }
+
+    public void updateMM1QueueModel() {
+        //assuming same service rate for all queues
+        int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
+        if (numOfTasks != 0) {
+            for (int host = 0; host < numOfEdgeDatacenters; host++) {
+                previousHostTotalTaskSize[host] = hostTotalTaskSize[host];
+                hostTotalTaskSize[host] = 0;
+            }
+        }
+        numOfTasks = 0;
+    }
+
 }

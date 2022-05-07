@@ -11,12 +11,13 @@
 
 package edu.boun.edgecloudsim.edge_client;
 
+import edu.boun.edgecloudsim.core.SimSettings;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.UtilizationModel;
 
 import edu.boun.edgecloudsim.utils.Location;
 
-//changed by Harel
+import java.io.*;
 
 public class Task extends Cloudlet {
 	private Location submittedLocation;

@@ -36,7 +36,7 @@ public class StaticRangeMobility extends MobilityModel {
 
         //create random number generator for each place
         Random random = new Random();
-        random.setSeed(ObjectGenerator.seed);
+        random.setSeed(SimSettings.getInstance().getRandomSeed());
         createDCLocationHash();
 
         //create list of DC locations
@@ -63,8 +63,10 @@ public class StaticRangeMobility extends MobilityModel {
             for (int i = 0; i < numberOfMobileDevices; i++) {
                 treeMapArray.add(i, new TreeMap<Double, Location>());
                 Location placedDevice;
-                if (SimSettings.getInstance().isOrbitMode())
-                    placedDevice = orbitPlaceDevice(random);
+                if (SimSettings.getInstance().isOrbitMode() || SimSettings.getInstance().isUserInNodes()) {
+                    int nextHost = i % SimSettings.getInstance().getNumOfEdgeDatacenters();
+                    placedDevice = orbitPlaceDevice(nextHost);
+                }
                 else
                     placedDevice = randomPlaceDevice(random);
                 try {
@@ -370,18 +372,24 @@ public class StaticRangeMobility extends MobilityModel {
         }
     }
 
-    private Location orbitPlaceDevice(Random random){
-        //get grid size
+    /**Returns location of host ID
+     *
+     * @param host
+     * @return
+     */
+    private Location orbitPlaceDevice(int host){
+/*        //get grid size
         int xRange = SimSettings.getInstance().getXRange();
         int yRange = SimSettings.getInstance().getYRange();
         int xPos = 0;
         int yPos = 0;
         List<Integer> hosts = new ArrayList<Integer>();
 //        Location deviceLocation;
-        int host = random.nextInt(SimSettings.getInstance().getNumOfEdgeDatacenters());
+        int host = host.nextInt(SimSettings.getInstance().getNumOfEdgeDatacenters());
         hosts.add(host);
         Location deviceLocation = getDCLocation(host);
-        return new Location(deviceLocation.getPlaceTypeIndex(), deviceLocation.getServingWlanId(), xPos, yPos,hosts);
+        return new Location(deviceLocation.getPlaceTypeIndex(), deviceLocation.getServingWlanId(), xPos, yPos,hosts);*/
+        return getDCLocation(host);
 
 
         //Initialize list of hosts in proximity of device

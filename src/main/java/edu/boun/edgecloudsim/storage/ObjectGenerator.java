@@ -17,13 +17,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import redis.clients.jedis.Jedis;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,13 +49,14 @@ public class ObjectGenerator {
     String objectPlacementPolicy;
     private int currHost;
     private Map<Integer,List<Map>> objectsInHosts;
+    private Map<String,List<String>> objectLocations;
+    private List<String> mdObjectNames;
     private List<Map> listOfObjects;
     private double overhead;
     private int locationDelta;
     private int numOfNodes;
     private static final double zipfExponent = SimSettings.getInstance().getZipfExponent();
 
-    //TODO: check why 21 objects generated when capacity is 20 (2 nodes)
     Random ran;
 
 
@@ -151,11 +152,79 @@ public class ObjectGenerator {
         objectsInHosts = new HashMap<Integer, List<Map>>(numOfNodes);
         populateObjectsInHosts();
         }
+        
+        hashObjectLocations();
 
 //        //reset to be used in object selection for workload
 //        newObjectRand = new Well19937c(seed);
 
     }
+
+
+
+    private void hashObjectLocations(){
+        try {
+            String tmpFolder = "";
+            if(SystemUtils.IS_OS_WINDOWS)
+                tmpFolder = SimSettings.getInstance().getOutputFolder() + "/../service_rate/";
+            else
+                tmpFolder = "/tmp/";
+            String filepath = tmpFolder + SimLogger.getInstance().getFilePrefix() + "_PLACEMENT.csv";
+            File f = new File(filepath);
+            PrintWriter out = new PrintWriter(new FileOutputStream(f));
+            out.append("object0,object1,node");
+            out.append("\n");
+            objectLocations = new HashMap<>();
+            mdObjectNames = new ArrayList<>();
+            for (Map<String, String> object : listOfObjects) {
+                String type = object.get("type");
+                if (type.equals("metadata")) {
+                    if (object.containsKey("parity"))
+                        mdObjectNames.add(object.get("id"));
+                    continue;
+                }
+                String objectID = object.get("id");
+                String locations = object.get("locations");
+                List<String> listLocations = new ArrayList<String>(Arrays.asList(locations.split(" ")));
+                objectLocations.put(objectID, listLocations);
+                if(type.equals("data")){
+                    objectID = objectID.substring(1);
+                    for (String location : listLocations)
+                        out.append(objectID + ",-1,"+location+"\n");
+                }
+                else if(type.equals("parity")){
+                    Pattern pattern = Pattern.compile("p(\\d+)-(\\d+)-(.*)");
+                    Matcher matcher = pattern.matcher(objectID);
+                    matcher.matches();
+                    String object1 = matcher.group(1);
+                    String object2 = matcher.group(2);
+                    for (String location : listLocations)
+                        out.append(object1 + "," + object2 + "," +location+"\n");
+
+                }
+                else
+                    throw new IllegalStateException("Unexpected type");
+            }
+            out.close();
+        }
+        catch (Exception e){
+            System.out.println("Failed to generate OBJECT_LOCATION.log");
+            System.exit(1);
+        }
+    }
+
+    //Returns data object IDs in index 0 and parity in index 1
+    public static String[] getStripeObjects(String metadataID){
+        Pattern pattern = Pattern.compile("md_(d\\d+)_(d\\d+)_(.*)");
+        Matcher matcher = pattern.matcher(metadataID);
+        matcher.matches();
+        String dataObjects = matcher.group(1) + " " + matcher.group(2);
+        String parityObjects = matcher.group(3);
+        return new String[] {dataObjects,parityObjects};
+
+    }
+
+
 
     public void resetNewObjectRandomGenerator(int seed){
         newObjectRand = new Well19937c(seed);
@@ -1314,6 +1383,12 @@ public class ObjectGenerator {
         return objectsInHosts;
     }
 
+
+    public List<String> getObjectLocation(String objectID) {
+        return objectLocations.get(objectID);
+    }
+
+
     public int getNumOfDataObjects() {
         return numOfDataObjects;
     }
@@ -1326,4 +1401,10 @@ public class ObjectGenerator {
     public double getOverhead() {
         return overhead;
     }
+
+    public List<String> getMdObjectNames() {
+        return mdObjectNames;
+    }
+
+
 }

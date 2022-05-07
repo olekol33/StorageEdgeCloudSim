@@ -16,6 +16,7 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
 
 import java.io.*;
@@ -148,11 +149,11 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
     public void submitTask(TaskProperty edgeTask) {
 //        int vmType=0;
         int nextEvent;
-//        int nextDeviceForNetworkModel;
+        int nextDeviceForNetworkModel;
         SimSettings.NETWORK_DELAY_TYPES delayType;
         double delay;
 
-//        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+        NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
 
         //create a task
         Task task = createTask(edgeTask);
@@ -197,16 +198,19 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //            vmType = SimSettings.VM_TYPES.CLOUD_VM.ordinal();
             nextEvent = REQUEST_RECEIVED_BY_CLOUD;
             delayType = SimSettings.NETWORK_DELAY_TYPES.WAN_DELAY;
-//            nextDeviceForNetworkModel = SimSettings.CLOUD_DATACENTER_ID;
+            nextDeviceForNetworkModel = SimSettings.CLOUD_DATACENTER_ID;
         }
         else {
-            //no upload delay
-//            delay = networkModel.getUploadDelay(task.getMobileDeviceId(), SimSettings.GENERIC_EDGE_DEVICE_ID, task);
-            delay = 0;
+            delay = networkModel.getUploadDelay(task.getMobileDeviceId(), task.getSubmittedLocation().getServingWlanId(), SimSettings.DEVICE_TO_LOCAL_EDGE,task);
+            if(delay < 0 ) {
+                SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY, task);
+                return;
+            }
+//            delay = 0;
 //            vmType = SimSettings.VM_TYPES.EDGE_VM.ordinal();
             nextEvent = REQUEST_RECEIVED_BY_EDGE_DEVICE;
             delayType = SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY;
-//            nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID;
+            nextDeviceForNetworkModel = SimSettings.GENERIC_EDGE_DEVICE_ID;
         }
 
             Vm selectedVM = SimManager.getInstance().getEdgeOrchestrator().getVmToOffload(task, nextHopId);
@@ -243,7 +247,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     nextEvent = REQUEST_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_NEIGHBOR;
                 }
             }
-//                networkModel.uploadStarted(currentLocation, nextDeviceForNetworkModel);
+//            networkModel.uploadStarted(currentLocation, nextDeviceForNetworkModel);
 
             SimLogger.getInstance().taskStarted(task.getCloudletId(), CloudSim.clock());
             SimLogger.getInstance().setUploadDelay(task.getCloudletId(), delay, delayType);
@@ -280,27 +284,32 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 submitTaskToVm(task, SimSettings.VM_TYPES.CLOUD_VM);
                 break;
             }
-            case REQUEST_RECEIVED_BY_REMOTE_EDGE_DEVICE:
+//            case REQUEST_RECEIVED_BY_REMOTE_EDGE_DEVICE:
             case REQUEST_RECEIVED_BY_EDGE_DEVICE:
             {
                 Task task = (Task) ev.getData();
                 submitTaskToVm(task, SimSettings.VM_TYPES.EDGE_VM);
                 break;
             }
-/*            case REQUEST_RECEIVED_BY_REMOTE_EDGE_DEVICE:
+            case REQUEST_RECEIVED_BY_REMOTE_EDGE_DEVICE:
             {
                 Task task = (Task) ev.getData();
-                submitTaskToVm(task, SimSettings.VM_TYPES.EDGE_VM);
+                submitTaskToVm(task, SimSettings.LOCAL_EDGE_TO_REMOTE_EDGE);
 
                 break;
-            }*/
+            }
             case REQUEST_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_NEIGHBOR:
             {
                 Task task = (Task) ev.getData();
 //                networkModel.uploadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
 
-//                double manDelay =  networkModel.getUploadDelay(SimSettings.GENERIC_EDGE_DEVICE_ID, SimSettings.GENERIC_EDGE_DEVICE_ID, task);
-                double manDelay =  0;
+                double manDelay =  networkModel.getUploadDelay(task.getSubmittedLocation().getServingWlanId(), task.getAssociatedHostId(),
+                        SimSettings.EDGE_TO_EDGE, task);
+                if(manDelay < 0 ) {
+                    SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY, task);
+                    return;
+                }
+//                double manDelay =  0;
                 SimLogger.getInstance().setUploadDelay(task.getCloudletId(), manDelay, SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY);
                 schedule(getId(), manDelay, REQUEST_RECEIVED_BY_REMOTE_EDGE_DEVICE, task);
 
@@ -323,7 +332,8 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 //get delay between access point and device
 //                double delay = networkModel.getDownloadDelay(task.getAssociatedHostId(), task.getMobileDeviceId(), task);
                 //Insert tag instead of user location to calculate WLAN delay of remote node
-                double delay = networkModel.getDownloadDelay(task.getAssociatedHostId(), RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE, task);
+                double delay = networkModel.getUploadDelay(SimSettings.GENERIC_EDGE_DEVICE_ID,
+                        task.getSubmittedLocation().getServingWlanId(), SimSettings.REMOTE_EDGE_TO_LOCAL_EDGE, task);
                 if (delay==((StorageNetworkModel) networkModel).MAN_DELAY)
                     delayType = SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY;
 
@@ -364,7 +374,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 if(task.getIsParity()==1) {
                     //key was removed
                     if (((IdleActiveStorageLoadGenerator) loadGeneratorModel).getParityReadFinished(task.getIoTaskID()) == true) {
-                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock(), task);
                         break;
                     }
 
@@ -376,7 +386,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                             networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
                         }
                         ((IdleActiveStorageLoadGenerator) loadGeneratorModel).setParityReadFinished(true,task.getIoTaskID());
-                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+                        SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock(), task);
                         break;
                     }
                 }
@@ -388,7 +398,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     if(!(task.getIsParity()==1 && task.getParitiesToRead()==0))
                         networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
                 }
-                SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+                SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock(), task);
                 break;
             }
             default:
@@ -397,6 +407,30 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                 break;
         }
     }
+    @Override
+    /** Submits request to node containing data
+     * If request is remote that add delay time for Wlan queue of remote node
+     */
+    protected void submitTaskToVm(Task task, int uploadType) {
+        double delay=0;
+        if(uploadType==SimSettings.LOCAL_EDGE_TO_REMOTE_EDGE) {
+            NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
+            delay = networkModel.getUploadDelay(task.getSubmittedLocation().getServingWlanId(),task.getAssociatedHostId() , SimSettings.LOCAL_EDGE_TO_REMOTE_EDGE, task);
+        }
+        if(delay < 0 ) {
+            SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), SimSettings.NETWORK_DELAY_TYPES.WLAN_DELAY, task);
+            return;
+        }
+        schedule(getVmsToDatacentersMap().get(task.getVmId()), delay, CloudSimTags.CLOUDLET_SUBMIT, task);
+
+        SimSettings.VM_TYPES vmType = SimSettings.VM_TYPES.EDGE_VM;
+        SimLogger.getInstance().taskAssigned(task.getCloudletId(),
+                task.getAssociatedDatacenterId(),
+                task.getAssociatedHostId(),
+                task.getAssociatedVmId(),
+                vmType.ordinal());
+    }
+
     //Process task return event
     @Override
     protected void processCloudletReturn(SimEvent ev) {

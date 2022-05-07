@@ -165,6 +165,10 @@ public class MM1Queue extends NetworkModel {
 		
 		return (result > 5) ? -1 : result;
 	}
+	@Override
+	public double getUploadDelay(int sourceDeviceId, int destDeviceId, int uploadType, Task task){
+		return 0;
+	}
 	
 	private double getWlanDownloadDelay(Location accessPointLocation, double time) {
 		return calculateMM1(0,

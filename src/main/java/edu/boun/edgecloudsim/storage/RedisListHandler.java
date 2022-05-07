@@ -1,19 +1,14 @@
 package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.math3.distribution.ZipfDistribution;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937c;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.util.Slowlog;
 
-import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.nio.file.*;
@@ -52,7 +47,7 @@ public class RedisListHandler {
     //Takes list from ObjectGenerator and creates KV pairs in Redis
     public static void createList(String objectPlacementPolicy){
         Jedis jedis = new Jedis(localhost, 6379);
-        OG = new ObjectGenerator(objectPlacementPolicy);
+        OG = SimManager.getInstance().getObjectGenerator();
         for (Map<String,String> KV : OG.getListOfObjects())
             jedis.hmset("object:"+KV.get("id"),KV);
         jedis.close();
@@ -64,7 +59,7 @@ public class RedisListHandler {
     private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
         String tmpFolder = "";
         if(SystemUtils.IS_OS_WINDOWS)
-            tmpFolder = SimSettings.getInstance().getOutputFolder();
+            tmpFolder = SimSettings.getInstance().getOutputFolder() + "../service_rate/";
         else
             tmpFolder = "/tmp/";
         Path pLoc = Paths.get("/tmp/Object_Locations.txt");
@@ -150,7 +145,8 @@ public class RedisListHandler {
         jedis.quit();
     }
     //Get key list by pattern
-    public static List<String> getObjectsFromRedis(String pattern){
+    public static List<String> getObjectsFromRedis(String objectID){
+/*
         Jedis jedis = new Jedis(localhost, 6379);
         int batch = 100;
         List<String> listOfObjects = new ArrayList<>();
@@ -164,7 +160,16 @@ public class RedisListHandler {
             cur = scanResult.getCursor();
         } while (!cur.equals(redis.clients.jedis.ScanParams.SCAN_POINTER_START));
         jedis.close();
+*/
+
+        List<String> listOfObjects = new ArrayList<>();
+        List<String> mdObjects = OG.getMdObjectNames();
+        for(String object:mdObjects){
+            if(object.contains(objectID+"_"))
+                listOfObjects.add(object);
+        }
         return listOfObjects;
+
 
     }
 
@@ -182,10 +187,13 @@ public class RedisListHandler {
         return locations;
     }
 
-    public static String getObjectLocations(String objectID){
-        Jedis jedis = new Jedis(localhost, 6379);
+    public static List<String> getObjectLocations(String objectID){
+        List<String> locations = new ArrayList<>();
+/*        Jedis jedis = new Jedis(localhost, 6379);
         String locations =  jedis.hget("object:"+objectID,"locations");
         jedis.close();
+        return locations;*/
+        locations = OG.getObjectLocation(objectID);
         return locations;
     }
 

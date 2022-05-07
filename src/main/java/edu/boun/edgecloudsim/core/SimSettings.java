@@ -55,6 +55,11 @@ public class SimSettings {
 	public static final int EDGE_ORCHESTRATOR_ID = 1002;
 	public static final int GENERIC_EDGE_DEVICE_ID = 1003;
 
+	public static final int DEVICE_TO_LOCAL_EDGE = 1100;
+	public static final int EDGE_TO_EDGE = 1101;
+	public static final int LOCAL_EDGE_TO_REMOTE_EDGE = 1102;
+	public static final int REMOTE_EDGE_TO_LOCAL_EDGE = 1103;
+
 	//delimiter for output file.
 	public static final String DELIMITER = ";";
 	
@@ -62,6 +67,7 @@ public class SimSettings {
     private double WARM_UP_PERIOD; //minutes unit in properties file
 
 	private double MM1_QUEUE_MODEL_UPDATE_INTERVAL; //minutes unit in properties file
+	private double REQUEST_PROCESSING_TIME; //seconds
     private double INTERVAL_TO_GET_VM_LOAD_LOG; //minutes unit in properties file
     private double INTERVAL_TO_GET_VM_LOCATION_LOG; //minutes unit in properties file
     private boolean FILE_LOG_ENABLED; //boolean to check file logging option
@@ -69,6 +75,8 @@ public class SimSettings {
 	private boolean STORAGE_LOG_ENABLED;
 	private boolean TERMINATE_FAILED_RUN; //boolean to check deep file logging option
 	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
+
+	private boolean USER_IN_NODES;
 	private boolean APPLY_SIGNAL_ATTENUATION;
 	private boolean OVERHEAD_SCAN;
 	private boolean SIMULATION_FAILED;
@@ -128,6 +136,8 @@ public class SimSettings {
     private String[] ORCHESTRATOR_POLICIES;
 
 	private String[] OBJECT_PLACEMENT;
+
+	private String currentObjectPlacementPolicy;
 
 	private String[] FAIL_SCENARIOS;
 
@@ -310,6 +320,7 @@ public class SimSettings {
 				SIMULATION_TIME = (double)60 * Double.parseDouble(prop.getProperty("simulation_time")); //seconds
 				WARM_UP_PERIOD = (double)60 * Double.parseDouble(prop.getProperty("warm_up_period")); //seconds
 				MM1_QUEUE_MODEL_UPDATE_INTERVAL = Double.parseDouble(prop.getProperty("mm1_queue_model_update_interval")); //seconds
+				REQUEST_PROCESSING_TIME = Double.parseDouble(prop.getProperty("request_processing_time")); //seconds
 //				INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_load_check_interval")); //seconds
 //				INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
 				INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * 0.1; //seconds
@@ -318,6 +329,7 @@ public class SimSettings {
 				DEEP_FILE_LOG_ENABLED = toBoolean(prop.getProperty("deep_file_log_enabled"));
 				STORAGE_LOG_ENABLED = toBoolean(prop.getProperty("storage_log_enabled"));
 				TERMINATE_FAILED_RUN = toBoolean(prop.getProperty("terminate_failed_run"));
+				USER_IN_NODES = toBoolean(prop.getProperty("user_in_nodes"));
 				COUNT_FAILEDDUETOINACCESSIBILITY = toBoolean(prop.getProperty("count_failedDueToInaccessibility"));
 				APPLY_SIGNAL_ATTENUATION = toBoolean(prop.getProperty("applySignalAttenuation"));
 				OVERHEAD_SCAN = toBoolean(prop.getProperty("overhead_scan"));
@@ -491,12 +503,17 @@ public class SimSettings {
 		if(SERVICE_RATE_SCAN && !SR_EXP_SAME_OVERHEAD) {
 			int basicNumberOfNodes = NUM_OF_EDGE_DATACENTERS;
 			System.out.println("Different overhead experiment");
-			if(!GEN_EDGE_DEVICES_XML || NUM_OF_EDGE_DATACENTERS != 6 || OBJECT_PLACEMENT.length>1)
+			if(!GEN_EDGE_DEVICES_XML || NUM_OF_EDGE_DATACENTERS != 6 || OBJECT_PLACEMENT.length>1 || OVERHEAD != 2)
 				throw new IllegalStateException("This mode currently not supported");
-			if(OVERHEAD%1 != 0)
-				throw new IllegalStateException("Overhead is not integer");
-			int ecNodes = (int) (basicNumberOfNodes*((OVERHEAD/2)+1));
-			int repNodes = (int) (basicNumberOfNodes*((OVERHEAD)+1));
+//			if(OVERHEAD%1 != 0)
+//				throw new IllegalStateException("Overhead is not integer");
+//			int ecNodes = (int) (basicNumberOfNodes*((OVERHEAD/2)*1.5));
+			if(SimSettings.getInstance().getObjectPlacement()[0].equals("CODING_PLACE")) {
+				OVERHEAD = 1.5;
+				NUM_OF_STRIPES = NUM_OF_DATA_OBJECTS/2;
+			}
+			int ecNodes = (int) (basicNumberOfNodes*((1.5)));
+			int repNodes = (int) (basicNumberOfNodes*((OVERHEAD)));
 			this.codingRepReqRatio = (double)ecNodes/repNodes;
 			if(OBJECT_PLACEMENT[0].equals("CODING_PLACE")){
 				setNumOfEdgeDatacenters(ecNodes);
@@ -592,6 +609,10 @@ public class SimSettings {
 		return WARM_UP_PERIOD; 
 	}
 
+
+	public double getRequestProcessingTime() {
+		return REQUEST_PROCESSING_TIME;
+	}
 
 	public double getMm1QueueModelUpdateInterval() {
 		return MM1_QUEUE_MODEL_UPDATE_INTERVAL;
@@ -857,6 +878,11 @@ public class SimSettings {
 		return COUNT_FAILEDDUETOINACCESSIBILITY;
 	}
 
+
+	public boolean isUserInNodes() {
+		return USER_IN_NODES;
+	}
+
 	public boolean isOverheadScan() {
 		return OVERHEAD_SCAN;
 	}
@@ -920,6 +946,9 @@ public class SimSettings {
 
 	public String getOutputFolder() {
 		return outputFolder;
+	}
+	public String getSerializableFolder() {
+		return outputFolder + "/serial";
 	}
 
 	public void setOutputFolder(String outputFolder) {
@@ -1277,7 +1306,7 @@ public class SimSettings {
 //				isElementPresent(appElement, "poisson_interarrival");
 				isElementPresent(appElement, "active_period");
 				isElementPresent(appElement, "idle_period");
-//				isElementPresent(appElement, "data_upload");
+				isElementPresent(appElement, "data_upload");
 				isElementPresent(appElement, "data_download");
 //				isElementPresent(appElement, "task_length");
 //				isElementPresent(appElement, "required_core");
@@ -1295,8 +1324,7 @@ public class SimSettings {
 				double poisson_interarrival = 1/Double.parseDouble(appElement.getElementsByTagName("req_per_sec").item(0).getTextContent());
 				double active_period = Double.parseDouble(appElement.getElementsByTagName("active_period").item(0).getTextContent());
 				double idle_period = Double.parseDouble(appElement.getElementsByTagName("idle_period").item(0).getTextContent());
-				double data_upload = 0;
-//				double data_upload = Double.parseDouble(appElement.getElementsByTagName("data_upload").item(0).getTextContent());
+				double data_upload = Double.parseDouble(appElement.getElementsByTagName("data_upload").item(0).getTextContent());
 				double data_download = Double.parseDouble(appElement.getElementsByTagName("data_download").item(0).getTextContent());
 //				double task_length = Double.parseDouble(appElement.getElementsByTagName("task_length").item(0).getTextContent());
 //				double required_core = Double.parseDouble(appElement.getElementsByTagName("required_core").item(0).getTextContent());
@@ -1305,7 +1333,7 @@ public class SimSettings {
 //				double vm_utilization_on_mobile = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_mobile").item(0).getTextContent());
 //				double delay_sensitivity = Double.parseDouble(appElement.getElementsByTagName("delay_sensitivity").item(0).getTextContent());
 				//Oleg
-				int readRate = SimSettings.getInstance().getServedReqsPerSec()*(int)(data_download/1000); //reqs to MB
+				int readRate = SimSettings.getInstance().getServedReqsPerSec()*(int)(data_download); //reqs to KB
 				SimSettings.getInstance().setREADRATE(readRate);
 /*
 				try {

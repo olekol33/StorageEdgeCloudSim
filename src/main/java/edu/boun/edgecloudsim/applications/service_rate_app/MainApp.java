@@ -58,7 +58,7 @@ public class MainApp {
 		BufferedWriter serviceRateFileBW=null;
 		int iterationNumber = 1;
 		String configFile = "";
-		String outputFolder = "";
+		String outputFolderPath = "";
 		String edgeDevicesFile = "";
 		String applicationsFile = "";
 		File serviceRateFile = null;
@@ -75,20 +75,20 @@ public class MainApp {
 			configFile = args[0];
 			edgeDevicesFile = args[1];
 			applicationsFile = args[2];
-			outputFolder = args[3];
+			outputFolderPath = args[3];
 			iterationNumber = Integer.parseInt(args[4]);
 		}
 		else if (args.length == 1){
 			configFile = args[0];
 			applicationsFile = "scripts/sample_app5/config/applications.xml";
 			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
+			outputFolderPath = "sim_results/ite" + iterationNumber;
 		}
 		else if (args.length == 3){
 			configFile = args[0];
 			applicationsFile = args[1];
 			edgeDevicesFile = args[2];
-			outputFolder = "sim_results/ite" + iterationNumber;
+			outputFolderPath = "sim_results/ite" + iterationNumber;
 		}
 		else{
 			MainApp o = new MainApp();
@@ -102,7 +102,7 @@ public class MainApp {
 //			configFile = "scripts/sample_app5/config/default_config.properties";
 //			applicationsFile = "scripts/sample_app5/config/applications.xml";
 //			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
-			outputFolder = "sim_results/ite" + iterationNumber;
+			outputFolderPath = "sim_results/ite" + iterationNumber;
 		}
 
 		//load settings from configuration file
@@ -127,17 +127,17 @@ public class MainApp {
 		int seed = SS.getRandomSeed();
 		rand = new Well19937c(seed);
 		SimLogger.printLine("Iteration: " + iterationNumber + ", with seed: " + seed);
-		File file = new File(outputFolder);
-		File parent = file.getParentFile();
+		File outputFolder = new File(outputFolderPath);
+		File parent = outputFolder.getParentFile();
 		if (!parent.exists()) {
 			System.out.println("No parent");
 			parent.mkdir();
-			file.mkdir();
+			outputFolder.mkdir();
 			System.out.println("Folder created");
-		} else if (!file.exists()) {
+		} else if (!outputFolder.exists()) {
 			System.out.println("No sub folder");
 			parent.mkdir();
-			file.mkdir();
+			outputFolder.mkdir();
 			System.out.println("Sub folder created");
 		} else {
 			System.out.println("Output folder exists");
@@ -148,11 +148,10 @@ public class MainApp {
 		String objectPlacementPolicy = SS.getObjectPlacement()[0];
 		SimSettings.getInstance().printServiceRate(users);
 		serviceRatePath = new File(parent,"/service_rate");
-		String filename = "SERVICE_RATE_N_"+String.valueOf(SS.getNumOfEdgeDatacenters())+"_K_"+
-				String.valueOf(SS.getNumOfDataObjects())+".csv";
-
+		String srFilename = "";
+		SS.setOutputFolder(outputFolderPath);
 		if(SS.isOrbitMode()){
-			SS.setOutputFolder(outputFolder);
+
 			long currentTime;
 			runType = args[0];
 			if (runType.equals("host")){
@@ -175,14 +174,14 @@ public class MainApp {
 		//whenever not same overhead need to generate two files: for coding and replication
 		//avoid deleting folder
 		//in post-processing need to merge files
-		if(SS.isServiceRateScan() && !SS.isSrExpSameOverhead()) {
+/*		if(SS.isServiceRateScan() && !SS.isSrExpSameOverhead()) {
 			if(objectPlacementPolicy.equals("REPLICATION_PLACE"))
 				filename = "SERVICE_RATE_1_N_" + String.valueOf(SS.getNumOfEdgeDatacenters()) + "_K_" +
 						String.valueOf(SS.getNumOfDataObjects()) + ".csv";
 			else
 				filename = "SERVICE_RATE_2_N_" + String.valueOf(SS.getNumOfEdgeDatacenters()) + "_K_" +
 						String.valueOf(SS.getNumOfDataObjects()) + ".csv";
-		}
+		}*/
 		else if (!SS.isOrbitMode()){
 			FileUtils.deleteDirectory(serviceRatePath);
 			serviceRatePath.mkdir();
@@ -193,12 +192,16 @@ public class MainApp {
 			for (int i = 0; i < SS.getNumOfDataObjects(); i++)
 				fileHeader += String.valueOf(i) + ",";
 			fileHeader += "type,reqsPerUserSec,readRate,completed";
-			serviceRateFile = new File(serviceRatePath, filename);
-			serviceRateFileFW = new FileWriter(serviceRateFile, true);
-			serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
-			SS.setServiceRateFileBW(serviceRateFileBW);
-			SimLogger.appendToFile(serviceRateFileBW, fileHeader);
-			serviceRateFileBW.close();
+			for(int p=0;p<SS.getObjectPlacement().length;p++) {
+				objectPlacementPolicy = SS.getObjectPlacement()[p];
+				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
+				serviceRateFile = new File(serviceRatePath, srFilename + "_DEMAND.csv");
+				serviceRateFileFW = new FileWriter(serviceRateFile, true);
+				serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
+				SS.setServiceRateFileBW(serviceRateFileBW);
+				SimLogger.appendToFile(serviceRateFileBW, fileHeader);
+				serviceRateFileBW.close();
+			}
 		}
 
 
@@ -226,19 +229,26 @@ public class MainApp {
 //			double zipfIndex = Math.abs(zipfIndexGenerator.sample());
 //			SS.setZipfExponent(zipfIndex);
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
+/*				if (!SS.isOrbitMode()){
+					File serialFolder = new File(SS.getSerializableFolder());
+					FileUtils.deleteDirectory(serialFolder);
+					serialFolder.mkdir();
+				}*/
 				SS.setSimulationFailed(false);
 
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 
+				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
+//				String filePrefix = srFilename + "_ITE_" + Integer.toString(i);
+				String filePrefix = srFilename;
+
 				Date ScenarioStartDate = Calendar.getInstance().getTime();
 				now = df.format(ScenarioStartDate);
-				// Storage: Generate Redis KV list
-				RedisListHandler.closeConnection();
-				RedisListHandler.createList(objectPlacementPolicy);
+
 
 				String[] simParams = {Integer.toString(users), simScenario, orchestratorPolicy, objectPlacementPolicy};
 
-				SimUtils.cleanOutputFolderPerConfiguration(outputFolder, simParams);
+				SimUtils.cleanOutputFolderPerConfiguration(outputFolderPath, simParams);
 
 
 				SimLogger.printLine("Scenario started at " + now);
@@ -246,8 +256,7 @@ public class MainApp {
 						" - Service rate iteration: " + String.valueOf(i));
 				SimLogger.printLine("Duration: " + SS.getSimulationTime() / 3600 + " hour(s) - Poisson: " +
 						SS.getTaskLookUpTable()[0][LoadGeneratorModel.POISSON_INTERARRIVAL] + " - #devices: " + users);
-				SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy +
-						"_" + objectPlacementPolicy + "_" + users + "DEVICES");
+				SimLogger.getInstance().simStarted(outputFolderPath,filePrefix );
 
 				try {
 					// First step: Initialize the CloudSim package. It should be called
@@ -256,8 +265,10 @@ public class MainApp {
 					Calendar calendar = Calendar.getInstance();
 					boolean trace_flag = false;  // mean trace events
 
+					//control period of time between new event is fetched (half such it ready for next event)
+					double periodBetweenCloudSimEvents = 0.5*SimSettings.getInstance().getRequestProcessingTime();
 					// Initialize the CloudSim library
-					CloudSim.init(num_user, calendar, trace_flag, 0.01);
+					CloudSim.init(num_user, calendar, trace_flag, periodBetweenCloudSimEvents);
 
 					// Generate EdgeCloudsim Scenario Factory
 					ScenarioFactory sampleFactory = new SampleScenarioFactory(users, SS.getSimulationTime(), orchestratorPolicy, simScenario, objectPlacementPolicy);
@@ -265,6 +276,10 @@ public class MainApp {
 
 					// Generate EdgeCloudSim Simulation Manager
 					SimManager manager = new SimManager(sampleFactory, users, simScenario, orchestratorPolicy, objectPlacementPolicy);
+
+					// Storage: Generate Redis KV list
+					RedisListHandler.closeConnection();
+					RedisListHandler.createList(objectPlacementPolicy);
 
 					// Start simulation
 					manager.startSimulation();
@@ -291,6 +306,7 @@ public class MainApp {
 					policy="coding";
 				else
 					policy="replication";
+				serviceRateFile = new File(serviceRatePath, srFilename + "_DEMAND.csv");
 				serviceRateFileFW = new FileWriter(serviceRateFile, true);
 				serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
 				SimLogger.appendToFile(serviceRateFileBW, SS.getObjectRequestRateArray() + "," + policy + "," +
@@ -298,6 +314,7 @@ public class MainApp {
 
 				Date ScenarioEndDate = Calendar.getInstance().getTime();
 				now = df.format(ScenarioEndDate);
+//				System.exit(0);
 				SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
 				SimLogger.printLine("----------------------------------------------------------------------");
 				serviceRateFileBW.close();

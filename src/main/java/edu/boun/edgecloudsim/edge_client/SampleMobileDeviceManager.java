@@ -76,6 +76,10 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 		schedule(getId(), SimSettings.CLIENT_ACTIVITY_START_TIME +
 				MM1_QUEUE_MODEL_UPDATE_INTERVAL, UPDATE_MM1_QUEUE_MODEL);
 	}
+
+	protected void submitTaskToVm(Task task, int uploadType){
+		//do nothing!
+	}
 	
 	/**
 	 * Submit cloudlets to the created VMs.
@@ -264,7 +268,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 				else
 					networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
 				
-				SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
+				SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock(), task);
 				break;
 			}
 			default:

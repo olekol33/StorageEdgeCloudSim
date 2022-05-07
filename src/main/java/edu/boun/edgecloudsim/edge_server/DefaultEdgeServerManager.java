@@ -99,8 +99,10 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 //					long storage = Long.parseLong(vmElement.getElementsByTagName("storage").item(0).getTextContent());
 //					long bandwidth = SimSettings.getInstance().getWlanBandwidth() / (hostNodeList.getLength()+vmNodeList.getLength());
 					int numOfCores = 1;
-					double mips = 1;
-					int ram = 1;
+//					double mips = Integer.MAX_VALUE;
+					//used to set next event to half of time between event checks (Datacenter.java)
+					double mips = 1/SimSettings.getInstance().getRequestProcessingTime();
+					int ram = Integer.MAX_VALUE;
 					String vmm = null;
 					int taskProcessingMbps = Integer.parseInt(hostElement.getElementsByTagName("taskProcessingMbps").item(0).getTextContent());
 					int readRate = Integer.parseInt(hostElement.getElementsByTagName("readRate").item(0).getTextContent());
@@ -207,8 +209,9 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 //			double mips = Double.parseDouble(hostElement.getElementsByTagName("mips").item(0).getTextContent());
 //			int ram = Integer.parseInt(hostElement.getElementsByTagName("ram").item(0).getTextContent());
 			int numOfCores = 1;
-			double mips = 1;
-			int ram = 1;
+			double mips = Double.MAX_VALUE;
+//			double mips = 2/CloudSim.getMinTimeBetweenEvents();
+			int ram = Integer.MAX_VALUE;
 			long storage = Long.parseLong(hostElement.getElementsByTagName("storage").item(0).getTextContent());
 			long bandwidth = SimSettings.getInstance().getWlanBandwidth() / hostNodeList.getLength();
 			

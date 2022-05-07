@@ -93,7 +93,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         parityRandom.setSeed(ObjectGenerator.getSeed());
         taskList = new ArrayList<TaskProperty>();
 
-        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+//        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
+        ObjectGenerator OG = SimManager.getInstance().getObjectGenerator();
 
         //Count number of requests for each object after warm up period
         double[] objectRequests = new double[SimSettings.getInstance().getNumOfDataObjects()];
@@ -107,6 +108,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             if(SimSettings.getInstance().getTaskLookUpTable()[i][USAGE_PERCENTAGE] ==0)
                 continue;
             expRngList[i][LIST_DATA_DOWNLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD]);
+            expRngList[i][LIST_DATA_UPLOAD] = new ExponentialDistribution(SimSettings.getInstance().getTaskLookUpTable()[i][DATA_UPLOAD]);
             dataSizeMean+=SimSettings.getInstance().getTaskLookUpTable()[i][DATA_DOWNLOAD];
         }
         dataSizeMean /= SimSettings.getInstance().getTaskLookUpTable().length;
@@ -210,8 +212,30 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         double objectRequestsMax = Arrays.stream(objectRequests).max().getAsDouble();
         System.out.println("Max object request rate: " +String.valueOf(objectRequestsMax) + "  mu");
         SimSettings.getInstance().setObjectRequestRateArray(objectRequests);
-
+        printObjectRank();
         checkModeAfterInit(dataSizeMean, OG.getOverhead());
+    }
+
+    void printObjectRank(){
+        String tmpFolder = "";
+        if(SystemUtils.IS_OS_WINDOWS)
+            tmpFolder = SimSettings.getInstance().getOutputFolder();
+        else
+            tmpFolder = "/tmp/";
+        int currentIteration = SimSettings.getInstance().getCurrentServiceRateIteration();
+        try {
+            File objectFile = new File(tmpFolder, "Object_Rank.txt");
+            FileWriter objectFW = new FileWriter(objectFile, false);
+            BufferedWriter objectBW = new BufferedWriter(objectFW);
+            for(int i=0;i<zipfPermutations[currentIteration].length;i++){
+                objectBW.write(String.valueOf(zipfPermutations[currentIteration][i]) + " ");
+
+            }
+            objectBW.close();
+        }catch (Exception e){
+            System.out.println(e);
+            System.exit(1);
+        }
     }
 
     //TODO: created by Harel
@@ -400,7 +424,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         taskListBW.newLine();
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(9);
-        for(TaskProperty task:getTaskList()){
+//        List<TaskProperty> taskList = getTaskList();
+        for(TaskProperty task:taskList){
             if(task.getMobileDeviceId()==currentDevice) {
                 taskListBW.write(df.format(task.getStartTime()) + "," + task.getOutputFileSize() +
                         "," + task.getMobileDeviceId() + "," + task.getObjectRead() + "," + task.getIoTaskID());

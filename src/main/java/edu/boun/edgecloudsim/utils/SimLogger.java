@@ -27,14 +27,11 @@ import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
-import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
-import edu.boun.edgecloudsim.utils.TaskProperty;
-import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.core.SimEntity;
 
 public class SimLogger {
 	public static enum TASK_STATUS {
@@ -158,42 +155,70 @@ public class SimLogger {
 	//Storage
 	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
 					   int taskOutputSize, String stripeID, String objectID, int ioTaskID, int isParity, int paritiesToRead, int accessHostID) {
-		taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID, ioTaskID, isParity, paritiesToRead,accessHostID));
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID, ioTaskID, isParity, paritiesToRead,accessHostID));
 	}
 	public void setObjectRead(int taskId, String objectRead) {
-		taskMap.get(taskId).setObjectRead(objectRead);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).setObjectRead(objectRead);
 	}
 
 	public void setHostId(int taskId, int hostId) {
-		taskMap.get(taskId).setHostId(hostId);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).setHostId(hostId);
 	}
 
 	public void setAccessHostID(int taskId, int accessHostID) {
-		taskMap.get(taskId).setAccessHostID(accessHostID);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).setAccessHostID(accessHostID);
 	}
 
+
+
 	public void taskStarted(int taskId, double time) {
-		taskMap.get(taskId).taskStarted(time);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).taskStarted(time);
 	}
 
 	public void setUploadDelay(int taskId, double delay, NETWORK_DELAY_TYPES delayType) {
-		taskMap.get(taskId).setUploadDelay(delay, delayType);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).setUploadDelay(delay, delayType);
 	}
 
 	public void setDownloadDelay(int taskId, double delay, NETWORK_DELAY_TYPES delayType) {
-		taskMap.get(taskId).setDownloadDelay(delay, delayType);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).setDownloadDelay(delay, delayType);
 	}
 	
 	public void taskAssigned(int taskId, int datacenterId, int hostId, int vmId, int vmType) {
-		taskMap.get(taskId).taskAssigned(datacenterId, hostId, vmId, vmType);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).taskAssigned(datacenterId, hostId, vmId, vmType);
 	}
 
 	public void taskExecuted(int taskId) {
-		taskMap.get(taskId).taskExecuted();
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).taskExecuted();
 	}
 
-	public void taskEnded(int taskId, double time) {
-		taskMap.get(taskId).taskEnded(time);
+	/** For grabage collection, remove task from edge_client.Task
+	 *
+	 * @param task
+	 */
+	private void clearTask(Task task){
+		MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
+		mobileDeviceManager.getCloudletList().remove(task);
+	}
+
+	public void taskEnded(int taskId, double time, Task task) {
+		if(SimSettings.getInstance().isStorageLogEnabled()) {
+			LogItem logTask = taskMap.get(taskId);
+			logTask.taskEnded(time);
+		}
+//		logTask.serialize();
+//		taskMap.remove(taskId);
+		clearTask(task);
+
+//		taskMap.get(taskId).taskEnded(time);
 	}
 
 	public void rejectedDueToVMCapacity(int taskId, double time, int vmType) {
@@ -208,7 +233,15 @@ public class SimLogger {
 		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
 	}
 	public void failedDueToBandwidth(int taskId, double time, NETWORK_DELAY_TYPES delayType, Task task) {
-		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
+//		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
+		if(SimSettings.getInstance().isStorageLogEnabled()) {
+			LogItem logTask = taskMap.get(taskId);
+			logTask.taskFailedDueToBandwidth(time, delayType);
+		}
+//		logTask.serialize();
+//		taskMap.remove(taskId);
+		clearTask(task);
+
 		//Count if parity and to read or if not parity
 		if (task.getIsParity() == task.getParitiesToRead()) {
 			//Give the system time to warm up
@@ -227,21 +260,24 @@ public class SimLogger {
 		taskMap.get(taskId).taskFailedDueToMobility(time);
 	}
 
-	public void taskRejectedDueToPolicy(int taskId, double time, int vmType) {
-		taskMap.get(taskId).taskRejectedDueToPolicy(time, vmType);
+	public void taskRejectedDueToPolicy(int taskId, double time, int vmType, Task task) {
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).taskRejectedDueToPolicy(time, vmType);
+		clearTask(task);
 	}
 
 	public void taskRejectedDueToQueue(int taskId, double time) {
 		taskMap.get(taskId).taskRejectedDueToQueue(time);
 	}
-
+/*
 	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType) {
 		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
 
-	}
+	}*/
 
 	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType, Task task) {
-		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
+		if(SimSettings.getInstance().isStorageLogEnabled())
+			taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
 		//Count if parity and to read (1) or if not parity (0)
 		if (task.getIsParity() == task.getParitiesToRead()) {
 			//Give the system time to warm up
@@ -432,13 +468,23 @@ public class SimLogger {
 		int[] parityTask = new int[numOfAppTypes + 1];
 
 		//Oleg: For object log
-//		System.out.println("array size: " + taskMap.size());
 		int numOfObjectsInStripe;
 		if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE"))
 			numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe();
 		else
 			numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe()+
 				SimSettings.getInstance().getNumOfParityInStripe();
+		LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+/*		int numOfIOTasks = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).getNumOfIOTasks();
+		String [] objectID = new String[numOfIOTasks];
+		int [] hostID = new int[numOfIOTasks];
+		int [] ioTaskID = new int[numOfIOTasks];
+		int [] isParity = new int[numOfIOTasks];
+		int [] isParityToRead = new int[numOfIOTasks];
+		int [] accessID = new int[numOfIOTasks];
+		double [] objectReadDelay = new double[numOfIOTasks];
+		String [] readSource = new String[numOfIOTasks];
+		TASK_STATUS [] objectStatusID = new TASK_STATUS[numOfIOTasks];*/
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] ioTaskID = new int[taskMap.size()];
@@ -547,13 +593,31 @@ public class SimLogger {
 //		int o=0;
 
 		// extract the result of each task and write it to the file if required
+/*
+		File serialFolder = new File(SimSettings.getInstance().getSerializableFolder());
+		File[] serialItem = serialFolder.listFiles();
+		if (serialItem == null)
+			throw new IllegalStateException("No LogItem objects in " + SimSettings.getInstance().getSerializableFolder());
+*/
+/*		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
+			Integer key = entry.getKey();
+			LogItem value = entry.getValue();
+			if (value.getStatus() == TASK_STATUS.REJECTED_DUE_TO_POLICY) //parity scenario - object already logged
+				continue;
+			value.serialize();
+		}*/
+//		for (File item : serialItem) {
 		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
+
+//			LogItem value = LogItem.deserialize(item.toString());
+//			int key = value.getIoTaskID()+1; // TODO: convert to iotaskID
 			Integer key = entry.getKey();
 			LogItem value = entry.getValue();
 
 
 			if (value.isInWarmUpPeriod())
 			{
+//				ioTaskID[key-1] = value.getIoTaskID(); //not really needed, just for debug below
 				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
@@ -616,6 +680,7 @@ public class SimLogger {
 					value.getStatus() == SimLogger.TASK_STATUS.PROCESSING ||
 					value.getStatus() == SimLogger.TASK_STATUS.DOWNLOADING)
 			{
+//				ioTaskID[key-1] = value.getIoTaskID(); //not really needed, just for debug below
 				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
@@ -859,9 +924,13 @@ public class SimLogger {
 			}
 
 			//Oleg:Create list of objects reads
+//			for (int i = 0; i < numOfIOTasks; i++) {
 			for (int i = 0; i < taskMap.size(); i++) {
+//				if (ioTaskID[i] == -1) failing for tasks not in taskMap (generated near run finish)
+//					throw new IllegalStateException("SimLogger: Illegal value for item " + String.valueOf(i));
 				if (objectID[i] == null)
 					continue;
+
 				objectsBW.write((ioTaskID[i] + SimSettings.DELIMITER + objectID[i] + SimSettings.DELIMITER + isParity[i] +
 						SimSettings.DELIMITER + isParityToRead[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
 						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + df.format(objectReadDelay[i])));
@@ -881,44 +950,43 @@ public class SimLogger {
 //				Map<Integer, SortedSet<Double>> pair = (Map.Entry)it.next();
 //				SortedSet<Double> set = pair.getValue();
 //				TreeSet<Double> set = new TreeSet<Double>();
-				ArrayList<Double> list = timeToReadStripe.get(key);
-				if (list.size()>numOfObjectsInStripe) {
-					System.out.println("ERROR: Illegal number of objects in stripe");
-					System.exit(0);
+				ArrayList<Double> objectReadFinished = timeToReadStripe.get(key);
+				if (objectReadFinished.size()>numOfObjectsInStripe) {
+					throw new IllegalStateException("ERROR: Illegal number of objects in stripe");
 				}
 
 				//warm up period
-				if (list.contains(REJECTED))
+				if (objectReadFinished.contains(REJECTED))
 					continue;
 				//TODO: support case of not finished
 				//TODO: check case one element and NOT_FINISHED
 				//if one of the tasks hasn't finished
-				if (list.contains(NOT_FINISHED))
+				if (objectReadFinished.contains(NOT_FINISHED))
 				{
 					//single element not finished
-					if((list.get(0).equals(NOT_FINISHED)) && list.size()==1){
+					if((objectReadFinished.get(0).equals(NOT_FINISHED)) && objectReadFinished.size()==1){
 //						System.out.println("Entire list not finished");
 						notFinished++;
 						continue;
 					}
 
 					//if data was read
-					if (!list.get(0).equals(NOT_FINISHED)) {
-						readDelay = list.get(0);
+					if (!objectReadFinished.get(0).equals(NOT_FINISHED)) {
+						readDelay = objectReadFinished.get(0);
 						readCost = readDelay;
 						dataTypeRead = "data";
 						objectsRead=1;
 					}
 					//if also parity wasn't read
-					else if(list.subList(1, list.size()).contains(NOT_FINISHED)) {
+					else if(objectReadFinished.subList(1, objectReadFinished.size()).contains(NOT_FINISHED)) {
 						notFinished++;
 						continue;
 					}
 					//parity finished
 					else {
 						dataTypeRead = "parity";
-						readDelay = Collections.max(list.subList(1, list.size()));
-						for(Double d : list.subList(1, list.size())) {
+						readDelay = Collections.max(objectReadFinished.subList(1, objectReadFinished.size()));
+						for(Double d : objectReadFinished.subList(1, objectReadFinished.size())) {
 							readCost += d;
 							objectsRead++;
 						}
@@ -926,21 +994,21 @@ public class SimLogger {
 					}
 				}
 				//if only one object read
-				else if (list.size() ==1) {
-					readDelay = list.get(0);
+				else if (objectReadFinished.size() ==1) {
+					readDelay = objectReadFinished.get(0);
 					readCost=readDelay;
 					objectsRead=1;
 				}
-				else if (list.size() ==2 && list.contains(FINISHED_ON_CLOUD)) {
-					readDelay = list.get(0);
+				else if (objectReadFinished.size() ==2 && objectReadFinished.contains(FINISHED_ON_CLOUD)) {
+					readDelay = objectReadFinished.get(0);
 					dataTypeRead = "parity";
 					readCost=readDelay;
 					objectsRead=1;
 				}
 				//shouldn't happen
-				else if (list.size() < (numOfObjectsInStripe)){
-					readDelay = list.get(0);
-					for(Double d : list) {
+				else if (objectReadFinished.size() < (numOfObjectsInStripe)){
+					readDelay = objectReadFinished.get(0);
+					for(Double d : objectReadFinished) {
 						readCost += d;
 						objectsRead++;
 					}
@@ -948,17 +1016,17 @@ public class SimLogger {
 				}
 				else {
 					try {
-						for(Double d : list) {
+						for(Double d : objectReadFinished) {
 							readCost += d;
 						}
-						objectsRead=list.size();
+						objectsRead=objectReadFinished.size();
 						//if data and parity were read, take the best one
 						//parity delay
-						readDelay = Collections.max(list.subList(1, numOfObjectsInStripe));
+						readDelay = Collections.max(objectReadFinished.subList(1, numOfObjectsInStripe));
 
-						if (readDelay > list.get(0)) {
+						if (readDelay > objectReadFinished.get(0)) {
 //							System.out.println("ioTaskID = " + key + ", data = " + list.get(0) + ", parity = " + readDelay + ", read data");
-							readDelay = list.get(0);
+							readDelay = objectReadFinished.get(0);
 							dataTypeRead = "data";
 						}
 						else {
@@ -1262,7 +1330,7 @@ class VmLoadLogItem {
 
 }
 
-class LogItem {
+class LogItem implements Serializable{
 	private SimLogger.TASK_STATUS status;
 	private SimLogger.NETWORK_ERRORS networkError;
 	private int datacenterId;
@@ -1317,6 +1385,54 @@ class LogItem {
 		isParity = _isParity;
 		paritiesToRead = _paritiesToRead;
 		accessHostID = _accessHostID;
+	}
+
+	public static LogItem deserialize(String filepath){
+		LogItem object = null;
+		try {
+//			String filepath = SimSettings.getInstance().getSerializableFolder() + "/" + String.valueOf(task.getIoTaskID());
+
+			// Reading the object from a file
+			FileInputStream file = new FileInputStream(filepath);
+			ObjectInputStream in = new ObjectInputStream(file);
+
+			// Method for deserialization of object
+			object = (LogItem)in.readObject();
+
+			in.close();
+			file.close();
+		}
+		catch(IOException ex)
+		{
+			System.out.println("IOException is caught");
+		}
+		catch(ClassNotFoundException ex)
+		{
+			System.out.println("ClassNotFoundException is caught");
+		}
+		return object;
+	}
+	public void serialize(){
+		try {
+			String suffix = String.valueOf(this.getIoTaskID()) + "_" + this.getObjectRead() + "_" + String.valueOf(this.hostId);
+			String filepath = SimSettings.getInstance().getSerializableFolder() + "/" + suffix;
+			File fileToCheck = new File(filepath);
+			if(fileToCheck.exists())
+				throw new IllegalStateException(filepath + " exists");
+			FileOutputStream file = new FileOutputStream(filepath);
+			ObjectOutputStream out = new ObjectOutputStream(file);
+
+
+			// Method for serialization of object
+			out.writeObject(this);
+
+			out.close();
+			file.close();
+		}
+		catch(IOException ex)
+		{
+			System.out.println("IOException is caught");
+		}
 	}
 	
 	public void taskStarted(double time) {

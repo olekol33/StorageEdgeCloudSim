@@ -7,8 +7,8 @@
             <wlan_id>0</wlan_id>
         </location>
         <host>
-            <storage>80000</storage>
-            <readRate>16000</readRate>
+            <storage>1280000</storage>
+            <readRate>3840000</readRate>
             <taskProcessingMbps>2500</taskProcessingMbps>
         </host>
     </datacenter>
@@ -19,8 +19,8 @@
             <wlan_id>1</wlan_id>
         </location>
         <host>
-            <storage>80000</storage>
-            <readRate>16000</readRate>
+            <storage>1280000</storage>
+            <readRate>3840000</readRate>
             <taskProcessingMbps>2500</taskProcessingMbps>
         </host>
     </datacenter>
@@ -31,8 +31,8 @@
             <wlan_id>2</wlan_id>
         </location>
         <host>
-            <storage>80000</storage>
-            <readRate>16000</readRate>
+            <storage>1280000</storage>
+            <readRate>3840000</readRate>
             <taskProcessingMbps>2500</taskProcessingMbps>
         </host>
     </datacenter>
@@ -43,8 +43,8 @@
             <wlan_id>3</wlan_id>
         </location>
         <host>
-            <storage>80000</storage>
-            <readRate>16000</readRate>
+            <storage>1280000</storage>
+            <readRate>3840000</readRate>
             <taskProcessingMbps>2500</taskProcessingMbps>
         </host>
     </datacenter>
@@ -55,8 +55,8 @@
             <wlan_id>4</wlan_id>
         </location>
         <host>
-            <storage>80000</storage>
-            <readRate>16000</readRate>
+            <storage>1280000</storage>
+            <readRate>3840000</readRate>
             <taskProcessingMbps>2500</taskProcessingMbps>
         </host>
     </datacenter>
@@ -67,8 +67,8 @@
             <wlan_id>5</wlan_id>
         </location>
         <host>
-            <storage>80000</storage>
-            <readRate>16000</readRate>
+            <storage>1280000</storage>
+            <readRate>3840000</readRate>
             <taskProcessingMbps>2500</taskProcessingMbps>
         </host>
     </datacenter>

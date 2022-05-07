@@ -9,10 +9,11 @@
 
 package edu.boun.edgecloudsim.utils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Location {
+public class Location implements Serializable {
 	private int xPos;
 	private int yPos;
 	private int servingWlanId;

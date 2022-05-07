@@ -617,6 +617,11 @@ public class SampleNetworkModel extends NetworkModel {
 		totalManTaskInputSize = 0;
 		numOfManTaskForUpload = 0;
 	}
+	@Override
+	public double getUploadDelay(int sourceDeviceId, int destDeviceId, int uploadType, Task task){
+		return 0;
+	}
+
 
     /**
     * source device is always mobile device in our simulation scenarios!
@@ -765,7 +770,7 @@ public class SampleNetworkModel extends NetworkModel {
 	}
 
 //	protected double calculateMM1(double propogationDelay, double bandwidth /*Kbps*/, double PoissonMean, double avgTaskSize /*KB*/, int deviceCount){
-	protected double calculateMM1(double propogationDelay, double mu , double lambda){
+	public static double calculateMM1(double propogationDelay, double mu , double lambda){
 //		double mu=0, lambda=0;
 		
 //		avgTaskSize = avgTaskSize * 8; //convert from KB to Kb

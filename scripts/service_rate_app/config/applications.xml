@@ -7,6 +7,7 @@
 		<req_per_sec>20</req_per_sec>
 		<active_period>60</active_period>
 		<idle_period>0</idle_period>
-		<data_download>4000</data_download>
+		<data_upload>200</data_upload>
+		<data_download>64000</data_download>
 	</application>
 </applications>
