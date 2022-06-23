@@ -36,7 +36,6 @@ public class ObjectGenerator {
     private int numOfParityInStripe;
     private RandomGenerator rand;
     private RandomGenerator newObjectRand;
-    private RandomGenerator newObjectLoadRand;
     public static int seed;
 //    private static RandomGenerator rand = null;
     //assuming same size for all objects
@@ -52,6 +51,8 @@ public class ObjectGenerator {
     private Map<String,List<String>> objectLocations;
     private List<String> mdObjectNames;
     private List<Map> listOfObjects;
+    private List<String> hotObjects;
+    private List<String> coldObjects;
     private double overhead;
     private int locationDelta;
     private int numOfNodes;
@@ -81,7 +82,6 @@ public class ObjectGenerator {
         listOfStripes = new HashMap<>();
 //        newObjectRand = new Well19937c(seed);
         resetNewObjectRandomGenerator(seed);
-        newObjectLoadRand = new Well19937c(seed);
         getRandomGenerator();
         currHost=0;
         locationDelta=1;
@@ -152,23 +152,47 @@ public class ObjectGenerator {
         objectsInHosts = new HashMap<Integer, List<Map>>(numOfNodes);
         populateObjectsInHosts();
         }
-        
-        hashObjectLocations();
+
+        String tmpFolder = "";
+        if(SystemUtils.IS_OS_WINDOWS) {
+            tmpFolder = SimSettings.getInstance().getOutputFolder() + "/../service_rate/";
+            hashObjectLocations(tmpFolder);
+        }
+        else {
+            tmpFolder = SimSettings.getInstance().getOutputFolder() + "/../service_rate/";
+            hashObjectLocations(tmpFolder);
+            tmpFolder = "/tmp/";
+            hashObjectLocations(tmpFolder);
+        }
+
+        if(SimSettings.getInstance().getHotColdUniform())
+            createHotColdObjects();
 
 //        //reset to be used in object selection for workload
 //        newObjectRand = new Well19937c(seed);
 
     }
 
-
-
-    private void hashObjectLocations(){
-        try {
-            String tmpFolder = "";
-            if(SystemUtils.IS_OS_WINDOWS)
-                tmpFolder = SimSettings.getInstance().getOutputFolder() + "/../service_rate/";
+    private void createHotColdObjects(){
+        hotObjects = new ArrayList<>();
+        coldObjects = new ArrayList<>();
+        String[] hotColdRatio = SimSettings.getInstance().getHotColdObjectRatio();
+        int hot = Integer.valueOf(hotColdRatio[0]);
+        int cold = Integer.valueOf(hotColdRatio[1]);
+        for (String object : dataObjects.keySet()) {
+            int rand = 1+newObjectRand.nextInt(hot+cold);
+            if(rand<=hot)
+                hotObjects.add(object);
             else
-                tmpFolder = "/tmp/";
+                coldObjects.add(object);
+        }
+
+    }
+
+
+
+    private void hashObjectLocations(String tmpFolder){
+        try {
             String filepath = tmpFolder + SimLogger.getInstance().getFilePrefix() + "_PLACEMENT.csv";
             File f = new File(filepath);
             PrintWriter out = new PrintWriter(new FileOutputStream(f));
@@ -422,7 +446,26 @@ public class ObjectGenerator {
         int objectNum = -1;
         if (dist.equals("UNIFORM"))
         {
-            objectNum =  newObjectRand.nextInt(numberOfElements);
+            if(SimSettings.getInstance().getHotColdUniform()){
+                String[] hotColdPopularityRatio = SimSettings.getInstance().getHotColdPopularityRatio();
+                String[] hotColdRatio = SimSettings.getInstance().getHotColdObjectRatio();
+                int initHotObjects = Integer.valueOf(hotColdRatio[0]);
+                int initColdObjects = Integer.valueOf(hotColdRatio[1]);
+                int hot = Integer.valueOf(hotColdPopularityRatio[0]) * initHotObjects;
+                int cold = Integer.valueOf(hotColdPopularityRatio[1]) * initColdObjects;
+                int rand = newObjectRand.nextInt(hot+cold) +1;
+                if(rand <= hot) { //hot
+                    objectNum = newObjectRand.nextInt(hotObjects.size());
+                    return Integer.valueOf(hotObjects.get(objectNum).replaceAll("[^\\d.]", ""));
+
+                }
+                else { //cold
+                    objectNum =  newObjectRand.nextInt(coldObjects.size());
+                    return Integer.valueOf(coldObjects.get(objectNum).replaceAll("[^\\d.]", ""));
+                }
+            }
+            else
+                objectNum =  newObjectRand.nextInt(numberOfElements);
         }
         else if (dist.equals("ZIPF") || dist.equals("MULTIZIPF"))
         {
@@ -432,6 +475,10 @@ public class ObjectGenerator {
         }
         return objectNum;
 
+    }
+
+    public static int objectName2Index(String objectName){
+        return Integer.valueOf(objectName.replaceAll("[^\\d.]", ""));
     }
 
     public String getDataObjectID(){
@@ -916,8 +963,11 @@ public class ObjectGenerator {
                         Element datacenterElement = (Element) datacenterNode;
                         int hostCapacity = Integer.parseInt(datacenterElement.getElementsByTagName("storage").item(0).getTextContent());
                         objectsSet = stringTokenizer((String) hostsContents.get(j).get("objects"));
-                        if ((objectsSet.size() * realObjectSize) < hostCapacity)
-                            System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(j));
+                        if ((objectsSet.size() * realObjectSize) < hostCapacity) {
+                            int remainingCap = (int) hostsContents.get(j).get("capacity");
+                            System.out.println("WARNING: Only " + Integer.toString(objectsSet.size()) + " objects in host: " + Integer.toString(j) +
+                                    " - Remaining capacity: " + String.valueOf(remainingCap));
+                        }
                     }
                     return; //all are full
                 }
@@ -1377,6 +1427,15 @@ public class ObjectGenerator {
     }
     public List<Map> getListOfObjects() {
         return listOfObjects;
+    }
+
+
+    public List<String> getHotObjects() {
+        return hotObjects;
+    }
+
+    public List<String> getColdObjects() {
+        return coldObjects;
     }
 
     public Map<Integer, List<Map>> getObjectsInHosts() {

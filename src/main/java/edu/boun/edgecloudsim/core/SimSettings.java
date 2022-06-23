@@ -14,6 +14,9 @@
 package edu.boun.edgecloudsim.core;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -83,12 +86,20 @@ public class SimSettings {
 
 	private boolean SERVICE_RATE_SCAN;
 	private boolean SR_EXP_SAME_OVERHEAD;
+
+	private boolean SHIFT_DEVICE_LOCATION;
 	private int SERVICE_RATE_ITERATIONS;
 	private int CURRENT_SERVICE_RATE_ITERATION;
+	private int REQUESTED_OBJECT_LOCATION;
+	private boolean KEEP_SERVICE_RATE_FILE;
 	private BufferedWriter serviceRateFileBW;
 	private double FAIL_THRESHOLD;
 	private double codingRepReqRatio;
 	private double REQUEST_RATE_PERCENTAGE_OF_CAPACITY;
+
+
+	private double OVERHEAD_SCAN_STD;
+	private double OVERHEAD_SCAN_MEAN_RATIO;
 
 
 	String outputFolder;
@@ -152,8 +163,12 @@ public class SimSettings {
 
 	private String OBJECT_DIST_READ;
 	private String OBJECT_DIST_PLACE;
+	private Boolean HOT_COLD_UNIFORM;
+	private String[] HOT_COLD_OBJECTS;
+	private String[] HOT_COLD_POPULARITY;
 	private int CONGESTED_THRESHOLD;
 	private double PARITY_PROB_STEP;
+
 //	private int MAX_CLOUD_REQUESTS;
 
 
@@ -166,6 +181,10 @@ public class SimSettings {
 	private int NUM_OF_PARITY_IN_STRIPE;
 	private double REDUNDANCY_SHARE;
 	private String objectRequestRateArray;
+	private int reqRatePerSec;
+	private double objectRequestRateTotal;
+
+	private double serviceCost;
 
 	//Host failure
 	private boolean HOST_FAILURE_SCENARIO;
@@ -221,6 +240,9 @@ public class SimSettings {
 	private int yRange;
 	private int numOfExternalTasks;
 
+
+	private String rundir;
+
 /*	public HashMap<Integer, String> getNodesHashVector() {
 		return nodesHashVector;
 	}
@@ -259,6 +281,11 @@ public class SimSettings {
 
 	public int getNumOfExternalTasks() {
 		return numOfExternalTasks;
+	}
+
+
+	public String getRundir() {
+		return rundir;
 	}
 
 	public Vector<StorageRequest> getStorageRequests() {
@@ -335,6 +362,7 @@ public class SimSettings {
 				OVERHEAD_SCAN = toBoolean(prop.getProperty("overhead_scan"));
 				SERVICE_RATE_SCAN = toBoolean(prop.getProperty("service_rate_scan"));
 				SR_EXP_SAME_OVERHEAD = toBoolean(prop.getProperty("sr_exp_same_overhead"));
+				SHIFT_DEVICE_LOCATION = toBoolean(prop.getProperty("shift_device_location"));
 				SIM2ORBIT_READRATE_RATIO = Double.parseDouble(prop.getProperty("sim2orbit_readrate_ratio"));
 
 				//Generate edge devices xml
@@ -395,11 +423,18 @@ public class SimSettings {
 				NUM_OF_EDGE_DATACENTERS = Integer.parseInt(prop.getProperty("number_of_edge_datacenters"));
 
 				if(SERVICE_RATE_SCAN) {
+					rundir = "service_rate_app";
 					SERVICE_RATE_ITERATIONS = Integer.parseInt(prop.getProperty("service_rate_iterations"));
 					REQUEST_RATE_PERCENTAGE_OF_CAPACITY = Double.parseDouble(prop.getProperty("request_rate_percentage_of_capacity"));
+					OVERHEAD_SCAN_MEAN_RATIO = Double.parseDouble(prop.getProperty("overhead_scan_mean_ratio"));
+					OVERHEAD_SCAN_STD = Double.parseDouble(prop.getProperty("overhead_scan_std"));
+					REQUESTED_OBJECT_LOCATION = Integer.parseInt(prop.getProperty("requested_object_location"));
+					KEEP_SERVICE_RATE_FILE = toBoolean(prop.getProperty("keep_service_rate_file"));
 					if(ORBIT_MODE)
 						CURRENT_SERVICE_RATE_ITERATION = Integer.parseInt(prop.getProperty("current_service_rate_iteration"));
 				}
+				else
+					rundir = "sample_app6";
 
 				GPS_COORDINATES_CONVERSION = Boolean.parseBoolean(prop.getProperty("gps_coordinates_conversion"));
 				EXTERNAL_NODES_INPUT = Boolean.parseBoolean(prop.getProperty("external_nodes_input"));
@@ -413,6 +448,7 @@ public class SimSettings {
 				REQUESTS_DIRECT_PATH = prop.getProperty("requests_direct_path");
 
 				PARAM_SCAN_MODE = false;
+				serviceCost=0;
 
 
 				NSF_EXPERIMENT = toBoolean(prop.getProperty("nsf"));
@@ -437,6 +473,12 @@ public class SimSettings {
 				Y_RANGE = Integer.parseInt(prop.getProperty("y_range"));
 				HOST_RADIUS = Integer.parseInt(prop.getProperty("host_radius"));
 				OBJECT_DIST_READ = prop.getProperty("object_dist_read");
+				HOT_COLD_UNIFORM = toBoolean(prop.getProperty("hot_cold_uniform"));
+				if(HOT_COLD_UNIFORM) {
+					OBJECT_DIST_READ = "UNIFORM";
+					HOT_COLD_OBJECTS = prop.getProperty("hot_cold_objects").split(",");
+					HOT_COLD_POPULARITY = prop.getProperty("hot_cold_popularity").split(",");
+				}
 				OBJECT_DIST_PLACE = prop.getProperty("object_dist_place");
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				PARITY_PROB_STEP = Double.parseDouble(prop.getProperty("parityProbStep"));
@@ -482,21 +524,7 @@ public class SimSettings {
 		}
 		parseApplicatinosXML(applicationsFile);
 
-		//checks if we are in external nodes mode
-		List<Object> nodesReturn = null;
-		if(SimSettings.instance.isExternalNodes()){
-			try{
-				ParseStorageNodes nodeParser = new ParseStorageNodes();
-				nodesReturn = nodeParser.prepareNodesHashVector(getPathOfNodesFile());
-				nodesHashVector = (HashMap<Integer,String>)nodesReturn.get(0);
-				minXpos = nodeParser.getxMin();
-				minYpos = nodeParser.getyMin();
-				xRange = nodeParser.getxRange();
-				yRange = nodeParser.getyRange();
-			}catch (Exception e){
-				e.printStackTrace();
-			}
-		}
+
 
 		//Service rate experiment
 		this.codingRepReqRatio=1;
@@ -524,7 +552,39 @@ public class SimSettings {
 		}
 
 
-		parseEdgeDevicesXML(edgeDevicesFile);
+
+		//checks if we are in external nodes mode
+		List<Object> nodesReturn = null;
+		if(SimSettings.instance.isExternalNodes()){
+			try{
+				NUM_OF_DATA_OBJECTS = countNumberLinesInFile(getPathOfObjectsFile(), true);
+				ParseStorageNodes nodeParser = new ParseStorageNodes();
+				nodesReturn = nodeParser.prepareNodesHashVector(getPathOfNodesFile());
+				nodesHashVector = (HashMap<Integer,String>)nodesReturn.get(0);
+				minXpos = nodeParser.getxMin();
+				minYpos = nodeParser.getyMin();
+				xRange = nodeParser.getxRange();
+				yRange = nodeParser.getyRange();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		else
+			parseEdgeDevicesXML(edgeDevicesFile, null);
+
+		//checks if we are in external objects mode
+		//updates the number of objects accordingly
+		if(SimSettings.getInstance().isExternalObjects()){
+			ParseStorageObject objectParser = new ParseStorageObject();
+			objectsHashVector = objectParser.prepareObjectsHashVector(nodesHashVector, getPathOfObjectsFile());
+			reversedHashVector = reverseHash(objectsHashVector);
+
+			if(NUM_OF_DATA_OBJECTS != objectsHashVector.size())
+				throw new IllegalStateException("Mismatch in NUM_OF_DATA_OBJECTS");
+//			NUM_OF_STRIPES = NUM_OF_DATA_OBJECTS / NUM_OF_DATA_IN_STRIPE;//if external input, use relative share of parities
+			NUM_OF_STRIPES = (int)((OVERHEAD-1) * NUM_OF_DATA_OBJECTS);
+			objectsVector = objectParser.getObjectsVector();
+		}
 
 		//checks if we are in external devices mode
 		//update the min/max number of mobile devices accordingly
@@ -541,16 +601,7 @@ public class SimSettings {
 			}
 		}//proceed
 
-		//checks if we are in external objects mode
-		//updates the number of objects accordingly
-		if(SimSettings.getInstance().isExternalObjects()){
-			ParseStorageObject objectParser = new ParseStorageObject();
-			objectsHashVector = objectParser.prepareObjectsHashVector(nodesHashVector, getPathOfObjectsFile());
-			reversedHashVector = reverseHash(objectsHashVector);
-			NUM_OF_DATA_OBJECTS = objectsHashVector.size();
-			NUM_OF_STRIPES = NUM_OF_DATA_OBJECTS / NUM_OF_DATA_IN_STRIPE;//if external input, use relative share of parities
-			objectsVector = objectParser.getObjectsVector();
-		}
+
 
 		if(SimSettings.getInstance().isExternalRequests()){
 			ParseStorageRequests requestsParser = new ParseStorageRequests();
@@ -906,6 +957,17 @@ public class SimSettings {
 			return 0;
 	}
 
+
+	public int getRequestedObjectLocation() {
+		return REQUESTED_OBJECT_LOCATION;
+	}
+
+
+	public boolean isKeepServiceRateFile() {
+		return KEEP_SERVICE_RATE_FILE;
+	}
+
+
 	public void setCurrentServiceRateIteration(int CURRENT_SERVICE_RATE_ITERATION) {
 		this.CURRENT_SERVICE_RATE_ITERATION = CURRENT_SERVICE_RATE_ITERATION;
 	}
@@ -921,6 +983,11 @@ public class SimSettings {
 	public boolean isSrExpSameOverhead() {
 		return SR_EXP_SAME_OVERHEAD;
 	}
+
+	public boolean isShiftDeviceLocation() {
+		return SHIFT_DEVICE_LOCATION;
+	}
+
 	public boolean isServiceRateScan() {
 		return SERVICE_RATE_SCAN;
 	}
@@ -937,6 +1004,16 @@ public class SimSettings {
 
 	public double getCodingRepReqRatio() {
 		return codingRepReqRatio;
+	}
+
+
+	public double getOverheadScanStd() {
+		return OVERHEAD_SCAN_STD;
+	}
+
+
+	public double getOverheadScanMeanRatio() {
+		return OVERHEAD_SCAN_MEAN_RATIO;
 	}
 
 	public double getRequestRatePercentageOfCapacity() {
@@ -1009,7 +1086,12 @@ public class SimSettings {
 	}
 
 	public String getPathOfObjectsFile(){
-		return OBJECTS_DIRECT_PATH;
+		if(OBJECTS_DIRECT_PATH.equals("")) {
+			return "scripts/" + rundir+ "/input_files/objects.csv";
+		}else{
+			return OBJECTS_DIRECT_PATH;
+		}
+
 	}
 
 	public String getPathOfRequestsFile(){
@@ -1169,6 +1251,20 @@ public class SimSettings {
 		return OBJECT_DIST_PLACE;
 	}
 
+
+	public Boolean getHotColdUniform() {
+		return HOT_COLD_UNIFORM;
+	}
+
+
+	public String[] getHotColdObjectRatio() {
+		return HOT_COLD_OBJECTS;
+	}
+
+	public String[] getHotColdPopularityRatio() {
+		return HOT_COLD_POPULARITY;
+	}
+
 	public void setObjectDistRead(String OBJECT_DIST_READ) {
 		this.OBJECT_DIST_READ = OBJECT_DIST_READ;
 	}
@@ -1207,9 +1303,7 @@ public class SimSettings {
 	}
 
 
-	public void setNumOfStripes(int NUM_OF_STRIPES) {
-		this.NUM_OF_STRIPES = NUM_OF_STRIPES;
-	}
+
 
 	public boolean isNsfExperiment() {
 		return NSF_EXPERIMENT;
@@ -1230,7 +1324,9 @@ public class SimSettings {
 //	public void setRAID(int RAID) {
 //		this.RAID = RAID;
 //	}
-
+	public void setNumOfStripes(int NUM_OF_STRIPES) {
+		this.NUM_OF_STRIPES = NUM_OF_STRIPES;
+	}
 	public int getNumOfStripes() {
 		return NUM_OF_STRIPES;
 	}
@@ -1248,16 +1344,56 @@ public class SimSettings {
 		return REDUNDANCY_SHARE;
 	}
 
+	public double getServiceCost() {
+		return serviceCost;
+	}
+
+	public void setServiceCost(double serviceCost) {
+		this.serviceCost = serviceCost;
+	}
+
 
 	public String getObjectRequestRateArray() {
 		return objectRequestRateArray;
 	}
 
+
+	public double getObjectRequestRateTotal() {
+		return objectRequestRateTotal;
+	}
+
+
+	public int getReqRatePerSec() {
+		return reqRatePerSec;
+	}
+
+	public void setReqRatePerSec(int reqRatePerSec) {
+		this.reqRatePerSec = reqRatePerSec;
+	}
+
+
+
+	private int countNumberLinesInFile(String filepath, boolean ignoreHeader)  {
+		try {
+			Path file = Paths.get(filepath);
+			int count = (int)Files.lines(file).count();
+			if(ignoreHeader)
+				count--;
+			return count;
+		} catch (Exception e) {
+			e.getStackTrace();
+			return 0;
+		}
+	}
+
+
 	public void setObjectRequestRateArray(double[] objectRequestRateDoubleArray) {
 		DecimalFormat df = new DecimalFormat();
 		df.setMaximumFractionDigits(4);
 		this.objectRequestRateArray = "";
+		objectRequestRateTotal=0;
 		for (int i=0; i<objectRequestRateDoubleArray.length-1;i++){
+			objectRequestRateTotal += objectRequestRateDoubleArray[i];
 			objectRequestRateArray += String.valueOf(df.format(objectRequestRateDoubleArray[i])) + ",";
 		}
 		objectRequestRateArray += String.valueOf(df.format(objectRequestRateDoubleArray[objectRequestRateDoubleArray.length-1]));
@@ -1380,17 +1516,20 @@ public class SimSettings {
 		System.out.println("Total request rate: " +String.valueOf(serviceRate) + "  mu-total");
 	}
 
-	private void generateEdgeDevicesXML(String filePath) throws ParserConfigurationException, TransformerException {
+	private void generateEdgeDevicesXML(String filePath, Vector<StorageNode> nodesVector) throws ParserConfigurationException, TransformerException {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		edgeDevicesDoc = dBuilder.newDocument();
 		Element root = edgeDevicesDoc.createElement("edge_devices");
 		edgeDevicesDoc.appendChild(root);
 		int objectSize = (int)SimSettings.getInstance().getTaskLookUpTable()[0][6];
-		int dataSize = NUM_OF_DATA_OBJECTS*objectSize;
+		int dataSize = NUM_OF_DATA_OBJECTS*objectSize; //TODO: change to long
 		double storedInNode = (dataSize*OVERHEAD)/NUM_OF_EDGE_DATACENTERS;
 		if(storedInNode%1!=0)
 			throw new IllegalStateException("Total data size is not int");
+		if(storedInNode % objectSize >0){
+			storedInNode -= storedInNode % objectSize; //round to object size granularity
+		}
 		int storage = (int)storedInNode;
 		int readRate = SimSettings.getInstance().getREADRATE();
 		int taskProcessingMbps = SimSettings.getInstance().getTaskProcessingMbps();
@@ -1398,7 +1537,11 @@ public class SimSettings {
 		int x_pos=hostRadius;
 		int y_pos=hostRadius;
 		int wlan_id=0;
-
+		if(isExternalNodes()){
+			x_pos=(int)nodesVector.get(0).getxPos();
+			y_pos=(int)nodesVector.get(0).getyPos();
+			readRate=(int)nodesVector.get(0).getServiceRate();
+		}
 
 		// datacenter element
 		for (int i=0; i<NUM_OF_EDGE_HOSTS; i++){
@@ -1419,6 +1562,7 @@ public class SimSettings {
 			location.appendChild(wlan_id_xml);
 			x_pos += hostRadius;
 			y_pos += hostRadius;
+
 			wlan_id++;
 
 			Element host = edgeDevicesDoc.createElement("host");
@@ -1432,6 +1576,11 @@ public class SimSettings {
 			Element taskProcessingMbps_xml = edgeDevicesDoc.createElement("taskProcessingMbps");
 			taskProcessingMbps_xml.appendChild(edgeDevicesDoc.createTextNode(String.valueOf(taskProcessingMbps)));
 			host.appendChild(taskProcessingMbps_xml);
+			if(isExternalNodes() && i<NUM_OF_EDGE_HOSTS-1){
+				x_pos=(int)nodesVector.get(i+1).getxPos();
+				y_pos=(int)nodesVector.get(i+1).getyPos();
+				readRate=(int)nodesVector.get(0).getServiceRate();
+			}
 		}
 		// create the xml file
 		//transform the DOM Object to an XML File
@@ -1450,7 +1599,7 @@ public class SimSettings {
 
 	}
 
-	private void parseEdgeDevicesXML(String filePath) {
+	public void parseEdgeDevicesXML(String filePath, Vector<StorageNode> nodesVector) {
 		try {
 			if (SimSettings.getInstance().isGenEdgeDevicesXML()){
 				NUM_OF_EDGE_HOSTS= SimSettings.getInstance().getNumOfEdgeDatacenters();
@@ -1460,7 +1609,7 @@ public class SimSettings {
 				genfile = genfile.getParentFile();
 				genfile = new File(genfile,"edge_devices.xml");
 				filePath = genfile.toString();
-				generateEdgeDevicesXML(filePath);
+				generateEdgeDevicesXML(filePath, nodesVector);
 				return;
 			}
 			File devicesFile = new File(filePath);
@@ -1475,24 +1624,11 @@ public class SimSettings {
 				Node datacenterNode = datacenterList.item(i);
 
 				Element datacenterElement = (Element) datacenterNode;
-//				isAttribtuePresent(datacenterElement, "arch");
-//				isAttribtuePresent(datacenterElement, "os");
-//				isAttribtuePresent(datacenterElement, "vmm");
-	//				isElementPresent(datacenterElement, "costPerBw");
-	//				isElementPresent(datacenterElement, "costPerSec");
-	//				isElementPresent(datacenterElement, "costPerMem");
-	//				isElementPresent(datacenterElement, "costPerStorage");
 
 				Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
-	//				isElementPresent(location, "attractiveness");
 				isElementPresent(location, "wlan_id");
 				isElementPresent(location, "x_pos");
 				isElementPresent(location, "y_pos");
-
-	//				String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-	//				int placeTypeIndex = Integer.parseInt(attractiveness);
-	//				if(NUM_OF_PLACE_TYPES < placeTypeIndex+1)
-	//					NUM_OF_PLACE_TYPES = placeTypeIndex+1;
 
 				NodeList hostList = datacenterElement.getElementsByTagName("host");
 				for (int j = 0; j < hostList.getLength(); j++) {
@@ -1500,27 +1636,11 @@ public class SimSettings {
 					Node hostNode = hostList.item(j);
 
 					Element hostElement = (Element) hostNode;
-	//					isElementPresent(hostElement, "core");
-	//					isElementPresent(hostElement, "mips");
-	//					isElementPresent(hostElement, "ram");
 					isElementPresent(hostElement, "storage");
 					isElementPresent(hostElement, "readRate");
 
 					//Oleg: removed VM feature and set only 1 to exist
 					NUM_OF_EDGE_VMS=NUM_OF_EDGE_HOSTS;
-	/*					NodeList vmList = hostElement.getElementsByTagName("VM");
-					for (int k = 0; k < vmList.getLength(); k++) {
-						NUM_OF_EDGE_VMS++;
-						Node vmNode = vmList.item(k);
-
-						Element vmElement = (Element) vmNode;
-						isAttribtuePresent(vmElement, "vmm");
-						isElementPresent(vmElement, "core");
-						isElementPresent(vmElement, "mips");
-						isElementPresent(vmElement, "ram");
-						isElementPresent(vmElement, "storage");
-						isElementPresent(vmElement, "readRate");
-					}*/
 				}
 			}
 	

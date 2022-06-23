@@ -16,6 +16,8 @@ import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import edu.boun.edgecloudsim.core.SimSettings;
 
+import static edu.boun.edgecloudsim.task_generator.LoadGeneratorModel.DATA_UPLOAD;
+
 public class TaskProperty {
     private double startTime;
     private long length, inputFileSize, outputFileSize;
@@ -104,7 +106,6 @@ public class TaskProperty {
 	}
 
 	//Storage - Harel
-	//TODO: check!
 	public TaskProperty(int _mobileDeviceId, int _taskType, double _startTime, String _objectID, int _ioTaskID,
 						int _taskPriority, double _taskDeadline, int _isParity) {
 
@@ -120,43 +121,6 @@ public class TaskProperty {
 		taskDeadline = _taskDeadline;
 		isParity = _isParity;
 
-		//finding the object original name (from the hash map)
-		/*
-		String originName = "";
-		int hashSize = SimSettings.getInstance().getObjectsHashVector().size();
-		for(int i = 0; i < hashSize; i++){
-			if(SimSettings.getInstance().getObjectsHashVector().get("d" + i).equals(objectRead)){
-				originName = "d" + i;
-				hashedName = originName;
-				break;
-			}
-		}
-		try {
-			if (originName.equals("")) {
-				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the hash vector!");
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-
-		//finding the size of the object
-		int size = SimSettings.getInstance().getObjectsVector().size();
-		//for testing purposes - delete!
-		//Vector<StorageObject> temp = SimSettings.getInstance().getObjectsVector();
-		for(int i = 0; i < size; i++){
-			StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
-			if(sObject.getObjName().equals(originName)){
-				inputFileSize = Long.parseLong(sObject.getObjSize());
-				break;
-			}
-		}
-		try {
-			if (inputFileSize == -1) {
-				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the objects input!");
-			}
-		}catch (Exception e){
-			e.printStackTrace();
-		}*/
 
 		//finding the size of the object
 		int size = SimSettings.getInstance().getObjectsVector().size();
@@ -165,19 +129,19 @@ public class TaskProperty {
 		for(int i = 0; i < size; i++){
 			StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
 			if(sObject.getObjName().equals(objectRead)){
-				inputFileSize = Long.parseLong(sObject.getObjSize());
+				outputFileSize = Long.parseLong(sObject.getObjSize());
 				break;
 			}
 		}
 		try {
-			if (inputFileSize == -1) {
+			if (outputFileSize == -1) {
 				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the objects input!");
 			}
 		}catch (Exception e){
 			e.printStackTrace();
 		}
 		length = inputFileSize;
-		outputFileSize = inputFileSize;
+		inputFileSize = (long)SimSettings.getInstance().getTaskLookUpTable()[0][DATA_UPLOAD];
 
 	}
 

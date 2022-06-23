@@ -150,6 +150,13 @@ public class MainApp {
 		serviceRatePath = new File(parent,"/service_rate");
 		String srFilename = "";
 		SS.setOutputFolder(outputFolderPath);
+
+		//set minimal number of stripes
+		double overhead = SS.getOverhead() - 1;
+		int numOfParities = (int)(SS.getNumOfDataObjects()*overhead);
+		if(numOfParities==0)
+			numOfParities=1; //to avoid 0
+		SS.setNumOfStripes(numOfParities);
 		if(SS.isOrbitMode()){
 
 			long currentTime;
@@ -182,7 +189,7 @@ public class MainApp {
 				filename = "SERVICE_RATE_2_N_" + String.valueOf(SS.getNumOfEdgeDatacenters()) + "_K_" +
 						String.valueOf(SS.getNumOfDataObjects()) + ".csv";
 		}*/
-		else if (!SS.isOrbitMode()){
+		else if (!SS.isOrbitMode() && !SS.isKeepServiceRateFile()){
 			FileUtils.deleteDirectory(serviceRatePath);
 			serviceRatePath.mkdir();
 		}
@@ -191,7 +198,7 @@ public class MainApp {
 			String fileHeader = "";
 			for (int i = 0; i < SS.getNumOfDataObjects(); i++)
 				fileHeader += String.valueOf(i) + ",";
-			fileHeader += "type,reqsPerUserSec,readRate,completed";
+			fileHeader += "type,reqsPerUserSec,readRate,iteration,simServiceCost,completed";
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
@@ -210,8 +217,8 @@ public class MainApp {
 		double meanSystemServedReqsPerSec = SS.getServedReqsPerSec()*SS.getNumOfEdgeDatacenters()/users;
 		if(objectPlacementPolicy.equals("REPLICATION_PLACE"))
 			meanSystemServedReqsPerSec *= SS.getCodingRepReqRatio(); //adjust replication to same request rate as coding
-		double meanSystemLambda = SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec;
-		double meanSystemStd = 0.4 * SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec;
+		double meanSystemLambda = SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec * SS.getOverheadScanMeanRatio();
+		double meanSystemStd = SS.getOverheadScanStd() * SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec;
 
 		NormalDistribution lambdaGenerator = new NormalDistribution(rand,meanSystemLambda,meanSystemStd);
 //		NormalDistribution zipfIndexGenerator = new NormalDistribution(rand,1.5,0.5);
@@ -225,7 +232,6 @@ public class MainApp {
 			double reqsPerSec = lambdaGenerator.sample();
 			reqsPerSec = Math.round(Math.abs(reqsPerSec)); //half-gaussian
 			SS.setPoissonInTaskLookUpTable(0,1/reqsPerSec);
-
 //			double zipfIndex = Math.abs(zipfIndexGenerator.sample());
 //			SS.setZipfExponent(zipfIndex);
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
@@ -259,6 +265,7 @@ public class MainApp {
 				SimLogger.getInstance().simStarted(outputFolderPath,filePrefix );
 
 				try {
+					SimSettings.getInstance().setServiceCost(0);
 					// First step: Initialize the CloudSim package. It should be called
 					// before creating any entities.
 					int num_user = 2;   // number of grid users
@@ -310,7 +317,8 @@ public class MainApp {
 				serviceRateFileFW = new FileWriter(serviceRateFile, true);
 				serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
 				SimLogger.appendToFile(serviceRateFileBW, SS.getObjectRequestRateArray() + "," + policy + "," +
-						reqsPerSec + "," + SS.getServedReqsPerSec() + "," + completed);
+//						reqsPerSec + "," + SS.getServedReqsPerSec() + "," + i + "," + SS.getServiceCost() + "," + completed);
+						SS.getReqRatePerSec() + "," + SS.getServedReqsPerSec() + "," + i + "," + SS.getServiceCost() + "," + completed);
 
 				Date ScenarioEndDate = Calendar.getInstance().getTime();
 				now = df.format(ScenarioEndDate);

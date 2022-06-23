@@ -78,7 +78,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //assuming all sizes in vms are equal
 
         //mbps to byte
-        long manMu = (SimSettings.getInstance().getTaskProcessingMbps()/8) * 1000 *1000;
+        long manMu = (SimSettings.getInstance().getTaskProcessingMbps()/8) * 1000 *(long)1000;
         wlanQueue = new EdgeQueue(SimSettings.getInstance().getREADRATE(),true);
         manQueue = new EdgeQueue(manMu,false);
         int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
@@ -677,7 +677,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
      * @return
      */
     public double getEdge2EdgeDelay(int hostID){
-        return wlanQueue.getHostTotalTaskSize(hostID);
+        return wlanQueue.getLatestDelay(hostID) + manQueue.getLatestDelay(hostID);
     }
     public List<String> getNonOperativeHosts() {
         List<String> nonOperativeHosts = new ArrayList<>();
@@ -694,6 +694,7 @@ class EdgeQueue{
     protected int[] hostOperativity;
 
     protected double[] previousHostTotalTaskSize;
+    protected double[] latestDelay;
     protected double numOfTasks;
     double mu;
 
@@ -707,6 +708,7 @@ class EdgeQueue{
         double intervalsInSec=SampleMobileDeviceManager.getMm1QueueModelUpdateInterval();
         double sim2orbitConst=1;
         previousHostTotalTaskSize = new double[numOfEdgeDatacenters];
+        latestDelay = new double[numOfEdgeDatacenters];
         hostTotalTaskSize = new double[numOfEdgeDatacenters];
 
         if(applySim2OrbitConst)
@@ -724,6 +726,9 @@ class EdgeQueue{
     public double getHostTotalTaskSize(int hostID) {
         return hostTotalTaskSize[hostID];
     }
+    public double getLatestDelay(int hostID) {
+        return latestDelay[hostID];
+    }
 
     public double getMu() {
         return mu;
@@ -738,14 +743,18 @@ class EdgeQueue{
         if (hostTotalTaskSize[hostIndex] >mu ) {
 //            HostClients[hostIndex]--;
             hostTotalTaskSize[hostIndex] -= dataSize;
+            latestDelay[hostIndex] = 1000; //max
             return -1;
         }
+        //TODO: wait time does not refer to object size
         //Use existing function. arrival rate is previousHostClients, service rate is 1/taskProcessingTimeS
-        double result = SampleNetworkModel.calculateMM1(propogationDelay,
-                mu,
-                previousHostTotalTaskSize[hostIndex]);
+        double result = SampleNetworkModel.calculateMM1(propogationDelay, mu, previousHostTotalTaskSize[hostIndex]);
         numOfTasks++;
-
+        //used for parityProb, use current task size to take online decision (not ideal)
+//        if(hostTotalTaskSize[hostIndex]>previousHostTotalTaskSize[hostIndex])
+            latestDelay[hostIndex] = SampleNetworkModel.calculateMM1(propogationDelay, mu, hostTotalTaskSize[hostIndex]);
+//        else
+//            latestDelay[hostIndex] = result;
 
         if (result < 0){
             hostTotalTaskSize[hostIndex] -= dataSize;

@@ -1,5 +1,7 @@
 package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.core.SimSettings;
+
 import java.io.*;
 import java.util.*;
 
@@ -35,7 +37,7 @@ public class ParseStorageObject {
         objectsVector = new Vector<>();
 
         //maps between the conventional name and the original provided one
-        HashMap<String,String> map = new HashMap<>();
+        HashMap<String,String> objectMap = new HashMap<>();
 
         try{
             if(nodesHashVector.isEmpty()){
@@ -43,7 +45,7 @@ public class ParseStorageObject {
             }
             BufferedReader br;
             if(file_path.equals("")) {
-                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Objects.csv"));
+                br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() +"/input_files/objects.csv"));
             }else{
                 br = new BufferedReader(new FileReader(file_path));
             }
@@ -65,12 +67,12 @@ public class ParseStorageObject {
                 }
 
                 //checks if the current object's name is unique
-                for(Map.Entry<String,String> m: map.entrySet()){
+/*                for(Map.Entry<String,String> m: objectMap.entrySet()){
                     if(objects[OBJECT_NAME].equals(m.getValue())){
                         //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
                         throw new Exception("The object name " + objects[OBJECT_NAME] + " is not unique!! error in line " + lineCounter);
                     }
-                }
+                }*/
 
                 //checks that the locations in the location list match a nodes in the nodes list
                 boolean checkIfNodeExists;
@@ -93,7 +95,7 @@ public class ParseStorageObject {
                 //mapping the objects and renaming them to the convention.
                 String objectPrefix = "d";
                 String objectNewName = objectPrefix + mapIndex;
-                map.put(objectNewName,objects[OBJECT_NAME]);
+                objectMap.put(objectNewName,objects[OBJECT_NAME]);
                 mapIndex++;
 
                 objects[OBJECT_NAME] = objectNewName; //The actual name changing of the object
@@ -130,6 +132,15 @@ public class ParseStorageObject {
                 }
                 lineCounter++;
             }
+            //check duplicacies in objects
+            // check size of both collections; if unequal, you have duplicates
+            List<String>  valuesList = new ArrayList(objectMap.values());
+            Set<String> valuesSet = new HashSet<String>(objectMap.values());
+            if(valuesList.size() != valuesSet.size())
+                throw new IllegalStateException("Duplicacies in objectMap");
+
+
+
             System.out.println("The objects' list successfully created!!!");
             /*
             System.out.println("Displaying HashMap:");
@@ -138,7 +149,7 @@ public class ParseStorageObject {
             }*/
 
             //write the HashMap to a csv file
-            CsvWrite.csvWriteSS(map,"scripts/sample_app6/hash_tables/Objects_Hash.csv" );
+            CsvWrite.csvWriteSS(objectMap,"scripts/" + SimSettings.getInstance().getRundir() +"/hash_tables/Objects_Hash.csv" );
         }
         catch (Exception e){
             e.printStackTrace();
@@ -155,7 +166,7 @@ public class ParseStorageObject {
             s.getObjLocationsProb().forEach(System.out::println);
         }
 */
-        return map;
+        return objectMap;
     }//end of prepareObjectsHashVector
 
     public Vector<StorageObject> getObjectsVector() {

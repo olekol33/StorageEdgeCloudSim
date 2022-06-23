@@ -1,5 +1,7 @@
 package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.core.SimSettings;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +50,7 @@ public class ParseStorageDevices {
         try{
             BufferedReader br;
             if(filePath.equals("")) {
-                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Devices.csv"));
+                br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() +"/input_files/devices.csv"));
             }else{
                 br = new BufferedReader(new FileReader(filePath));
             }
@@ -111,10 +113,15 @@ public class ParseStorageDevices {
                 }
 
                 //creat new StorageDevice and add it to the nodes vector
+                StorageDevice sDevice;
                 double devX = Double.parseDouble(objects[DEVICE_X_POSE]);
                 double devY = Double.parseDouble(objects[DEVICE_Y_POSE]);
-                int[] coord = ParseStorageNodes.latlonToMeters(devX,devY,minX ,minY);
-                StorageDevice sDevice = new StorageDevice(newName,coord[0],coord[1],Double.parseDouble(objects[DEVICE_TIME]));
+                if(SimSettings.getInstance().isGpsConversionRequired()) {
+                    int[] coord = ParseStorageNodes.latlonToMeters(devX, devY, minX, minY);
+                    sDevice = new StorageDevice(newName, coord[0], coord[1], Double.parseDouble(objects[DEVICE_TIME]));
+                }
+                else
+                    sDevice = new StorageDevice(newName, devX, devY, Double.parseDouble(objects[DEVICE_TIME]));
                 devicesVector.add(sDevice);
             }
             System.out.println("The devices' vector successfully created!!!");
@@ -125,7 +132,7 @@ public class ParseStorageDevices {
         }*/
 
             //write the HashMap to a csv file
-            CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Devices_Hash.csv");
+            CsvWrite.csvWriteIS(map, "scripts/" + SimSettings.getInstance().getRundir() + "/hash_tables/Devices_Hash.csv");
 
         }
         catch (Exception e){

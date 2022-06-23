@@ -1,5 +1,7 @@
 package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.core.SimSettings;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
@@ -34,28 +36,45 @@ public class ParseStorageRequests {
 
         Vector<StorageRequest> requestsVector = new Vector<>();
 
+        Map<String, String> reversed_objectsHashVector = new HashMap<>();
+        for(Map.Entry<String, String> entry : objectsHashVector.entrySet()){
+            reversed_objectsHashVector.put(entry.getValue(), entry.getKey());
+        }
+
+        Map<String, Integer> reversed_devicesHashVector = new HashMap<>();
+        for(Map.Entry<Integer, String> entry : devicesHashVector.entrySet()){
+            reversed_devicesHashVector.put(entry.getValue(), entry.getKey());
+        }
+
         //maps between the conventional name and the original provided one
         try{
             BufferedReader br;
             if(file_path.equals("")) {
-                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Requests.csv"));
+                br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() +"/input_files/requests.csv"));
             }else{
                 br = new BufferedReader(new FileReader(file_path));
             }
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
+                line = line.replace("\"",""); //remove quotes if there are any
                 String[] objects = line.split(splitLineBy,-1);
 
                 //check if the deviceName is in the Devices file
                 boolean checkIfDeviceExists;
                 checkIfDeviceExists = false;
-                for(Map.Entry<Integer,String> m: devicesHashVector.entrySet()){
+/*                for(Map.Entry<Integer,String> m: devicesHashVector.entrySet()){
                     if(m.getValue().equals(objects[REQUEST_DEVICE_NAME])){
                         checkIfDeviceExists = true;
                         break;
                     }
+                }*/
+                //this is faster
+                if(reversed_devicesHashVector.containsKey(objects[REQUEST_DEVICE_NAME])){
+                    checkIfDeviceExists = true;
                 }
+
+
                 if(!checkIfDeviceExists){
                     throw new Exception("The request is trying to access a non-existing device!! error in line " +
                             lineCounter + "\n" + "The node " + objects[REQUEST_DEVICE_NAME] + " does not exist!!");
@@ -66,12 +85,18 @@ public class ParseStorageRequests {
                 boolean checkIfObjectExists;
                 checkIfObjectExists = false;
                 String new_object_name = "";
-                for(Map.Entry<String,String> m: objectsHashVector.entrySet()){
+                //slow...
+/*                for(Map.Entry<String,String> m: objectsHashVector.entrySet()){
                     if(m.getValue().equals(objects[REQUEST_OBJECT_ID])){
                         checkIfObjectExists = true;
                         new_object_name = m.getKey();
                         break;
                     }
+                }*/
+                //this is faster
+                if(reversed_objectsHashVector.containsKey(objects[REQUEST_OBJECT_ID])){
+                    checkIfObjectExists = true;
+                    new_object_name = reversed_objectsHashVector.get(objects[REQUEST_OBJECT_ID]);
                 }
 
                 if(!checkIfObjectExists){
@@ -93,7 +118,8 @@ public class ParseStorageRequests {
                 StorageRequest sRequest;
 
                 //check if the priority or deadline fields are empty
-                if(!objects[REQUEST_TASK_PRIORITY].equals("") && !objects[REQUEST_TASK_DEADLINE].equals("")){//both are not empty
+                //TODO: uncomment when request list is fixed (-1 removed)
+/*                if(!objects[REQUEST_TASK_PRIORITY].equals("") && !objects[REQUEST_TASK_DEADLINE].equals("")){//both are not empty
                     sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
                 } else if(objects[REQUEST_TASK_PRIORITY].equals("") && objects[REQUEST_TASK_DEADLINE].equals("")){//both are empty
                     sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
@@ -101,7 +127,9 @@ public class ParseStorageRequests {
                     sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
                 } else{
                     sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]));
-                }
+                }*/
+                sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
+
 
                 //creat new StorageDevice and add it to the nodes vector
                 //StorageRequest sRequest = new StorageRequest(objects[0],Double.parseDouble(objects[1]),objects[2],Integer.parseInt(objects[3]),Integer.parseInt(objects[4]),Double.parseDouble(objects[5]));

@@ -1,5 +1,6 @@
 package edu.boun.edgecloudsim.storage;
 
+import edu.boun.edgecloudsim.core.SimSettings;
 import org.apache.commons.math3.util.Pair;
 
 import java.io.*;
@@ -28,6 +29,10 @@ public class ParseStorageNodes {
      * @param nodesVector contains the nodes. each Node in the vector is from type StorageNode.
      */
     public static void xmlWrite(Vector<StorageNode> nodesVector){
+        if(SimSettings.getInstance().isServiceRateScan()){
+            SimSettings.getInstance().parseEdgeDevicesXML("scripts/service_rate_app/config/edge_devices.xml", nodesVector);
+            return;
+        }
         try{
             FileWriter writer = new FileWriter("scripts/sample_app6/config/edge_devices.xml");
             writer.write("<?xml version=\"1.0\"?>\n");
@@ -99,7 +104,7 @@ public class ParseStorageNodes {
         try{
             //collect device locations
             BufferedReader br;
-            br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Devices.csv"));
+            br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() + "/input_files/devices.csv"));
             br.readLine();
             lineCounter++;
             ArrayList<Pair<Double,Double>> devicesXY = new ArrayList<>();
@@ -112,7 +117,7 @@ public class ParseStorageNodes {
 
 //            BufferedReader br;
             if(file_path.equals("")) {
-                br = new BufferedReader(new FileReader("scripts/sample_app6/input_files/Nodes.csv"));
+                br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() +"/input_files/nodes.csv"));
             }else{
                 br = new BufferedReader(new FileReader(file_path));
             }
@@ -170,23 +175,39 @@ public class ParseStorageNodes {
 
             //cast the range of the nodes to the range: (0,0) - (maxX, maxY)
             for (StorageNode temp : nodesVector) {
-                int[] coord = latlonToMeters(temp.getxPos(),temp.getyPos(),minX ,minY);
+                int[] coord;
+                if(SimSettings.getInstance().isGpsConversionRequired()) {
+                    coord = latlonToMeters(temp.getxPos(),temp.getyPos(),minX ,minY);
+                }
+                else {
+                    coord = new int[2];
+                    coord[0] = (int)temp.getxPos();
+                    coord[1] = (int)temp.getyPos();
+
+                }
+
                 temp.setxPos(coord[0]);
                 temp.setyPos(coord[1]);
             }
-
-            int[] coord = latlonToMeters(maxX,maxY, minX, minY);
+            if(SimSettings.getInstance().isGpsConversionRequired()) {
+                int[] coord = latlonToMeters(maxX, maxY, minX, minY);
+                xRange = coord[0];
+                yRange = coord[1];
+            }
+            else{
+                xRange = (int)maxX;
+                yRange = (int)maxY;
+            }
             xMin = 0;
             yMin = 0;
-            xRange = coord[0];
-            yRange = coord[1];
+
 
             //write the HashMap to a csv file
-            CsvWrite.csvWriteIS(map, "scripts/sample_app6/hash_tables/Nodes_Hash.csv");
+            CsvWrite.csvWriteIS(map, "scripts/" + SimSettings.getInstance().getRundir() +"/hash_tables/Nodes_Hash.csv");
 
             //write the edge_device.xml file
             xmlWrite(nodesVector);
-            System.out.println("The edge_devices.xml file has been overwrite successfully!!!");
+            System.out.println("The edge_devices.xml file has been overwritten successfully!!!");
         }
         catch (Exception e){
             e.printStackTrace();

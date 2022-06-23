@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //    private int taskIdCounter=0;
     private int failedDueToBW=0;
+    private int validFailed=0;
     private int failedDueToInaccessibility=0;
     public StorageMobileDeviceManager() throws Exception {
     }
@@ -537,17 +538,19 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 
     public void terminateFailedRun(){
         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
-        int numOfIOTasks = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).getNumOfIOTasks();
+        int numOfIOTasks = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).getNumOfValidIOTasks();
         double ratio;
         double ratioTh = SimSettings.getInstance().getFailThreshold();
-        if (SimSettings.getInstance().isCountFailedduetoinaccessibility()) {
+        if(CloudSim.clock()>SimSettings.getInstance().getWarmUpPeriod())
+            validFailed++;
+        else
+            return;
+        ratio=(double)  validFailed / numOfIOTasks;
+/*        if (SimSettings.getInstance().isCountFailedduetoinaccessibility()) {
             ratio = (double) (failedDueToBW + failedDueToInaccessibility) / numOfIOTasks;
-            //larger threshold in this case
-/*            if (failedDueToInaccessibility>0)
-                ratioTh *= 2;*/
         }
         else
-            ratio = (double)(failedDueToBW)/numOfIOTasks;
+            ratio = (double)(failedDueToBW)/numOfIOTasks;*/
         if(ratio>ratioTh && SimSettings.getInstance().isTerminateFailedRun()) {
             try {
                 if (SimSettings.getInstance().isParamScanMode()) {
@@ -591,6 +594,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
 //                if (file.exists())
 //                    new FileOutputStream(file).close();
                 out.close();
+                SimLogger.getInstance().calculateServiceCost();
                 System.out.println("Failed above threshold for: " + SimLogger.getInstance().getFilePrefix());
                 SimManager.getInstance().shutdownEntity();
                 SimLogger.printLine("100");

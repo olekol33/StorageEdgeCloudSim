@@ -118,15 +118,15 @@ public class SimManager extends SimEntity {
 
 		objectGenerator = new ObjectGenerator(objectPlacementPolicy);
 
-		SimLogger.print("Creating tasks...");
-		loadGeneratorModel = scenarioFactory.getLoadGeneratorModel();
-		loadGeneratorModel.initializeModel();
-		SimLogger.printLine("Done, ");
-
 		SimLogger.print("Creating device locations...");
 		mobilityModel = scenarioFactory.getMobilityModel();
 		mobilityModel.initialize();
 		SimLogger.printLine("Done.");
+
+		SimLogger.print("Creating tasks...");
+		loadGeneratorModel = scenarioFactory.getLoadGeneratorModel();
+		loadGeneratorModel.initializeModel();
+		SimLogger.printLine("Done, ");
 
 		//Generate network model
 		networkModel = scenarioFactory.getNetworkModel();

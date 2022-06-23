@@ -242,7 +242,7 @@ public class SimLogger {
 //		taskMap.remove(taskId);
 		clearTask(task);
 
-		//Count if parity and to read or if not parity
+		//Count if parity and to read (1) or if not parity (0)
 		if (task.getIsParity() == task.getParitiesToRead()) {
 			//Give the system time to warm up
 /*			if (CloudSim.clock() < SimSettings.getInstance().getWarmUpPeriod())
@@ -941,6 +941,8 @@ public class SimLogger {
 //			Iterator it = timeToReadStripe.entrySet().iterator();
 //			while (it.hasNext()){
 			int notFinished=0;
+			int totalObjectsRead = 0;
+			double countedTasks = 0;
 			for (Integer key : timeToReadStripe.keySet()){
 				double readDelay=100;
 				double readCost=0;
@@ -984,7 +986,7 @@ public class SimLogger {
 					}
 					//parity finished
 					else {
-						dataTypeRead = "parity";
+						dataTypeRead = "parity"; //pontentially incorrect, single remote read is not parity
 						readDelay = Collections.max(objectReadFinished.subList(1, objectReadFinished.size()));
 						for(Double d : objectReadFinished.subList(1, objectReadFinished.size())) {
 							readCost += d;
@@ -1039,6 +1041,15 @@ public class SimLogger {
 					}
 				}
 
+				if (objectsRead==1)
+					dataTypeRead = "data";
+				else if (objectsRead==2)
+					dataTypeRead = "parity";
+				else
+					throw new IllegalStateException("Unexpected value of objectsRead");
+				totalObjectsRead += objectsRead;
+				countedTasks++;
+
 				readObjectsBW.write((key + SimSettings.DELIMITER + df.format(readDelay))+
 						SimSettings.DELIMITER +  df.format(readCost)+  SimSettings.DELIMITER +dataTypeRead +
 						SimSettings.DELIMITER + objectsRead);
@@ -1046,6 +1057,7 @@ public class SimLogger {
 //				it.remove(); // avoids a ConcurrentModificationException
 
 			}
+			SimSettings.getInstance().setServiceCost((totalObjectsRead / countedTasks) * SimSettings.getInstance().getObjectRequestRateTotal() );
 			System.out.println("Not finished: " + notFinished);
 
 			for (int i = 0; i < numOfAppTypes + 1; i++) {
@@ -1281,6 +1293,29 @@ public class SimLogger {
 		// clear related collections (map list etc.)
 		taskMap.clear();
 		vmLoadList.clear();
+	}
+
+	public void calculateServiceCost() {
+		int objectsUsed = 0;
+		Set<Integer> requestsServedSet = new HashSet<>();
+		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
+
+			Integer key = entry.getKey();
+			LogItem value = entry.getValue();
+
+
+			if (!value.isInWarmUpPeriod()) {
+				if (value.getStatus() == SimLogger.TASK_STATUS.COMPLETED) {
+					objectsUsed++;
+					requestsServedSet.add(value.getIoTaskID());
+				}
+			}
+		}
+		int requestsServed = requestsServedSet.size();
+		double meanObjectsUsed = 0;
+		if(requestsServed>0)
+			meanObjectsUsed = (double) objectsUsed / requestsServed;
+		SimSettings.getInstance().setServiceCost(meanObjectsUsed * SimSettings.getInstance().getObjectRequestRateTotal());
 	}
 
 	public int hostOfOriginalData(int ioTaskID){
