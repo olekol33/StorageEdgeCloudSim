@@ -62,17 +62,8 @@ public class ParseStorageRequests {
 
                 //check if the deviceName is in the Devices file
                 boolean checkIfDeviceExists;
-                checkIfDeviceExists = false;
-/*                for(Map.Entry<Integer,String> m: devicesHashVector.entrySet()){
-                    if(m.getValue().equals(objects[REQUEST_DEVICE_NAME])){
-                        checkIfDeviceExists = true;
-                        break;
-                    }
-                }*/
                 //this is faster
-                if(reversed_devicesHashVector.containsKey(objects[REQUEST_DEVICE_NAME])){
-                    checkIfDeviceExists = true;
-                }
+                checkIfDeviceExists = reversed_devicesHashVector.containsKey(objects[REQUEST_DEVICE_NAME]);
 
 
                 if(!checkIfDeviceExists){
@@ -85,15 +76,6 @@ public class ParseStorageRequests {
                 boolean checkIfObjectExists;
                 checkIfObjectExists = false;
                 String new_object_name = "";
-                //slow...
-/*                for(Map.Entry<String,String> m: objectsHashVector.entrySet()){
-                    if(m.getValue().equals(objects[REQUEST_OBJECT_ID])){
-                        checkIfObjectExists = true;
-                        new_object_name = m.getKey();
-                        break;
-                    }
-                }*/
-                //this is faster
                 if(reversed_objectsHashVector.containsKey(objects[REQUEST_OBJECT_ID])){
                     checkIfObjectExists = true;
                     new_object_name = reversed_objectsHashVector.get(objects[REQUEST_OBJECT_ID]);
@@ -103,9 +85,6 @@ public class ParseStorageRequests {
                     throw new Exception("The request is trying to access a non-existing Device!! error in line " +
                             lineCounter + "\n" + "The object " + objects[REQUEST_OBJECT_ID] + " does not exist!!");
                 }
-
-
-
                 //checks if the time is in ascending order
                 if(Double.parseDouble(objects[REQUEST_TIME]) < prevRequestTime){
                     throw new Exception("The requests' time must be in ascending order!! error in line " + lineCounter);
@@ -114,34 +93,16 @@ public class ParseStorageRequests {
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
                 lineCounter++;
 
-
                 StorageRequest sRequest;
 
                 //check if the priority or deadline fields are empty
-                //TODO: uncomment when request list is fixed (-1 removed)
-/*                if(!objects[REQUEST_TASK_PRIORITY].equals("") && !objects[REQUEST_TASK_DEADLINE].equals("")){//both are not empty
-                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
-                } else if(objects[REQUEST_TASK_PRIORITY].equals("") && objects[REQUEST_TASK_DEADLINE].equals("")){//both are empty
-                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
-                } else if(objects[REQUEST_TASK_PRIORITY].equals("")){
-                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Double.parseDouble(objects[REQUEST_TASK_DEADLINE]));
-                } else{
-                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]),Integer.parseInt(objects[REQUEST_TASK_PRIORITY]));
-                }*/
-                sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
-
+                sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),
+                        new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
 
                 //creat new StorageDevice and add it to the nodes vector
-                //StorageRequest sRequest = new StorageRequest(objects[0],Double.parseDouble(objects[1]),objects[2],Integer.parseInt(objects[3]),Integer.parseInt(objects[4]),Double.parseDouble(objects[5]));
                 requestsVector.add(sRequest);
             }
             System.out.println("The requests' vector successfully created!!!");
-        /*
-        System.out.println("Displaying HashMap:");
-        for(Map.Entry m: map.entrySet()){
-            System.out.println(m.getKey() +" "+m.getValue());
-        }*/
-
         }
         catch (Exception e){
             e.printStackTrace();

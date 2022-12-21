@@ -50,6 +50,7 @@ public class ObjectGenerator {
     private Map<Integer,List<Map>> objectsInHosts;
     private Map<String,List<String>> objectLocations;
     private List<String> mdObjectNames;
+    private HashMap<String, List<String[]>> mdObjectHash;
     private List<Map> listOfObjects;
     private List<String> hotObjects;
     private List<String> coldObjects;
@@ -153,6 +154,7 @@ public class ObjectGenerator {
         populateObjectsInHosts();
         }
 
+
         String tmpFolder = "";
         if(SystemUtils.IS_OS_WINDOWS) {
             tmpFolder = SimSettings.getInstance().getOutputFolder() + "/../service_rate/";
@@ -196,15 +198,28 @@ public class ObjectGenerator {
             String filepath = tmpFolder + SimLogger.getInstance().getFilePrefix() + "_PLACEMENT.csv";
             File f = new File(filepath);
             PrintWriter out = new PrintWriter(new FileOutputStream(f));
+
+            File objectListFile = new File(SimSettings.getInstance().getPathOfObjectsFile());
+            FileWriter objectListFW = null;
+            BufferedWriter objectListBW = null;
+            if(SimSettings.getInstance().isExportRunFiles()){
+                objectListFW = new FileWriter(objectListFile, false);
+                objectListBW = new BufferedWriter(objectListFW);
+                objectListBW.write("objectName,size,locationVector,locationProbVector,class,popularityShare");
+                objectListBW.newLine();
+            }
             out.append("object0,object1,node");
             out.append("\n");
             objectLocations = new HashMap<>();
             mdObjectNames = new ArrayList<>();
+            mdObjectHash = new HashMap<>();
             for (Map<String, String> object : listOfObjects) {
                 String type = object.get("type");
                 if (type.equals("metadata")) {
-                    if (object.containsKey("parity"))
+                    if (object.containsKey("parity")) {
                         mdObjectNames.add(object.get("id"));
+                        addMetadataToHash(object.get("id"));
+                    }
                     continue;
                 }
                 String objectID = object.get("id");
@@ -213,8 +228,14 @@ public class ObjectGenerator {
                 objectLocations.put(objectID, listLocations);
                 if(type.equals("data")){
                     objectID = objectID.substring(1);
-                    for (String location : listLocations)
-                        out.append(objectID + ",-1,"+location+"\n");
+                    for (String location : listLocations) {
+                        out.append(objectID + ",-1," + location + "\n");
+                        if(SimSettings.getInstance().isExportRunFiles()){
+                            objectListBW.write("d"+objectID + "," + object.get("size") + ",,,0,0");
+                            objectListBW.newLine();
+                        }
+                    }
+
                 }
                 else if(type.equals("parity")){
                     Pattern pattern = Pattern.compile("p(\\d+)-(\\d+)-(.*)");
@@ -230,6 +251,8 @@ public class ObjectGenerator {
                     throw new IllegalStateException("Unexpected type");
             }
             out.close();
+            if(SimSettings.getInstance().isExportRunFiles())
+                objectListBW.close();
         }
         catch (Exception e){
             System.out.println("Failed to generate OBJECT_LOCATION.log");
@@ -237,14 +260,39 @@ public class ObjectGenerator {
         }
     }
 
+    private void addMetadataToHash(String mdObject){
+        String[] stripeObjects = ObjectGenerator.getStripeObjects(mdObject);
+        ArrayList<String> stripeObjectsList = new ArrayList<>(Arrays.asList(stripeObjects[0].split(" "))); //convert to list
+        stripeObjectsList.add(stripeObjects[1]);
+        addObjectToMetadataHash(stripeObjects[1], mdObject);
+        for (String object: stripeObjectsList)
+            addObjectToMetadataHash(object, mdObject);
+    }
+
+    private void addObjectToMetadataHash(String key, String mdObject){
+        if (mdObjectHash.containsKey(mdObject)){
+            List<String[]> objectsList = mdObjectHash.get(key);
+            String[] objects = getStripeObjects(mdObject);
+            objectsList.add(objects);
+            mdObjectHash.put(key, objectsList);
+        }
+        else{
+            String[] objects = getStripeObjects(mdObject);
+            List<String[]> mdObjects = new ArrayList<String[]>(Collections.singletonList(objects));
+            mdObjectHash.put(key, mdObjects);
+        }
+
+    }
+
     //Returns data object IDs in index 0 and parity in index 1
     public static String[] getStripeObjects(String metadataID){
         Pattern pattern = Pattern.compile("md_(d\\d+)_(d\\d+)_(.*)");
         Matcher matcher = pattern.matcher(metadataID);
         matcher.matches();
-        String dataObjects = matcher.group(1) + " " + matcher.group(2);
-        String parityObjects = matcher.group(3);
-        return new String[] {dataObjects,parityObjects};
+
+//        String dataObjects = matcher.group(1) + " " + matcher.group(2);
+//        String parityObjects = matcher.group(3);
+        return new String[] {matcher.group(1), matcher.group(2), matcher.group(3)};
 
     }
 
@@ -810,8 +858,9 @@ public class ObjectGenerator {
         if(SimSettings.getInstance().isNsfExperiment()) {
             //keep all coding objects in the list
             listOfStripeIDs = new ArrayList<>(listOfStripes.keySet());
-            objectName = (String)listOfStripes.keySet().toArray()[0];
-            listOfStripeIDs.remove(objectName);
+//            objectName = (String)listOfStripes.keySet().toArray()[0];
+            objectName = listOfStripeIDs.get(0);
+            listOfStripeIDs.remove(0);
         }
         else {
             List<String> lowOccurrenceObjects =objectsPlaced.get(lowestNumOfOccurrences);
@@ -834,12 +883,14 @@ public class ObjectGenerator {
         int placementattempts=0;
         String attemptedObject = "";
         int attemptedHost = -1;
+        if(SimSettings.getInstance().getRAID()==5 && SimSettings.getInstance().isNsfExperiment())
+            currentHost=1;
         while(1==1) {
             if(SimSettings.getInstance().getRAID()==4 && SimSettings.getInstance().isNsfExperiment())
-                    currentHost=2;
+                currentHost=2;
             //get name of object by its ID
-            if(SimSettings.getInstance().isNsfExperiment())
-                objectName = (String)listOfStripes.get(objectName).get(numOfDataInStripe).get("id");
+//            if(SimSettings.getInstance().isNsfExperiment())
+//                objectName = (String)listOfStripes.get(objectName).get(numOfDataInStripe).get("id");
             //change host if enough tried
             if(placementattempts>numOfNodes){
                 //if previously attempted this object
@@ -896,42 +947,30 @@ public class ObjectGenerator {
             for (int id=0; id<numOfDataInStripe;id++){
                 //if host contains data objects of stripe - select new stripe and break
                 if(objectsSet.contains((String)listOfStripes.get(objectName).get(id).get("id"))){
-                    if(SimSettings.getInstance().isNsfExperiment()) {
-                        //return previous id to list and select next
-                        listOfStripeIDs.add(objectName);
-//                        stripeID = listOfStripeIDs.get(0);
-                        objectName = (String)listOfStripes.keySet().toArray()[0];
-                        listOfStripeIDs.remove(0);
+                    //select new stripe
+                    if (SimSettings.getInstance().getDeepFileLoggingEnabled())
+                        System.out.println("Data of " + objectName + " is already in " + String.valueOf(currentHost));
+                    List<String> lowOccurrenceObjects =objectsPlaced.get(lowestNumOfOccurrences);
+                    objectName = lowOccurrenceObjects.get(newObjectRand.nextInt(lowOccurrenceObjects.size()));
+                    if(deadlockCount>numOfNodes*10){
+                        //change host if enough tried
+                        currentHost = (currentHost+1)%numOfNodes;
+                        currentHost = nextVacantHost(realObjectSize,currentHost);
+                        if(currentHost==-1)
+                            return;
+                        deadlockCount=0;
                     }
-                    else { //select new stripe
-                        if (SimSettings.getInstance().getDeepFileLoggingEnabled())
-                            System.out.println("Data of " + objectName + " is already in " + String.valueOf(currentHost));
-                        List<String> lowOccurrenceObjects =objectsPlaced.get(lowestNumOfOccurrences);
-                        objectName = lowOccurrenceObjects.get(newObjectRand.nextInt(lowOccurrenceObjects.size()));
-                        if(deadlockCount>numOfNodes*10){
-                            //it couldn't be placed anyway
-/*                            objectsPlaced.remove(lowOccurrenceObjects);
-                            lowestNumOfOccurrences++;
-                            //1 above current might not exist
-                            if(!objectsPlaced.containsKey(lowestNumOfOccurrences+1))
-                                objectsPlaced.put(lowestNumOfOccurrences+1,new ArrayList<String>());
-                            lowOccurrenceObjects =objectsPlaced.get(lowestNumOfOccurrences);*/
-//                            objectName = lowOccurrenceObjects.get(newObjectRand.nextInt(lowOccurrenceObjects.size()));
-                            //change host if enough tried
-                            currentHost = (currentHost+1)%numOfNodes;
-                            currentHost = nextVacantHost(realObjectSize,currentHost);
-                            if(currentHost==-1)
-                                return;
-                            deadlockCount=0;
-                        }
-                        deadlockCount++;
-                    }
+                    deadlockCount++;
+
                     parityDataInSameHost=true;
                     break;
                 }
             }
-            if(parityDataInSameHost==true)
+            if(parityDataInSameHost==true) {
+                if(SimSettings.getInstance().isNsfExperiment())
+                    currentHost = (currentHost+1)%numOfNodes;
                 continue;
+            }
 
             objectsPlaced.get(lowestNumOfOccurrences).remove(objectName);
             objectsPlaced.get(lowestNumOfOccurrences+1).add(objectName);
@@ -977,8 +1016,10 @@ public class ObjectGenerator {
             i=1;
             if(SimSettings.getInstance().isNsfExperiment()) {
 //                stripeID = listOfStripeIDs.get(0);
-                objectName = (String)listOfStripes.keySet().toArray()[0];
+//                objectName = (String)listOfStripes.keySet().toArray()[0];
+                objectName = listOfStripeIDs.get(0);
                 listOfStripeIDs.remove(0);
+//                currentHost = (currentHost+1)%numOfNodes;
             }
             else {
 //                stripeID = getObjectID(numOfStripes, "stripes", dist);
@@ -1463,6 +1504,11 @@ public class ObjectGenerator {
 
     public List<String> getMdObjectNames() {
         return mdObjectNames;
+    }
+
+
+    public List<String[]> getMdObjectHash(String objectID) {
+        return mdObjectHash.get(objectID);
     }
 
 

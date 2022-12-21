@@ -17,6 +17,7 @@ public class ParseStorageObject {
     private final int OBJECT_LOCATION_PROB_VECTOR = 3; // object[3]
     private final int OBJECT_CLASS = 4; // object[4]
     private Vector<StorageObject> objectsVector;
+    private HashMap<String, StorageObject> objectHash;
 
 
     /**
@@ -35,6 +36,7 @@ public class ParseStorageObject {
         int mapIndex = 0;
 
         objectsVector = new Vector<>();
+        objectHash = new HashMap<>();
 
         //maps between the conventional name and the original provided one
         HashMap<String,String> objectMap = new HashMap<>();
@@ -62,7 +64,6 @@ public class ParseStorageObject {
                                 !objects[OBJECT_LOCATION_VECTOR].equals("")) ||
                                 !objects[OBJECT_LOCATION_PROB_VECTOR].equals("") &&
                                         objects[OBJECT_LOCATION_VECTOR].equals(""))){
-                    //System.out.println("The number of locations does not match the number of probs!! error in line " + lineCounter);
                     throw new Exception("The number of locations does not match the number of probabilities!! error in line " + lineCounter);
                 }
 
@@ -122,6 +123,7 @@ public class ParseStorageObject {
                 StorageObject so = new StorageObject(objects[OBJECT_NAME],
                         objects[OBJECT_SIZE],locationsList,lpv,Integer.parseInt(objects[OBJECT_CLASS]));
                 objectsVector.add(so);
+                objectHash.put(objects[OBJECT_NAME], so);
 
                 //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
 
@@ -172,6 +174,11 @@ public class ParseStorageObject {
     public Vector<StorageObject> getObjectsVector() {
         return objectsVector;
     }
+
+    public HashMap<String, StorageObject> getObjectHash() {
+        return objectHash;
+    }
+
 
 }//end of class ParseStorageObjects
 

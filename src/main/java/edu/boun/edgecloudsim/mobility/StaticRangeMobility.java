@@ -5,21 +5,21 @@ import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.StorageDevice;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
+//import edu.boun.edgecloudsim.utils.deviceProperty;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
+import java.io.*;
+import java.text.DecimalFormat;
 import java.util.*;
 
 //changed by Harel
 
 public class StaticRangeMobility extends MobilityModel {
     private List<TreeMap<Double, Location>> treeMapArray;
+    private HashMap<Integer, Location> staticLocationHash;
     private HashMap<Integer,Location> DCLocationArray;
 //    private static List<Location> dcLocations = new ArrayList<>();
 
@@ -27,10 +27,12 @@ public class StaticRangeMobility extends MobilityModel {
         super(_numberOfMobileDevices, _simulationTime);
     }
 
+
     @Override
     public void initialize() {
         treeMapArray = new ArrayList<>();
         DCLocationArray = new HashMap<>();
+        staticLocationHash = new HashMap<>();
 
 //        ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
 
@@ -54,10 +56,26 @@ public class StaticRangeMobility extends MobilityModel {
                     e.printStackTrace();
                 }
                 treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
+                if (SimSettings.getInstance().isUserInNodes())
+                    staticLocationHash.put(i, placedDevice);
 //            System.out.println(placedDevice.getServingWlanId());
             }
 
         }else{
+            File deviceListFile = null;
+            FileWriter deviceListFW = null;
+            BufferedWriter deviceListBW = null;
+            deviceListFile = new File(SimSettings.getInstance().getPathOfDevicesFile());
+            try {
+                if (SimSettings.getInstance().isExportRunFiles()) {
+                    deviceListFW = new FileWriter(deviceListFile, false);
+                    deviceListBW = new BufferedWriter(deviceListFW);
+                    deviceListBW.write("deviceName,xPos,yPos,time");
+                    deviceListBW.newLine();
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
             //initialize tree maps and position of mobile devices
             //places each mobile device at a location of a DC
             for (int i = 0; i < numberOfMobileDevices; i++) {
@@ -70,13 +88,31 @@ public class StaticRangeMobility extends MobilityModel {
                 else
                     placedDevice = randomPlaceDevice(random);
                 try {
+                    if (SimSettings.getInstance().isExportRunFiles()) {
+                        DecimalFormat df = new DecimalFormat();
+                        df.setMaximumFractionDigits(9);
+                        //        List<deviceProperty> deviceList = getdeviceList();
+                        deviceListBW.write(String.valueOf(i) + "," + String.valueOf(placedDevice.getXPos())
+                                + "," + String.valueOf(placedDevice.getYPos()) + ",0");
+                        deviceListBW.newLine();
+                    }
                     if (SimSettings.getInstance().isStorageLogEnabled())
                         logAccessLocation(i, placedDevice.getServingWlanId());
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
                 treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
             }
+            if (SimSettings.getInstance().isExportRunFiles()) {
+                try {
+                    deviceListBW.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
     }
@@ -103,10 +139,11 @@ public class StaticRangeMobility extends MobilityModel {
 
     @Override
     public Location getLocation(int deviceId, double time) {
+        if (SimSettings.getInstance().isUserInNodes())
+            return getLocationStatic(deviceId);
+
         TreeMap<Double, Location> treeMap = treeMapArray.get(deviceId);
-
         Map.Entry<Double, Location> e = treeMap.floorEntry(time);
-
         if(e == null){
             SimLogger.printLine("impossible has occurred! no location is found for the device '" + deviceId + "' at " + time);
             System.exit(0);
@@ -114,6 +151,11 @@ public class StaticRangeMobility extends MobilityModel {
 
         return e.getValue();
     }
+
+    private Location getLocationStatic(int deviceId){
+        return staticLocationHash.get(deviceId);
+    }
+
     //In case location is updated (mostly for host update) - only static
     public void setLocation(int deviceId, Location deviceLocation) {
 //        Map.Entry<Double, Location> e = treeMap.floorEntry(time);
@@ -289,12 +331,13 @@ public class StaticRangeMobility extends MobilityModel {
     public int getNearestHost(List<Integer> hosts, Location deviceLocation){
         double minDistance = Integer.MAX_VALUE;
         int minDCLocationID = -1;
+        if(hosts.size() == 1)
+            return hosts.get(0);
 
-        for (int i=0 ; i < hosts.size() ; i++){
-            int host = hosts.get(i);
-            double distance = getGridDistance(deviceLocation,getDCLocation(host));
+        for (int host : hosts) {
+            double distance = getGridDistance(deviceLocation, getDCLocation(host));
             //best possible
-            if (distance==0)
+            if (distance == 0)
                 return host;
             if (distance < minDistance) {
                 minDistance = distance;

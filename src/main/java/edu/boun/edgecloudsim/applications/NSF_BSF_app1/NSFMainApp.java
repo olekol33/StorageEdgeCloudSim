@@ -77,18 +77,18 @@ public class NSFMainApp {
 			edgeDevicesFile = "scripts/NSF_BSF_app1/config/edge_devices.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
-		File file = new File(outputFolder);
-		File parent = file.getParentFile();
+		File outputFolderPath = new File(outputFolder);
+		File parent = outputFolderPath.getParentFile();
 		if (!parent.exists()) {
 			System.out.println("No parent");
 			parent.mkdir();
-			file.mkdir();
+			outputFolderPath.mkdir();
 			System.out.println("Folder created");
 		}
-		else if (!file.exists()) {
+		else if (!outputFolderPath.exists()) {
 			System.out.println("No sub folder");
 			parent.mkdir();
-			file.mkdir();
+			outputFolderPath.mkdir();
 			System.out.println("Sub dolder created");
 		}
 		else {
@@ -104,9 +104,11 @@ public class NSFMainApp {
 			SimLogger.enableFileLog();
 //			SimUtils.cleanOutputFolder(outputFolder);
 		}
+		int users = SS.getMinNumOfMobileDev();
 		//this is a special experiment
 		SS.setNsfExperiment(true);
 		SS.checkRunMode();
+		SS.setOutputFolder(outputFolder);
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date SimulationStartDate = Calendar.getInstance().getTime();
 		String now = df.format(SimulationStartDate);
@@ -126,12 +128,15 @@ public class NSFMainApp {
 						double step0=SS.getLambda0step();
 						for(double lambda0= SS.getLambda0Min(); lambda0<=SS.getLambda0Max();lambda0=lambda0+step0) {
 							step0*=i0;
-							i0+=0.05;
+							i0+=0.02;
 							double step1=SS.getLambda1step();
 							i1=1;
 							for(double lambda1= SS.getLambda1Min(); lambda1<=SS.getLambda1Max();lambda1=lambda1+step1) {
 								step1*=i1;
-								i1+=0.05;
+								i1+=0.02;
+								double reqsPerUsers = SS.getServedReqsPerSec()/(users/2);
+								SS.setPoissonInTaskLookUpTable(0,1/(reqsPerUsers*lambda0));
+								SS.setPoissonInTaskLookUpTable(1,1/(reqsPerUsers*lambda1));
 
 								String objectPlacementPolicy = SS.getObjectPlacement()[p];
 								String simScenario = SS.getSimulationScenarios()[k];
@@ -152,17 +157,14 @@ public class NSFMainApp {
 									System.exit(0);
 								}
 
-								//Setting lambdas for iteration
-								SS.setPoissonInTaskLookUpTable(0,lambda0);
-								SS.setPoissonInTaskLookUpTable(1,lambda1);
 
 
 								Date ScenarioStartDate = Calendar.getInstance().getTime();
 								now = df.format(ScenarioStartDate);
 //						System.out.println(Integer.toString(j) + simScenario + orchestratorPolicy + objectPlacementPolicy);
 								// Storage: Generate Redis KV list
-								RedisListHandler.closeConnection();
-								RedisListHandler.createList(objectPlacementPolicy);
+//								RedisListHandler.closeConnection();
+//								RedisListHandler.createList(objectPlacementPolicy);
 
 								String[] simParams = {Integer.toString(j), simScenario, orchestratorPolicy, objectPlacementPolicy,
 										Double.toString(lambda0)+'_'+Double.toString(lambda1)};
@@ -186,8 +188,11 @@ public class NSFMainApp {
 									Calendar calendar = Calendar.getInstance();
 									boolean trace_flag = false;  // mean trace events
 
+									//control period of time between new event is fetched (half such it ready for next event)
+									double periodBetweenCloudSimEvents = 0.5*SimSettings.getInstance().getRequestProcessingTime();
 									// Initialize the CloudSim library
-									CloudSim.init(num_user, calendar, trace_flag, 0.01);
+//									CloudSim.init(num_user, calendar, trace_flag, 0.01);
+									CloudSim.init(num_user, calendar, trace_flag, periodBetweenCloudSimEvents);
 
 									// Generate EdgeCloudsim Scenario Factory
 									ScenarioFactory sampleFactory = new SampleScenarioFactory(j, SS.getSimulationTime(),
@@ -196,7 +201,7 @@ public class NSFMainApp {
 
 									// Generate EdgeCloudSim Simulation Manager
 									SimManager manager = new SimManager(sampleFactory, j, simScenario, orchestratorPolicy, objectPlacementPolicy);
-
+									RedisListHandler.createList(objectPlacementPolicy);
 									// Start simulation
 									manager.startSimulation();
 
@@ -236,9 +241,9 @@ public class NSFMainApp {
 		}
 		try
 		{
-			file = new File(outputFolder+"/done_"+hostname);
-			if (!file.exists())
-				new FileOutputStream(file).close();
+			outputFolderPath = new File(outputFolder+"/done_"+hostname);
+			if (!outputFolderPath.exists())
+				new FileOutputStream(outputFolderPath).close();
 		}
 		catch (IOException e)
 		{

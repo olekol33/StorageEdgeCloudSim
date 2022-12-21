@@ -12,6 +12,11 @@
 
 package edu.boun.edgecloudsim.edge_server;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +63,21 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 	public void startDatacenters() throws Exception{
 		Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
 		NodeList datacenterList = doc.getElementsByTagName("datacenter");
+		try {
+			if (SimSettings.getInstance().isExportRunFiles()) {
+				File nodeListFile = null;
+				FileWriter nodeListFW = null;
+				BufferedWriter nodeListBW = null;
+				nodeListFile = new File(SimSettings.getInstance().getPathOfNodesFile());
+				nodeListFW = new FileWriter(nodeListFile, false);
+				nodeListBW = new BufferedWriter(nodeListFW);
+				nodeListBW.write("nodeName,xPos,yPos,serviceClass,capacity,serviceRate");
+				nodeListBW.newLine();
+				nodeListBW.close();
+			}
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
 		for (int i = 0; i < datacenterList.getLength(); i++) {
 			Node datacenterNode = datacenterList.item(i);
 			Element datacenterElement = (Element) datacenterNode;
@@ -201,6 +221,10 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 		int placeTypeIndex = Integer.parseInt(attractiveness);
 
 		NodeList hostNodeList = datacenterElement.getElementsByTagName("host");
+
+
+
+		
 		for (int j = 0; j < hostNodeList.getLength(); j++) {
 			Node hostNode = hostNodeList.item(j);
 			
@@ -239,6 +263,25 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 			host.setPlace(new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
 			hostList.add(host);
 			hostIdCounter++;
+
+			if (SimSettings.getInstance().isExportRunFiles()) {
+				DecimalFormat df = new DecimalFormat();
+				df.setMaximumFractionDigits(9);
+				try {
+					File nodeListFile = null;
+					FileWriter nodeListFW = null;
+					BufferedWriter nodeListBW = null;
+					nodeListFile = new File(SimSettings.getInstance().getPathOfNodesFile());
+					nodeListFW = new FileWriter(nodeListFile, true);
+					nodeListBW = new BufferedWriter(nodeListFW);
+					nodeListBW.write(String.valueOf(hostIdCounter-1) + "," + String.valueOf(x_pos) + "," + String.valueOf(y_pos) + ",0,"+
+							String.valueOf(storage) + "," + String.valueOf(SimSettings.getInstance().getServedReqsPerSec()));
+					nodeListBW.newLine();
+					nodeListBW.close();
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 		return hostList;

@@ -771,17 +771,11 @@ public class SampleNetworkModel extends NetworkModel {
 
 //	protected double calculateMM1(double propogationDelay, double bandwidth /*Kbps*/, double PoissonMean, double avgTaskSize /*KB*/, int deviceCount){
 	public static double calculateMM1(double propogationDelay, double mu , double lambda){
-//		double mu=0, lambda=0;
-		
-//		avgTaskSize = avgTaskSize * 8; //convert from KB to Kb
 
-//		lambda = ((double)1/(double)PoissonMean); //task per seconds
-//		mu = bandwidth /*Kbps*/ / avgTaskSize /*Kbps*/; //task per seconds
 		//Oleg: Little's law: total time a customer spends in the system
 		//lamda*(double)deviceCount = (numOfManTaskForDownload/lastInterval)
 		double result = 1 / (mu-lambda);
 
-//		System.out.println("delay: " + result); //To remove
 		result += propogationDelay;
 		
 		return (result > 1) ? -1 : result;

@@ -80,9 +80,14 @@ public class SimSettings {
 	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
 
 	private boolean USER_IN_NODES;
+	private boolean SCALE_MM1;
 	private boolean APPLY_SIGNAL_ATTENUATION;
+
+	private boolean MEASURE_FUNCTION_TIME;
 	private boolean OVERHEAD_SCAN;
-	private boolean SIMULATION_FAILED;
+	private boolean[] SIMULATION_FAILED;
+	private int[] TASKS_IN_INTERVAL;
+	private int[] FAILED_TASKS_IN_INTERVAL;
 
 	private boolean SERVICE_RATE_SCAN;
 	private boolean SR_EXP_SAME_OVERHEAD;
@@ -126,6 +131,7 @@ public class SimSettings {
     
     private double WAN_PROPOGATION_DELAY; //seconds unit in properties file
     private double LAN_INTERNAL_DELAY; //seconds unit in properties file
+	private double DELAY_TO_USER;
 
     private int BANDWITH_WLAN; //Mbps unit in properties file
     private int BANDWITH_WAN; //Mbps unit in properties file
@@ -167,6 +173,7 @@ public class SimSettings {
 	private String[] HOT_COLD_OBJECTS;
 	private String[] HOT_COLD_POPULARITY;
 	private int CONGESTED_THRESHOLD;
+	private int TRACE_INTERVAL_DURATION;
 	private double PARITY_PROB_STEP;
 
 //	private int MAX_CLOUD_REQUESTS;
@@ -208,6 +215,7 @@ public class SimSettings {
 	private boolean EXTERNAL_DEVICES_INPUT;
 	private boolean EXTERNAL_OBJECTS_INPUT;
 	private boolean EXTERNAL_REQUESTS_INPUT;
+	private boolean EXPORT_RUN_FILES;
 	private boolean TEST_USING_INT;
 	private String NODES_DIRECT_PATH;
 	private String DEVICES_DIRECT_PATH;
@@ -231,6 +239,7 @@ public class SimSettings {
 	private HashMap<String,String> objectsHashVector;
 	private HashMap<String,String> reversedHashVector;
 	private HashMap<String, Integer> reversedHashDevicesVector;
+	private HashMap<String,StorageObject> objectHash;
 	private Vector<StorageDevice> devicesVector;
 	private Vector<StorageObject> objectsVector;
 	private Vector<StorageRequest> storageRequests;
@@ -261,6 +270,11 @@ public class SimSettings {
 
 	public Vector<StorageObject> getObjectsVector() {
 		return objectsVector;
+	}
+
+
+	public StorageObject getObjectHash(String key) {
+		return objectHash.get(key);
 	}
 
 	public double getMinXpos() {
@@ -329,8 +343,6 @@ public class SimSettings {
 		return (input != null) ? Boolean.valueOf(input) : null;
 	}
 
-
-
 	/**
 	 * Reads configuration file and stores information to local variables
 	 */
@@ -357,8 +369,10 @@ public class SimSettings {
 				STORAGE_LOG_ENABLED = toBoolean(prop.getProperty("storage_log_enabled"));
 				TERMINATE_FAILED_RUN = toBoolean(prop.getProperty("terminate_failed_run"));
 				USER_IN_NODES = toBoolean(prop.getProperty("user_in_nodes"));
+				SCALE_MM1 = toBoolean(prop.getProperty("scale_mm1"));
 				COUNT_FAILEDDUETOINACCESSIBILITY = toBoolean(prop.getProperty("count_failedDueToInaccessibility"));
 				APPLY_SIGNAL_ATTENUATION = toBoolean(prop.getProperty("applySignalAttenuation"));
+				MEASURE_FUNCTION_TIME = toBoolean(prop.getProperty("measure_function_time"));
 				OVERHEAD_SCAN = toBoolean(prop.getProperty("overhead_scan"));
 				SERVICE_RATE_SCAN = toBoolean(prop.getProperty("service_rate_scan"));
 				SR_EXP_SAME_OVERHEAD = toBoolean(prop.getProperty("sr_exp_same_overhead"));
@@ -379,6 +393,7 @@ public class SimSettings {
 
 				WAN_PROPOGATION_DELAY = Double.parseDouble(prop.getProperty("wan_propogation_delay"));
 				LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("lan_internal_delay"));
+				DELAY_TO_USER = Double.parseDouble(prop.getProperty("delay_to_user"));
 				FAIL_THRESHOLD = Double.parseDouble(prop.getProperty("fail_threshold"));
 //				BANDWITH_WLAN = 1000 * Integer.parseInt(prop.getProperty("wlan_bandwidth"));
 //				BANDWITH_WAN = 1000 * Integer.parseInt(prop.getProperty("wan_bandwidth"));
@@ -441,6 +456,7 @@ public class SimSettings {
 				EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
 				EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
 				EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
+				EXPORT_RUN_FILES = Boolean.parseBoolean(prop.getProperty("export_run_files"));
 				TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
 				NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
 				DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
@@ -482,6 +498,7 @@ public class SimSettings {
 				OBJECT_DIST_PLACE = prop.getProperty("object_dist_place");
 				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				PARITY_PROB_STEP = Double.parseDouble(prop.getProperty("parityProbStep"));
+				TRACE_INTERVAL_DURATION = Integer.parseInt(prop.getProperty("trace_interval_duration"));
 //				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 				RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
 				ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
@@ -584,6 +601,7 @@ public class SimSettings {
 //			NUM_OF_STRIPES = NUM_OF_DATA_OBJECTS / NUM_OF_DATA_IN_STRIPE;//if external input, use relative share of parities
 			NUM_OF_STRIPES = (int)((OVERHEAD-1) * NUM_OF_DATA_OBJECTS);
 			objectsVector = objectParser.getObjectsVector();
+			objectHash = objectParser.getObjectHash();
 		}
 
 		//checks if we are in external devices mode
@@ -720,6 +738,11 @@ public class SimSettings {
 	public double getInternalLanDelay()
 	{
 		return LAN_INTERNAL_DELAY;
+	}
+
+
+	public double getDelayToUser() {
+		return DELAY_TO_USER;
 	}
 
 	/**
@@ -925,6 +948,11 @@ public class SimSettings {
 		return APPLY_SIGNAL_ATTENUATION;
 	}
 
+
+	public boolean isMeasurefunctionTime() {
+		return MEASURE_FUNCTION_TIME;
+	}
+
 	public boolean isCountFailedduetoinaccessibility() {
 		return COUNT_FAILEDDUETOINACCESSIBILITY;
 	}
@@ -934,17 +962,44 @@ public class SimSettings {
 		return USER_IN_NODES;
 	}
 
+
+	public boolean isScaleMm1() {
+		return SCALE_MM1;
+	}
+
 	public boolean isOverheadScan() {
 		return OVERHEAD_SCAN;
 	}
 
 
-	public boolean isSimulationFailed() {
+	public boolean[] isSimulationFailed() {
 		return SIMULATION_FAILED;
 	}
 
-	public void setSimulationFailed(boolean SIMULATION_FAILED) {
-		this.SIMULATION_FAILED = SIMULATION_FAILED;
+	public int getTasksInInterval(int interval) {
+		return TASKS_IN_INTERVAL[interval];
+	}
+
+	public int getFailedTasksInInterval(int interval) {
+		return FAILED_TASKS_IN_INTERVAL[interval];
+	}
+
+	public void setSimulationFailed(int interval) {
+		this.SIMULATION_FAILED[interval] = true;
+	}
+
+	public void setTasksInInterval(int interval, int tasksInInterval, int failedTasksInInterval) {
+		this.TASKS_IN_INTERVAL[interval] = tasksInInterval;
+		this.FAILED_TASKS_IN_INTERVAL[interval] = failedTasksInInterval;
+	}
+
+	public void resetSimulationFailed(int intervals){
+		SIMULATION_FAILED = new boolean[intervals];
+		TASKS_IN_INTERVAL = new int[intervals];
+		FAILED_TASKS_IN_INTERVAL = new int[intervals];
+		Arrays.fill(SIMULATION_FAILED, false);
+		Arrays.fill(TASKS_IN_INTERVAL, 0);
+		Arrays.fill(FAILED_TASKS_IN_INTERVAL, 0);
 	}
 
 	public int getServiceRateIterations() {
@@ -1057,7 +1112,7 @@ public class SimSettings {
 		return GPS_COORDINATES_CONVERSION;
 	}
 
-	public boolean isExternalNodes(){
+	public boolean isExternalNodes(){ //TODO: set number_of_edge_datacenters by number of nodes
 		return EXTERNAL_NODES_INPUT;
 	}
 
@@ -1073,16 +1128,29 @@ public class SimSettings {
 		return EXTERNAL_REQUESTS_INPUT;
 	}
 
+
+	public boolean isExportRunFiles() {
+		return EXPORT_RUN_FILES;
+	}
+
 	public boolean isItIntTest(){
 		return TEST_USING_INT;
 	}
 
 	public String getPathOfNodesFile(){
-		return NODES_DIRECT_PATH;
+		if(NODES_DIRECT_PATH.equals("")) {
+			return "scripts/" + rundir+ "/input_files/nodes.csv";
+		}else{
+			return NODES_DIRECT_PATH;
+		}
 	}
 
 	public String getPathOfDevicesFile(){
-		return DEVICES_DIRECT_PATH;
+		if(DEVICES_DIRECT_PATH.equals("")) {
+			return "scripts/" + rundir+ "/input_files/devices.csv";
+		}else{
+			return DEVICES_DIRECT_PATH;
+		}
 	}
 
 	public String getPathOfObjectsFile(){
@@ -1095,7 +1163,11 @@ public class SimSettings {
 	}
 
 	public String getPathOfRequestsFile(){
-		return REQUESTS_DIRECT_PATH;
+		if(REQUESTS_DIRECT_PATH.equals("")) {
+			return "scripts/" + rundir+ "/input_files/requests.csv";
+		}else{
+			return REQUESTS_DIRECT_PATH;
+		}
 	}
 
 	public boolean isVariabilityRun() {
@@ -1273,6 +1345,12 @@ public class SimSettings {
 		return CONGESTED_THRESHOLD;
 	}
 
+
+	public int getTraceIntervalDuration() {
+		return TRACE_INTERVAL_DURATION;
+	}
+
+
 	public double getParityProbStep() {
 		return PARITY_PROB_STEP;
 	}
@@ -1330,6 +1408,7 @@ public class SimSettings {
 	public int getNumOfStripes() {
 		return NUM_OF_STRIPES;
 	}
+
 
 	public int getNumOfDataInStripe() {
 		return NUM_OF_DATA_IN_STRIPE;

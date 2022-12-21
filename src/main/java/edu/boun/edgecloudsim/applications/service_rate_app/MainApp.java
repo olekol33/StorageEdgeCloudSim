@@ -45,6 +45,7 @@ public class MainApp {
 	 * Creates main() to run this example
 	 */
 	public static void main(String[] args) throws ParserConfigurationException, IOException, TransformerException, SAXException {
+		long startTime = System.nanoTime();
 		System.out.println("####### Service Rate Experiment #######");
 		//disable console output of cloudsim library
 		Log.disable();
@@ -178,17 +179,6 @@ public class MainApp {
 			currentTime = Instant.now().toEpochMilli();
 		}
 
-		//whenever not same overhead need to generate two files: for coding and replication
-		//avoid deleting folder
-		//in post-processing need to merge files
-/*		if(SS.isServiceRateScan() && !SS.isSrExpSameOverhead()) {
-			if(objectPlacementPolicy.equals("REPLICATION_PLACE"))
-				filename = "SERVICE_RATE_1_N_" + String.valueOf(SS.getNumOfEdgeDatacenters()) + "_K_" +
-						String.valueOf(SS.getNumOfDataObjects()) + ".csv";
-			else
-				filename = "SERVICE_RATE_2_N_" + String.valueOf(SS.getNumOfEdgeDatacenters()) + "_K_" +
-						String.valueOf(SS.getNumOfDataObjects()) + ".csv";
-		}*/
 		else if (!SS.isOrbitMode() && !SS.isKeepServiceRateFile()){
 			FileUtils.deleteDirectory(serviceRatePath);
 			serviceRatePath.mkdir();
@@ -198,7 +188,8 @@ public class MainApp {
 			String fileHeader = "";
 			for (int i = 0; i < SS.getNumOfDataObjects(); i++)
 				fileHeader += String.valueOf(i) + ",";
-			fileHeader += "type,reqsPerUserSec,readRate,iteration,simServiceCost,completed";
+			fileHeader += "type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval," +
+					"simServiceCost,completed";
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
@@ -210,8 +201,6 @@ public class MainApp {
 				serviceRateFileBW.close();
 			}
 		}
-
-
 			//gaussian distribution generator
 		//Mean is share of mean number of individual user requests that can be served
 		double meanSystemServedReqsPerSec = SS.getServedReqsPerSec()*SS.getNumOfEdgeDatacenters()/users;
@@ -221,7 +210,6 @@ public class MainApp {
 		double meanSystemStd = SS.getOverheadScanStd() * SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec;
 
 		NormalDistribution lambdaGenerator = new NormalDistribution(rand,meanSystemLambda,meanSystemStd);
-//		NormalDistribution zipfIndexGenerator = new NormalDistribution(rand,1.5,0.5);
 		for (int i = 0; i < SS.getServiceRateIterations(); i++) {
 			if(!SS.isOrbitMode()) //in orbit mode this is set in config
 				SS.setCurrentServiceRateIteration(i);
@@ -232,15 +220,8 @@ public class MainApp {
 			double reqsPerSec = lambdaGenerator.sample();
 			reqsPerSec = Math.round(Math.abs(reqsPerSec)); //half-gaussian
 			SS.setPoissonInTaskLookUpTable(0,1/reqsPerSec);
-//			double zipfIndex = Math.abs(zipfIndexGenerator.sample());
-//			SS.setZipfExponent(zipfIndex);
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
-/*				if (!SS.isOrbitMode()){
-					File serialFolder = new File(SS.getSerializableFolder());
-					FileUtils.deleteDirectory(serialFolder);
-					serialFolder.mkdir();
-				}*/
-				SS.setSimulationFailed(false);
+//				SS.setSimulationFailed(false);
 
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 
@@ -295,31 +276,27 @@ public class MainApp {
 					SimLogger.printLine("The simulation has been terminated due to an unexpected error");
 					e.printStackTrace();
 					System.exit(0);
-/*					if (!SimSettings.getInstance().isServiceRateScan()) {
-						SimLogger.printLine("The simulation has been terminated due to an unexpected error");
-						e.printStackTrace();
-						System.exit(0);
-					} else {
-						System.out.println("Failed iteration");
-					}*/
 				}
 				String completed = "";
-				if (SS.isSimulationFailed())
-					completed = "false";
-				else
-					completed = "true";
-				String policy = "";
-				if(objectPlacementPolicy.equals("CODING_PLACE"))
-					policy="coding";
-				else
-					policy="replication";
 				serviceRateFile = new File(serviceRatePath, srFilename + "_DEMAND.csv");
 				serviceRateFileFW = new FileWriter(serviceRateFile, true);
 				serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
-				SimLogger.appendToFile(serviceRateFileBW, SS.getObjectRequestRateArray() + "," + policy + "," +
-//						reqsPerSec + "," + SS.getServedReqsPerSec() + "," + i + "," + SS.getServiceCost() + "," + completed);
-						SS.getReqRatePerSec() + "," + SS.getServedReqsPerSec() + "," + i + "," + SS.getServiceCost() + "," + completed);
-
+				for (int interval=0; interval<SS.isSimulationFailed().length; interval++) {
+					if (SS.isSimulationFailed()[interval])
+						completed = "false";
+					else
+						completed = "true";
+					String policy = "";
+					if (objectPlacementPolicy.equals("CODING_PLACE"))
+						policy = "coding";
+					else
+						policy = "replication";
+					int tasksPerInterval = SS.getTasksInInterval(interval);
+					int failedTasksPerInterval = SS.getFailedTasksInInterval(interval);
+					SimLogger.appendToFile(serviceRateFileBW, SS.getObjectRequestRateArray() + "," + policy + "," +
+							SS.getReqRatePerSec() + "," + SS.getServedReqsPerSec() + "," + i + "," + interval + "," +
+							tasksPerInterval + "," +failedTasksPerInterval+ "," + SS.getServiceCost() + "," + completed);
+				}
 				Date ScenarioEndDate = Calendar.getInstance().getTime();
 				now = df.format(ScenarioEndDate);
 //				System.exit(0);
@@ -335,7 +312,7 @@ public class MainApp {
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
-
+		SimLogger.measureDuration(startTime, "Total runtime");
 		//touch to mark run has finished
 /*		String hostname = "Unknown";
 		try

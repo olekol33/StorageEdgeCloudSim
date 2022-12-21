@@ -121,18 +121,8 @@ public class TaskProperty {
 		taskDeadline = _taskDeadline;
 		isParity = _isParity;
 
-
-		//finding the size of the object
-		int size = SimSettings.getInstance().getObjectsVector().size();
-		//for testing purposes - delete!
-		//Vector<StorageObject> temp = SimSettings.getInstance().getObjectsVector();
-		for(int i = 0; i < size; i++){
-			StorageObject sObject = SimSettings.getInstance().getObjectsVector().get(i);
-			if(sObject.getObjName().equals(objectRead)){
-				outputFileSize = Long.parseLong(sObject.getObjSize());
-				break;
-			}
-		}
+		StorageObject sObject = SimSettings.getInstance().getObjectHash(objectRead);
+		outputFileSize = Long.parseLong(sObject.getObjSize());
 		try {
 			if (outputFileSize == -1) {
 				throw new Exception("ERROR: The task name " + _objectID + " does not much any object in the objects input!");

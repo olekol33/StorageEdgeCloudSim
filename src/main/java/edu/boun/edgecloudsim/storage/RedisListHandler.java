@@ -5,8 +5,6 @@ import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import org.apache.commons.lang3.SystemUtils;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.util.Slowlog;
 
 import java.io.BufferedWriter;
@@ -15,8 +13,6 @@ import java.nio.file.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RedisListHandler {
 
@@ -48,9 +44,9 @@ public class RedisListHandler {
     public static void createList(String objectPlacementPolicy){
         Jedis jedis = new Jedis(localhost, 6379);
         OG = SimManager.getInstance().getObjectGenerator();
-        for (Map<String,String> KV : OG.getListOfObjects())
-            jedis.hmset("object:"+KV.get("id"),KV);
-        jedis.close();
+//        for (Map<String,String> KV : OG.getListOfObjects())
+//            jedis.hmset("object:"+KV.get("id"),KV);
+//        jedis.close();
         SimLogger.print("Created Redis KV with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
@@ -145,55 +141,30 @@ public class RedisListHandler {
         jedis.quit();
     }
     //Get key list by pattern
-    public static List<String> getObjectsFromRedis(String objectID){
-/*
-        Jedis jedis = new Jedis(localhost, 6379);
-        int batch = 100;
-        List<String> listOfObjects = new ArrayList<>();
-        //Scan in batches
-        ScanParams scanParams = new ScanParams().count(batch).match(pattern);
-        String cur = redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-        do {
-            ScanResult<String> scanResult = jedis.scan(cur, scanParams);
-            listOfObjects = Stream.concat(listOfObjects.stream(), scanResult.getResult().stream())
-                    .collect(Collectors.toList());
-            cur = scanResult.getCursor();
-        } while (!cur.equals(redis.clients.jedis.ScanParams.SCAN_POINTER_START));
-        jedis.close();
-*/
-
-        List<String> listOfObjects = new ArrayList<>();
+    public static List<String[]> getObjects(String objectID){
+        return OG.getMdObjectHash(objectID);
+/*        List<String> listOfObjects = new ArrayList<>();
         List<String> mdObjects = OG.getMdObjectNames();
         for(String object:mdObjects){
             if(object.contains(objectID+"_"))
                 listOfObjects.add(object);
         }
-        return listOfObjects;
+        return listOfObjects;*/
 
 
     }
 
-    public static String getObjectLocationsFromMetadata(String hostname, String mdObjectID, String readObjectID){
-        Jedis jedis = new Jedis(hostname, 6379);
+    public static String getObjectLocationsFromMetadata(String hostname, String[] mdObjectID, String readObjectID){
+        throw new UnsupportedOperationException("Should use this");
+/*        Jedis jedis = new Jedis(hostname, 6379);
         String locations =  jedis.hget(mdObjectID,readObjectID);
         jedis.close();
-        return locations;
-    }
+        return locations;*/
 
-    public static String getObjectLocations(String hostname, String objectID){
-        Jedis jedis = new Jedis(hostname, 6379);
-        String locations =  jedis.hget("object:"+objectID,"locations");
-        jedis.close();
-        return locations;
     }
 
     public static List<String> getObjectLocations(String objectID){
-        List<String> locations = new ArrayList<>();
-/*        Jedis jedis = new Jedis(localhost, 6379);
-        String locations =  jedis.hget("object:"+objectID,"locations");
-        jedis.close();
-        return locations;*/
-        locations = OG.getObjectLocation(objectID);
+        List<String> locations = OG.getObjectLocation(objectID);
         return locations;
     }
 
@@ -223,38 +194,6 @@ public class RedisListHandler {
         return new String[] {dataObjects,parityObjects};
 
     }
-/*    //Returns random list of stripes
-    public static List<String> getRandomStripeListForDevice(int numOfStripesToRead){
-        List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
-        List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
-//        Random random = new Random();
-//        random.setSeed(ObjectGenerator.seed);
-        for (int i=0; i<numOfStripesToRead; i++) {
-            //Get index such that 0<=index<= size of list
-            getRandomGenerator().nextInt(listOfMetadataObjects.size());
-//            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
-            int metadataIndex = getRandomGenerator().nextInt(listOfMetadataObjects.size());
-            String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
-            listForDevice.add(objectID);
-        }
-        return listForDevice;
-    }*/
-
-
-/*    public static List<String> getZipfStripeListForDevice(int numOfStripesToRead){
-        List<String> listOfMetadataObjects = getObjectsFromRedis("object:md*");
-        List<String> listForDevice = new ArrayList<>(numOfStripesToRead);
-        for (int i=0; i<numOfStripesToRead; i++) {
-            //Get index such that 0<=index<= size of list
-            int metadataIndex = new ZipfDistribution(getRandomGenerator(), numOfStripes, zipfExponent).sample();
-            //need to reduce by 1
-            metadataIndex--;
-//            int metadataIndex = random.nextInt(listOfMetadataObjects.size());
-            String objectID = getObjectID(listOfMetadataObjects.get(metadataIndex));
-            listForDevice.add(objectID);
-        }
-        return listForDevice;
-    }*/
 
 
     public static int getNumOfDataObjects() {

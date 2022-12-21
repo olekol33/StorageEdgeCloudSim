@@ -206,7 +206,9 @@ public class SimLogger {
 	 */
 	private void clearTask(Task task){
 		MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
+
 		mobileDeviceManager.getCloudletList().remove(task);
+
 	}
 
 	public void taskEnded(int taskId, double time, Task task) {
@@ -214,11 +216,7 @@ public class SimLogger {
 			LogItem logTask = taskMap.get(taskId);
 			logTask.taskEnded(time);
 		}
-//		logTask.serialize();
-//		taskMap.remove(taskId);
 		clearTask(task);
-
-//		taskMap.get(taskId).taskEnded(time);
 	}
 
 	public void rejectedDueToVMCapacity(int taskId, double time, int vmType) {
@@ -256,6 +254,16 @@ public class SimLogger {
 		}
 	}
 
+	static public void measureDuration(long startTime, String measuredName){
+		if (!SimSettings.getInstance().isMeasurefunctionTime())
+			return;
+		long endTime = System.nanoTime();
+		long duration = (endTime - startTime);
+		double elapsedTimeInSecond = (double) duration / 1_000_000_000;
+		System.out.println(measuredName + ": " + String.valueOf(elapsedTimeInSecond));
+//		long startTime = System.nanoTime();
+//		SimLogger.measureDuration(startTime, "numOfExternalTasks");
+	}
 	public void failedDueToMobility(int taskId, double time) {
 		taskMap.get(taskId).taskFailedDueToMobility(time);
 	}
@@ -666,13 +674,15 @@ public class SimLogger {
 					delays.add(0, (double)100);
 				if(value.getIsParity()==0) {
 					//put at location 0
-					delays.set(0, value.getNetworkDelay());
+//					delays.set(0, value.getNetworkDelay());
+					delays.set(0, value.getServiceTime());
 					if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
 						delays.add(1, FINISHED_ON_CLOUD);
 				}
 				else
 					//or append
-					delays.add(1,value.getNetworkDelay());
+					delays.add(1,value.getServiceTime());
+//					delays.add(1,value.getNetworkDelay());
 				timeToReadStripe.put(value.getIoTaskID(),delays);
 			}
 			else if(value.getStatus() == SimLogger.TASK_STATUS.CREATED ||

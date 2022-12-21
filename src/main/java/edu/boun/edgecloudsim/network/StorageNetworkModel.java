@@ -185,6 +185,7 @@ public class StorageNetworkModel extends SampleNetworkModel {
         }
         else if(uploadType == SimSettings.DEVICE_TO_LOCAL_EDGE){
             delay = getWlanUploadDelay(destDeviceId, dataSize);
+            delay += SimSettings.getInstance().getDelayToUser(); //user to node delay
             operationType="UPLOAD_WLAN_DEVICE_TO_EDGE";
         }
         else if(uploadType == SimSettings.LOCAL_EDGE_TO_REMOTE_EDGE){
@@ -238,42 +239,31 @@ public class StorageNetworkModel extends SampleNetworkModel {
         //special case for man communication
         // When communication is between edge nodes(on grid)
         if(destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
-//            return delay = getManDownloadDelay();
             delay = manQueue.getQueueDownloadDelay(task.getAssociatedHostId(),dataSize,1);
             logRequestPathInQueues(task, "DOWNLOAD_MAN_EDGE_TO_EDGE", task.getAssociatedHostId(),
                     task.getSubmittedLocation().getServingWlanId(), dataSize, delay);
             return delay;
-//            return delay = getManDownloadDelay(task.getAssociatedHostId(),1);
         }
-/*        else if(sourceDeviceId == destDeviceId && sourceDeviceId != SimSettings.GENERIC_EDGE_DEVICE_ID) {
-            delay = getManDownloadDelay(task.getAssociatedHostId(), 0);
-            if (delay < 0) //if MAN already full, stop now (pass very negative number)
-                return MAN_DELAY;
-        }*/
         StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
 
-        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
-//        Location accessPointLocation = (StaticRangeMobility)SimManager.getInstance().getMobilityModel().getDCLocation(deviceLocation.getServingWlanId());
+//        Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+        Location deviceLocation = staticMobility.getLocation(task.getMobileDeviceId(), CloudSim.clock());
         Location accessPointLocation = staticMobility.getDCLocation(deviceLocation.getServingWlanId());;
-//        Location accessPointLocation = StaticRangeMobility.getDCLocation(deviceLocation.getServingWlanId());
-//        Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
 
 
         //cloud server to mobile device
         //TODO: update for cloud
         if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
-//            delay += getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
+            assert true; //do nothing
         }
         //edge device (wifi access point) to mobile device
         else{
             //factor of #accesses
             //For access node user location = destDeviceId
             //For remote read destDeviceId is object location
-//            double wlanDelay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
             int accessLocation = deviceLocation.getServingWlanId();
             if(destDeviceId == 100007) //RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE
                 accessLocation = sourceDeviceId;
-//            double wlanDelay = getWlanDownloadDelay(accessLocation,dataSize);
             double wlanDelay = wlanQueue.getQueueDownloadDelay(sourceDeviceId,dataSize,0);
             logRequestPathInQueues(task, "DOWNLOAD_WLAN_EDGE_NODE", task.getAssociatedHostId(),
                     task.getSubmittedLocation().getServingWlanId(), dataSize, wlanDelay);
@@ -281,12 +271,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
             //In case something went wrong
             if (wlanDelay==0)
                 System.out.println("delay=0");
-/*            if (wlanDelay<0)
-                System.out.println("delay<0");*/
-//                return delay;
             //Add delay on network if access point not in range
 
-//            Location nearestAccessPoint = StaticRangeMobility.getAccessPoint(deviceLocation,accessPointLocation);
             Location nearestAccessPoint = staticMobility.getAccessPoint(deviceLocation,accessPointLocation);
             if (nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId())
                 System.out.println("nearestAccessPoint.getServingWlanId() != accessPointLocation.getServingWlanId()");
@@ -681,6 +667,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
     }
     public List<String> getNonOperativeHosts() {
         List<String> nonOperativeHosts = new ArrayList<>();
+        if(!SimSettings.getInstance().isHostFailureScenario())
+            return nonOperativeHosts;
         for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
             if (hostOperativity[i]==0)
                 nonOperativeHosts.add(Integer.toString(i));
@@ -735,7 +723,7 @@ class EdgeQueue{
     }
 
     double getQueueDownloadDelay(int hostIndex, double dataSize, int readOnGrid) {
-        double propogationDelay = 2*readOnGrid * SimSettings.getInstance().getInternalLanDelay();
+        double propogationDelay = readOnGrid * SimSettings.getInstance().getInternalLanDelay();
 
         hostTotalTaskSize[hostIndex] += dataSize;
 
@@ -748,11 +736,15 @@ class EdgeQueue{
         }
         //TODO: wait time does not refer to object size
         //Use existing function. arrival rate is previousHostClients, service rate is 1/taskProcessingTimeS
-        double result = SampleNetworkModel.calculateMM1(propogationDelay, mu, previousHostTotalTaskSize[hostIndex]);
+        double littleScaleFactor=1;
+        if(SimSettings.getInstance().isScaleMm1())
+            littleScaleFactor=2*dataSize;
+        double result = calculateMM1(littleScaleFactor, propogationDelay, mu, previousHostTotalTaskSize[hostIndex]);
         numOfTasks++;
         //used for parityProb, use current task size to take online decision (not ideal)
 //        if(hostTotalTaskSize[hostIndex]>previousHostTotalTaskSize[hostIndex])
-            latestDelay[hostIndex] = SampleNetworkModel.calculateMM1(propogationDelay, mu, hostTotalTaskSize[hostIndex]);
+//        latestDelay[hostIndex] = SampleNetworkModel.calculateMM1(propogationDelay, mu, hostTotalTaskSize[hostIndex]);
+        latestDelay[hostIndex] = result;
 //        else
 //            latestDelay[hostIndex] = result;
 
@@ -760,6 +752,18 @@ class EdgeQueue{
             hostTotalTaskSize[hostIndex] -= dataSize;
         }
         return result;
+    }
+
+    //scaled version of little's law - use num of objects for queue (scale by object size)
+    public static double calculateMM1(double scaleFactor, double propogationDelay, double mu , double lambda){
+
+        //Oleg: Little's law: total time a customer spends in the system
+        //lamda*(double)deviceCount = (numOfManTaskForDownload/lastInterval)
+        double result = scaleFactor / (mu-lambda);
+
+        result += propogationDelay;
+
+        return (result > 1) ? -1 : result;
     }
 
     public void updateMM1QueueModel() {

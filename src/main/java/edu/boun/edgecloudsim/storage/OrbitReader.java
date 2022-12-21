@@ -40,7 +40,7 @@ public class OrbitReader {
     private void initialize(){
         LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
         List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
-        for(int i=0; i< loadGeneratorModel.getTaskList().size(); i++){
+        for(int i=0; i< taskList.size(); i++){
             if (taskList.get(i).getMobileDeviceId()==clientID)
                 clientTaskList.add(taskList.get(i));
         }
@@ -95,16 +95,15 @@ public class OrbitReader {
             if (currentTime >= clientTaskList.get(0).getStartTime()+startTime){
                 String objectID = clientTaskList.get(0).getObjectRead();
 //                System.out.println("Read object: " + objectID);
-                List<String> mdObjects = RedisListHandler.getObjectsFromRedis("object:md*_"+objectID+"_*");
+                List<String[]> mdObjects = RedisListHandler.getObjects("object:md*_"+objectID+"_*");
                 //no parities
                 //TODO:check not accidentally taking another object
-                if (mdObjects.size()==0)
-                    mdObjects = RedisListHandler.getObjectsFromRedis("object:md_"+objectID);
+//                if (mdObjects.size()==0)
+                if (mdObjects==null)
+                    mdObjects = RedisListHandler.getObjects("object:md_"+objectID);
                 //TODO: currently selects random stripe
                 int mdObjectID = random.nextInt(mdObjects.size());
-//                System.out.println("mdObjectID: " + mdObjectID + ", mdObjects: " + mdObjects.get(mdObjectID));
-                Set<String> locations = ObjectGenerator.tokenizeList(RedisListHandler.getObjectLocationsFromMetadata(localhost,
-                        mdObjects.get(mdObjectID), objectID));
+                Set<String> locations = ObjectGenerator.tokenizeList(RedisListHandler.getObjectLocationsFromMetadata(localhost, mdObjects.get(mdObjectID), objectID));
                 //TODO: currently takes first location
                 String readSrc = locations.iterator().next();
                 pttl = readObject(readSrc,objectID);

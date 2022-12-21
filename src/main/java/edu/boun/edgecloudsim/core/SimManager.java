@@ -268,10 +268,12 @@ public class SimManager extends SimEntity {
 		}
 		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
 		//Creation of tasks are scheduled here!
-		for(int i=0; i< taskList.size(); i++) {
-			TaskProperty taskProperty = taskList.get(i);
-			schedule(getId(), taskProperty.getStartTime(), CREATE_TASK, taskProperty);
+		for (TaskProperty task : taskList){
+//		for(int i=0; i< taskList.size(); i++) {
+//			TaskProperty taskProperty = taskList.get(i);
+			schedule(getId(), task.getStartTime(), CREATE_TASK, task);
 		}
+		loadGeneratorModel.getTaskList().clear();
 		
 		//Periodic event loops starts from here!
 		schedule(getId(), 5, CHECK_ALL_VM);
@@ -282,15 +284,11 @@ public class SimManager extends SimEntity {
 		SimLogger.printLine("Done.");
 	}
 	//Oleg: create single task in mid sim run
-	public void createNewTask(){
-		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
-		TaskProperty lastTask = taskList.get(taskList.size() - 1);
-//		System.out.println("Finally Generated parity ioTaskID = " + lastTask.getIoTaskID() + ",");
-/*		System.out.println("Finally parity at " + CloudSim.clock() + " .Submitting ioTaskID = " + lastTask.getIoTaskID() +
-				", of time: " + lastTask.getStartTime() +", isParity = " + lastTask.getIsParity());*/
-		schedule(getId(), 0, CREATE_TASK, lastTask);
-/*		if (CloudSim.running()) {
-			CloudSim.send(getId(), dest, delay, CREATE_TASK, lastTask);*/
+	public void createNewTask(TaskProperty newTask){
+//		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
+//		loadGeneratorModel.addTaskToList(newTask);
+//		TaskProperty lastTask = taskList.get(taskList.size() - 1);
+		schedule(getId(), 0, CREATE_TASK, newTask);
 	}
 
 	@Override
@@ -300,26 +298,7 @@ public class SimManager extends SimEntity {
 			case CREATE_TASK:
 				try {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
-/*					List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
-					int ioTaskID = edgeTask.getIoTaskID();
-					//remove head of list once read - to reduce heap size
-					if(edgeTask.getIsParity()==0) { //if not parity - next task is in head of list
-						if (ioTaskID != taskList.get(0).getIoTaskID()) //in case not parity
-							throw new IllegalStateException("Served task cannot be removed");
-//						taskList.set(0, null);
-//						taskList.remove(0);
-					}
-					else { //in case is parity - parity task is added last
-						int lastTaskIndex = taskList.size()-1;
-						if (ioTaskID != taskList.get(lastTaskIndex).getIoTaskID())
-							throw new IllegalStateException("Served task cannot be removed");
-						taskList.set(lastTaskIndex, null);
-						taskList.remove(lastTaskIndex);
-					}
-					if (SimSettings.getInstance().isOrbitMode())
-						((StorageMobileDeviceManager) mobileDeviceManager).submitOrbitTask(edgeTask);
-					else*/
-						mobileDeviceManager.submitTask(edgeTask);
+					mobileDeviceManager.submitTask(edgeTask);
 
 				} catch (Exception e) {
 					e.printStackTrace();

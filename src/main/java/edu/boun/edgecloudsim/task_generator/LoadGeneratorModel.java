@@ -61,6 +61,10 @@ public abstract class LoadGeneratorModel {
 		return taskList;
 	}
 
+	public void addTaskToList(TaskProperty task) {
+		taskList.add(task);
+	}
+
 	/*
 	 * fill task list according to related task generation model
 	 */
