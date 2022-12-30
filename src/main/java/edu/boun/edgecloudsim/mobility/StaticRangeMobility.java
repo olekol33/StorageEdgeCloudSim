@@ -21,7 +21,6 @@ public class StaticRangeMobility extends MobilityModel {
     private List<TreeMap<Double, Location>> treeMapArray;
     private HashMap<Integer, Location> staticLocationHash;
     private HashMap<Integer,Location> DCLocationArray;
-//    private static List<Location> dcLocations = new ArrayList<>();
 
     public StaticRangeMobility(int _numberOfMobileDevices, double _simulationTime) {
         super(_numberOfMobileDevices, _simulationTime);

@@ -49,11 +49,11 @@ public class ParseStorageRequests {
         //maps between the conventional name and the original provided one
         try{
             BufferedReader br;
-            if(file_path.equals("")) {
-                br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() +"/input_files/requests.csv"));
-            }else{
+            if(file_path.equals(""))
+                br = new BufferedReader(new FileReader("scripts/" + SimSettings.getInstance().getRundir() +
+                        "/input_files/requests.csv"));
+            else
                 br = new BufferedReader(new FileReader(file_path));
-            }
             br.readLine();
             lineCounter++;
             while((line = br.readLine()) != null){
@@ -61,44 +61,29 @@ public class ParseStorageRequests {
                 String[] objects = line.split(splitLineBy,-1);
 
                 //check if the deviceName is in the Devices file
-                boolean checkIfDeviceExists;
-                //this is faster
-                checkIfDeviceExists = reversed_devicesHashVector.containsKey(objects[REQUEST_DEVICE_NAME]);
-
-
-                if(!checkIfDeviceExists){
-                    throw new Exception("The request is trying to access a non-existing device!! error in line " +
-                            lineCounter + "\n" + "The node " + objects[REQUEST_DEVICE_NAME] + " does not exist!!");
+                if (SimSettings.getInstance().getDeepFileLoggingEnabled()) {
+                    boolean checkIfDeviceExists = reversed_devicesHashVector.containsKey(objects[REQUEST_DEVICE_NAME]);
+                    if (!checkIfDeviceExists) {
+                        throw new Exception("The request is trying to access a non-existing device!! error in line " +
+                                lineCounter + "\n" + "The node " + objects[REQUEST_DEVICE_NAME] + " does not exist!!");
+                    }
+                    boolean checkIfObjectExists = reversed_objectsHashVector.containsKey(objects[REQUEST_OBJECT_ID]);
+                    if(!checkIfObjectExists){
+                        throw new Exception("The request is trying to access a non-existing Device!! error in line " +
+                                lineCounter + "\n" + "The object " + objects[REQUEST_OBJECT_ID] + " does not exist!!");
+                    }
                 }
-
-
-                //checks if the objectID is in the Objects file
-                boolean checkIfObjectExists;
-                checkIfObjectExists = false;
-                String new_object_name = "";
-                if(reversed_objectsHashVector.containsKey(objects[REQUEST_OBJECT_ID])){
-                    checkIfObjectExists = true;
-                    new_object_name = reversed_objectsHashVector.get(objects[REQUEST_OBJECT_ID]);
-                }
-
-                if(!checkIfObjectExists){
-                    throw new Exception("The request is trying to access a non-existing Device!! error in line " +
-                            lineCounter + "\n" + "The object " + objects[REQUEST_OBJECT_ID] + " does not exist!!");
-                }
+                String new_object_name = reversed_objectsHashVector.get(objects[REQUEST_OBJECT_ID]);
+                double reqTime = Double.parseDouble(objects[REQUEST_TIME]);
                 //checks if the time is in ascending order
-                if(Double.parseDouble(objects[REQUEST_TIME]) < prevRequestTime){
+                if(reqTime < prevRequestTime)
                     throw new Exception("The requests' time must be in ascending order!! error in line " + lineCounter);
-                }
 
-                //System.out.println("Object Name: " + objects[0] + " Size: " + objects[1] + " Location Vector: "+ objects[2] + " locationProbVector: " + objects[3] + " Class: " + objects[4]);
                 lineCounter++;
-
                 StorageRequest sRequest;
-
                 //check if the priority or deadline fields are empty
-                sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],Double.parseDouble(objects[REQUEST_TIME]),
+                sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME],reqTime,
                         new_object_name,Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
-
                 //creat new StorageDevice and add it to the nodes vector
                 requestsVector.add(sRequest);
             }

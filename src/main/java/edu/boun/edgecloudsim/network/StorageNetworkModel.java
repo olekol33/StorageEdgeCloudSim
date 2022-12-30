@@ -279,25 +279,9 @@ public class StorageNetworkModel extends SampleNetworkModel {
             //additional delay
             if(SimSettings.getInstance().isApplySignalAttenuation())
                 delay /= StaticRangeMobility.getSignalAttenuation(deviceLocation,nearestAccessPoint,100,2);
-
         }
-
         return delay;
     }
-
-
-/*    @Override
-    double getWlanDownloadDelay(Location accessPointLocation, double dataSize) {
-        int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
-        double taskSizeInKb = dataSize * (double)8; //KB to Kb
-        double result=0;
-//        System.out.println("previously " + wlanClients[accessPointLocation.getServingWlanId()]+ " tasks");
-        if(numOfWlanUser < experimentalWlanDelay.length)
-            result = taskSizeInKb *//*Kb*//* / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) *//*Kbps*//*; //802.11ac is around 3 times faster than 802.11n
-        else
-            result = -1;
-        return result;
-    }*/
     @Override
     double getWanDownloadDelay(Location accessPointLocation, double dataSize) {
         int numOfWanUser = wanClients[accessPointLocation.getServingWlanId()];
@@ -306,11 +290,6 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
         if(numOfWanUser < experimentalWanDelay.length)
             result = taskSizeInKb /*Kb*/ / (experimentalWanDelay[numOfWanUser]) /*Kbps*/;
-/*        else
-            System.out.println("Insufficient delay data at experimentalWanDelay for " + wanClients[accessPointLocation.getServingWlanId()]+ " tasks");*/
-
-        //System.out.println("--> " + numOfWanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
-
         return result;
     }
 
@@ -606,22 +585,18 @@ public class StorageNetworkModel extends SampleNetworkModel {
         return result;
     }
 
-    public void downloadStarted(Location accessPointLocation, int sourceDeviceId, int hostIndex) {
+    @Override
+    public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
         if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
             wanClients[accessPointLocation.getServingWlanId()]++;
-        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID)
             wlanClients[accessPointLocation.getServingWlanId()]++;
-        }
-        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1) {
+        else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID+1)
             manClients++;
-        }
         else {
             SimLogger.printLine("Error - unknown device id in downloadStarted(). Terminating simulation...");
             System.exit(0);
         }
-//		System.out.println("manClients: " + manClients); //To remove
-/*        if((100<CloudSim.clock()) && (CloudSim.clock()<105))
-            System.out.println(hostIndex);*/
     }
 
     public void downloadFinished(Location accessPointLocation, int sourceDeviceId, int hostIndex) {
@@ -665,13 +640,13 @@ public class StorageNetworkModel extends SampleNetworkModel {
     public double getEdge2EdgeDelay(int hostID){
         return wlanQueue.getLatestDelay(hostID) + manQueue.getLatestDelay(hostID);
     }
-    public List<String> getNonOperativeHosts() {
-        List<String> nonOperativeHosts = new ArrayList<>();
+    public List<Integer> getNonOperativeHosts() {
+        List<Integer> nonOperativeHosts = new ArrayList<>();
         if(!SimSettings.getInstance().isHostFailureScenario())
             return nonOperativeHosts;
         for(int i=0; i<SimSettings.getInstance().getNumOfEdgeDatacenters(); i++){
             if (hostOperativity[i]==0)
-                nonOperativeHosts.add(Integer.toString(i));
+                nonOperativeHosts.add(i);
         }
         return nonOperativeHosts;
     }
@@ -723,15 +698,14 @@ class EdgeQueue{
     }
 
     double getQueueDownloadDelay(int hostIndex, double dataSize, int readOnGrid) {
-        double propogationDelay = readOnGrid * SimSettings.getInstance().getInternalLanDelay();
+        double propagationDelay = readOnGrid * SimSettings.getInstance().getInternalLanDelay();
 
         hostTotalTaskSize[hostIndex] += dataSize;
 
         //check for overflow on the fly
-        if (hostTotalTaskSize[hostIndex] >mu ) {
-//            HostClients[hostIndex]--;
+        if (hostTotalTaskSize[hostIndex] > mu ) {
             hostTotalTaskSize[hostIndex] -= dataSize;
-            latestDelay[hostIndex] = 1000; //max
+            latestDelay[hostIndex] = 1000000; //max
             return -1;
         }
         //TODO: wait time does not refer to object size
@@ -739,29 +713,22 @@ class EdgeQueue{
         double littleScaleFactor=1;
         if(SimSettings.getInstance().isScaleMm1())
             littleScaleFactor=2*dataSize;
-        double result = calculateMM1(littleScaleFactor, propogationDelay, mu, previousHostTotalTaskSize[hostIndex]);
+        double result = calculateMM1(littleScaleFactor, propagationDelay, mu, previousHostTotalTaskSize[hostIndex]);
         numOfTasks++;
-        //used for parityProb, use current task size to take online decision (not ideal)
-//        if(hostTotalTaskSize[hostIndex]>previousHostTotalTaskSize[hostIndex])
-//        latestDelay[hostIndex] = SampleNetworkModel.calculateMM1(propogationDelay, mu, hostTotalTaskSize[hostIndex]);
-        latestDelay[hostIndex] = result;
-//        else
-//            latestDelay[hostIndex] = result;
-
-        if (result < 0){
+        latestDelay[hostIndex] = (latestDelay[hostIndex] + result) / 2; //avg of current and prev
+        if (result < 0)
             hostTotalTaskSize[hostIndex] -= dataSize;
-        }
         return result;
     }
 
     //scaled version of little's law - use num of objects for queue (scale by object size)
-    public static double calculateMM1(double scaleFactor, double propogationDelay, double mu , double lambda){
+    public static double calculateMM1(double scaleFactor, double propagationDelay, double mu , double lambda){
 
         //Oleg: Little's law: total time a customer spends in the system
         //lamda*(double)deviceCount = (numOfManTaskForDownload/lastInterval)
         double result = scaleFactor / (mu-lambda);
 
-        result += propogationDelay;
+        result += propagationDelay;
 
         return (result > 1) ? -1 : result;
     }

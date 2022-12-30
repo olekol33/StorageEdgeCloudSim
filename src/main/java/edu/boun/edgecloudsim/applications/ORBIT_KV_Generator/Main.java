@@ -63,13 +63,6 @@ public class Main {
             System.out.println("PTTL on node2: " + jedisHostname.pttl("object:d40"));
             jedis.close();
             jedisHostname.close();
-//            System.out.println(RedisListHandler.getObjectLocations("node1-1.sb5.orbit-lab.org","d4"));
-/*            System.out.println(RedisListHandler.getObjectLocations("node1-1.sb5.orbit-lab.org","d4"));
-            System.out.println("Execution time: " + RedisListHandler.slowlogGet("node1-1.sb5.orbit-lab.org",1));
-            System.out.println(RedisListHandler.getObjectLocations("node1-1.sb5.orbit-lab.org","d0"));
-            System.out.println("Execution time: " + RedisListHandler.slowlogGet("node1-1.sb5.orbit-lab.org",1));
-            System.out.println(RedisListHandler.getObjectLocations("node1-1.sb5.orbit-lab.org","d1"));
-            System.out.println("Execution time: " + RedisListHandler.slowlogGet("node1-1.sb5.orbit-lab.org",1));*/
         }
 
     }

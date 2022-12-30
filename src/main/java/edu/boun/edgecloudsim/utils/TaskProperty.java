@@ -121,7 +121,7 @@ public class TaskProperty {
 		taskDeadline = _taskDeadline;
 		isParity = _isParity;
 
-		StorageObject sObject = SimSettings.getInstance().getObjectHash(objectRead);
+		StorageObject sObject = SimSettings.getInstance().getObjectHashItem(objectRead);
 		outputFileSize = Long.parseLong(sObject.getObjSize());
 		try {
 			if (outputFileSize == -1) {
@@ -183,9 +183,9 @@ public class TaskProperty {
     	return mobileDeviceId;
     }
 
-	public String getStripeID() {
+/*	public String getStripeID() {
 		return stripeID;
-	}
+	}*/
 
 
 	public String getObjectRead() {

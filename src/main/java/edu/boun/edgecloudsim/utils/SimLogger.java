@@ -154,9 +154,9 @@ public class SimLogger {
 	}
 	//Storage
 	public void addLog(int taskId, int taskType, int taskLenght, int taskInputType,
-					   int taskOutputSize, String stripeID, String objectID, int ioTaskID, int isParity, int paritiesToRead, int accessHostID) {
+					   int taskOutputSize, String objectID, int ioTaskID, int isParity, int paritiesToRead, int accessHostID) {
 		if(SimSettings.getInstance().isStorageLogEnabled())
-			taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,stripeID,objectID, ioTaskID, isParity, paritiesToRead,accessHostID));
+			taskMap.put(taskId, new LogItem(taskType, taskLenght, taskInputType, taskOutputSize,objectID, ioTaskID, isParity, paritiesToRead,accessHostID));
 	}
 	public void setObjectRead(int taskId, String objectRead) {
 		if(SimSettings.getInstance().isStorageLogEnabled())
@@ -409,8 +409,9 @@ public class SimLogger {
 	}
 
 	public void simStopped() throws IOException {
+		if(!SimSettings.getInstance().isStorageLogEnabled())
+			return;
 		int numOfAppTypes = SimSettings.getInstance().getTaskLookUpTable().length;
-
 		File successFile = null, failFile = null, vmLoadFile = null, locationFile = null, gridLocationFile = null, objectsFile = null, readObjectsFile = null;
 		FileWriter successFW = null, failFW = null, vmLoadFW = null, locationFW = null, gridLocationFW = null, objectsFW = null, readObjectsFW = null;
 		BufferedWriter successBW = null, failBW = null, vmLoadBW = null, locationBW = null, gridLocationBW = null, objectsBW = null, readObjectsBW = null;;
@@ -483,16 +484,6 @@ public class SimLogger {
 			numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe()+
 				SimSettings.getInstance().getNumOfParityInStripe();
 		LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
-/*		int numOfIOTasks = ((IdleActiveStorageLoadGenerator) loadGeneratorModel).getNumOfIOTasks();
-		String [] objectID = new String[numOfIOTasks];
-		int [] hostID = new int[numOfIOTasks];
-		int [] ioTaskID = new int[numOfIOTasks];
-		int [] isParity = new int[numOfIOTasks];
-		int [] isParityToRead = new int[numOfIOTasks];
-		int [] accessID = new int[numOfIOTasks];
-		double [] objectReadDelay = new double[numOfIOTasks];
-		String [] readSource = new String[numOfIOTasks];
-		TASK_STATUS [] objectStatusID = new TASK_STATUS[numOfIOTasks];*/
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] ioTaskID = new int[taskMap.size()];
@@ -501,7 +492,7 @@ public class SimLogger {
 		int [] accessID = new int[taskMap.size()];
 		double [] objectReadDelay = new double[taskMap.size()];
 		String [] readSource = new String[taskMap.size()];
-		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
+//		TASK_STATUS [] objectStatusID = new TASK_STATUS[taskMap.size()];
 		Arrays.fill(hostID,-1);
 		Arrays.fill(ioTaskID,-1);
 		Arrays.fill(isParity,-1);
@@ -586,39 +577,11 @@ public class SimLogger {
 				appendToFile(successBW, "#auto generated file!");
 				appendToFile(failBW, "#auto generated file!");
 			}
-/*			if(MATLAB) {
-				appendToFile(vmLoadBW, "#auto generated file!");
-				appendToFile(locationBW, "#auto generated file!");
-			}
-			else {
-				appendToFile(vmLoadBW, "#time;loadOnEdge;loadOnCloud;loadOnMobile");
-				appendToFile(locationBW, "#Time;Attractiveness 0;Attractiveness 1;Attractiveness 2");
-			}*/
 			appendToFile(gridLocationBW, "ItemType;ItemID;xPos;yPos");
 		}
 
-		//Oleg
-//		int o=0;
-
-		// extract the result of each task and write it to the file if required
-/*
-		File serialFolder = new File(SimSettings.getInstance().getSerializableFolder());
-		File[] serialItem = serialFolder.listFiles();
-		if (serialItem == null)
-			throw new IllegalStateException("No LogItem objects in " + SimSettings.getInstance().getSerializableFolder());
-*/
-/*		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
-			Integer key = entry.getKey();
-			LogItem value = entry.getValue();
-			if (value.getStatus() == TASK_STATUS.REJECTED_DUE_TO_POLICY) //parity scenario - object already logged
-				continue;
-			value.serialize();
-		}*/
-//		for (File item : serialItem) {
 		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
 
-//			LogItem value = LogItem.deserialize(item.toString());
-//			int key = value.getIoTaskID()+1; // TODO: convert to iotaskID
 			Integer key = entry.getKey();
 			LogItem value = entry.getValue();
 
@@ -660,7 +623,7 @@ public class SimLogger {
 				isParity[key-1] = value.getIsParity();
 				isParityToRead[key-1] = value.getParitiesToRead();
 				objectReadDelay[key-1] = value.getNetworkDelay();
-				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
+//				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
 				if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
 					readSource[key-1] = "Cloud";
 				else if (value.getDatacenterId()==SimSettings.GENERIC_EDGE_DEVICE_ID)
@@ -714,7 +677,7 @@ public class SimLogger {
 				else
 					uncompletedTaskOnEdge[value.getTaskType()]++;
 				//Oleg
-				objectStatusID[key-1] = value.getStatus();
+//				objectStatusID[key-1] = value.getStatus();
 			}
 			else {
 				//rejected
@@ -740,7 +703,7 @@ public class SimLogger {
 				else
 					failedTaskOnEdge[value.getTaskType()]++;
 				//Oleg
-				objectStatusID[key-1] = value.getStatus();
+//				objectStatusID[key-1] = value.getStatus();
 			}
 
 			if (value.getStatus() == SimLogger.TASK_STATUS.COMPLETED) {
@@ -887,12 +850,11 @@ public class SimLogger {
 			for (int t = 1; t < (SimSettings.getInstance().getSimulationTime()
 					/ SimSettings.getInstance().getVmLocationLogInterval()); t++) {
 				int[] locationInfo = new int[SimSettings.getInstance().getNumOfPlaceTypes()];
-				Double time = t * SimSettings.getInstance().getVmLocationLogInterval();
+				double time = t * SimSettings.getInstance().getVmLocationLogInterval();
 
 				if (time < SimSettings.getInstance().getWarmUpPeriod())
 					continue;
 
-				//TODO: added by Harel! - oleg needs to check!!!
 				if(time < 10)
 					continue;
 
@@ -902,7 +864,7 @@ public class SimLogger {
 					int placeTypeIndex = loc.getPlaceTypeIndex();
 					locationInfo[placeTypeIndex]++;
 				}
-				locationBW.write(time.toString());
+				locationBW.write(Double.toString(time));
 				for (int i = 0; i < locationInfo.length; i++)
 					locationBW.write(SimSettings.DELIMITER + locationInfo[i]);
 
@@ -1398,7 +1360,7 @@ class LogItem implements Serializable{
 	private double cpuCost;
 	private boolean isInWarmUpPeriod;
 	//storage
-	private String stripeID;
+//	private String stripeID;
 	private String objectRead;
 	private int paritiesToRead;
 	private int ioTaskID;
@@ -1415,16 +1377,16 @@ class LogItem implements Serializable{
 		taskEndTime = 0;
 	}
 	//Storage
-	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _stripeID, String _objectID, int _ioTaskID,
+	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize, String _objectID, int _ioTaskID,
 			int _isParity, int _paritiesToRead, int _accessHostID) {
 		taskType = _taskType;
-		taskLenght = _taskLenght;
+//		taskLenght = _taskLenght;
 		taskInputType = _taskInputType;
 		taskOutputSize = _taskOutputSize;
-		networkError = NETWORK_ERRORS.NONE;
+//		networkError = NETWORK_ERRORS.NONE;
 		status = SimLogger.TASK_STATUS.CREATED;
 		taskEndTime = 0;
-		stripeID = _stripeID;
+//		stripeID = _stripeID;
 		objectRead = _objectID;
 		ioTaskID = _ioTaskID;
 		isParity = _isParity;
@@ -1663,9 +1625,9 @@ class LogItem implements Serializable{
 				wanDownloadDelay;
 	}
 
-	public String getStripeID() {
+/*	public String getStripeID() {
 		return stripeID;
-	}
+	}*/
 
 
 	public String getObjectRead() {

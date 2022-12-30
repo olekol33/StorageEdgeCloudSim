@@ -128,12 +128,12 @@ public class Task extends Cloudlet {
 		return type;
 	}
 
-	public String getStripeID() {
+/*	public String getStripeID() {
 		return stripeID;
 	}
 	public void setStripeID(String stripeID) {
 		this.stripeID = stripeID;
-	}
+	}*/
 	public int getHostID() {
 		return hostID;
 	}

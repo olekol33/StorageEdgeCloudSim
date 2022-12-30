@@ -3,7 +3,7 @@ package edu.boun.edgecloudsim.storage;
 import java.util.List;
 
 
-public class StorageObject {
+public class StorageObject implements Cloneable {
     private String objName;
     private String objSize;
     private List<String> objLocations; //contains a Nodes List
@@ -20,8 +20,21 @@ public class StorageObject {
         this.type = "data";
     }
 
+    @Override
+    public StorageObject clone() {
+        try {
+            return (StorageObject) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public String getObjName() {
         return objName;
+    }
+
+    public void setObjName(String objName) {
+        this.objName = objName;
     }
 
     public String getObjSize() {

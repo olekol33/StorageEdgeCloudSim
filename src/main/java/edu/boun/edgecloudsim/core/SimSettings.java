@@ -69,7 +69,7 @@ public class SimSettings {
     private double SIMULATION_TIME; //minutes unit in properties file
     private double WARM_UP_PERIOD; //minutes unit in properties file
 
-	private double MM1_QUEUE_MODEL_UPDATE_INTERVAL; //minutes unit in properties file
+	private double MM1_QUEUE_MODEL_UPDATE_INTERVAL; //seconds unit in properties file
 	private double REQUEST_PROCESSING_TIME; //seconds
     private double INTERVAL_TO_GET_VM_LOAD_LOG; //minutes unit in properties file
     private double INTERVAL_TO_GET_VM_LOCATION_LOG; //minutes unit in properties file
@@ -273,8 +273,12 @@ public class SimSettings {
 	}
 
 
-	public StorageObject getObjectHash(String key) {
+	public StorageObject getObjectHashItem(String key) {
 		return objectHash.get(key);
+	}
+
+	public HashMap<String,StorageObject> getObjectHash() {
+		return objectHash;
 	}
 
 	public double getMinXpos() {
@@ -303,6 +307,11 @@ public class SimSettings {
 	}
 
 	public Vector<StorageRequest> getStorageRequests() {
+		if(SimSettings.getInstance().isExternalRequests()){
+			ParseStorageRequests requestsParser = new ParseStorageRequests();
+			storageRequests = requestsParser.prepareRequestsVector(devicesHashVector, objectsHashVector,getPathOfRequestsFile());
+			numOfExternalTasks = storageRequests.size();
+		}
 		return storageRequests;
 	}
 
@@ -618,14 +627,6 @@ public class SimSettings {
 				e.printStackTrace();
 			}
 		}//proceed
-
-
-
-		if(SimSettings.getInstance().isExternalRequests()){
-			ParseStorageRequests requestsParser = new ParseStorageRequests();
-			storageRequests = requestsParser.prepareRequestsVector(devicesHashVector, objectsHashVector,getPathOfRequestsFile());
-			numOfExternalTasks = storageRequests.size();
-		}
 		return result;
 	}
 
@@ -1548,7 +1549,7 @@ public class SimSettings {
 //				double vm_utilization_on_mobile = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_mobile").item(0).getTextContent());
 //				double delay_sensitivity = Double.parseDouble(appElement.getElementsByTagName("delay_sensitivity").item(0).getTextContent());
 				//Oleg
-				int readRate = SimSettings.getInstance().getServedReqsPerSec()*(int)(data_download); //reqs to KB
+				int readRate = SimSettings.getInstance().getServedReqsPerSec()*(int)(data_download); //reqs to B
 				SimSettings.getInstance().setREADRATE(readRate);
 /*
 				try {
@@ -1603,12 +1604,12 @@ public class SimSettings {
 		edgeDevicesDoc.appendChild(root);
 		int objectSize = (int)SimSettings.getInstance().getTaskLookUpTable()[0][6];
 		int dataSize = NUM_OF_DATA_OBJECTS*objectSize; //TODO: change to long
-		double storedInNode = (dataSize*OVERHEAD)/NUM_OF_EDGE_DATACENTERS;
+		double maxCapPerNode = (dataSize*OVERHEAD)/NUM_OF_EDGE_DATACENTERS;
+		double storedInNode = maxCapPerNode;
 		if(storedInNode%1!=0)
 			throw new IllegalStateException("Total data size is not int");
-		if(storedInNode % objectSize >0){
-			storedInNode -= storedInNode % objectSize; //round to object size granularity
-		}
+		if(maxCapPerNode % objectSize >0)
+			storedInNode += objectSize - maxCapPerNode % objectSize; //round up to fit all
 		int storage = (int)storedInNode;
 		int readRate = SimSettings.getInstance().getREADRATE();
 		int taskProcessingMbps = SimSettings.getInstance().getTaskProcessingMbps();

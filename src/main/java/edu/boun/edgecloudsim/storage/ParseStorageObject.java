@@ -67,14 +67,6 @@ public class ParseStorageObject {
                     throw new Exception("The number of locations does not match the number of probabilities!! error in line " + lineCounter);
                 }
 
-                //checks if the current object's name is unique
-/*                for(Map.Entry<String,String> m: objectMap.entrySet()){
-                    if(objects[OBJECT_NAME].equals(m.getValue())){
-                        //System.out.println("The object name " + objects[0] + " is not unique!! error in line " + lineCounter);
-                        throw new Exception("The object name " + objects[OBJECT_NAME] + " is not unique!! error in line " + lineCounter);
-                    }
-                }*/
-
                 //checks that the locations in the location list match a nodes in the nodes list
                 boolean checkIfNodeExists;
                 for(int i = 0; i < locations.length && !objects[OBJECT_LOCATION_PROB_VECTOR].equals(""); i++){
@@ -140,15 +132,12 @@ public class ParseStorageObject {
             Set<String> valuesSet = new HashSet<String>(objectMap.values());
             if(valuesList.size() != valuesSet.size())
                 throw new IllegalStateException("Duplicacies in objectMap");
-
+            if (isInvalidNumOfObjects(objectsVector.size())) {
+                addObjectsToResolve(objectMap);
+            }
 
 
             System.out.println("The objects' list successfully created!!!");
-            /*
-            System.out.println("Displaying HashMap:");
-            for(Map.Entry m: map.entrySet()){
-                System.out.println(m.getKey() +" "+m.getValue());
-            }*/
 
             //write the HashMap to a csv file
             CsvWrite.csvWriteSS(objectMap,"scripts/" + SimSettings.getInstance().getRundir() +"/hash_tables/Objects_Hash.csv" );
@@ -156,20 +145,44 @@ public class ParseStorageObject {
         catch (Exception e){
             e.printStackTrace();
         }
-/*
-        //Display the objects list
-        Iterator<storageObject> iter = objectsList.iterator();
-        while (iter.hasNext()){
-            storageObject s = iter.next();
-            System.out.println("Name: " + s.getObjName() + " Size: " + s.getObjSize());
-            System.out.println("Printing locations list");
-            s.getObjLocations().forEach(System.out::println);
-            System.out.println("Printing prob list");
-            s.getObjLocationsProb().forEach(System.out::println);
-        }
-*/
         return objectMap;
     }//end of prepareObjectsHashVector
+
+    private void addObjectsToResolve(HashMap<String,String> objectMap){
+        int numOfObjectsToAdd = getNumOfObjectsToAdd();
+        for (int i=0; i < numOfObjectsToAdd; i++) {
+            String objectName = addFakeObject();
+            objectMap.put(objectName, "FAKE_" + String.valueOf(i));
+        }
+    }
+
+    private int getNumOfObjectsToAdd(){
+        int originalNumOfObjects = objectsVector.size();
+        int currentNumOfObjects = originalNumOfObjects;
+        while(isInvalidNumOfObjects(currentNumOfObjects)){
+            currentNumOfObjects += 1;
+        }
+        return currentNumOfObjects - originalNumOfObjects;
+    }
+
+    private String addFakeObject(){
+        StorageObject newObject = objectsVector.lastElement().clone();
+        int objectID = Integer.parseInt(newObject.getObjName().substring(1)) + 1;
+        String objectName = "d" + String.valueOf(objectID);
+        newObject.setObjName(objectName);
+        objectsVector.add(newObject);
+        objectHash.put(objectName, newObject);
+        SimSettings.getInstance().setNumOfDataObjects(objectsVector.size());
+        return objectName;
+    }
+
+    private boolean isInvalidNumOfObjects(double numOfDataObjects){
+        double numOfObjects = numOfDataObjects * (SimSettings.getInstance().getOverhead() - 1);
+        if (numOfObjects != Math.ceil(numOfObjects) || numOfObjects != Math.floor(numOfObjects))
+            return true;
+        else
+            return false;
+    }
 
     public Vector<StorageObject> getObjectsVector() {
         return objectsVector;

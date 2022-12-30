@@ -51,49 +51,6 @@ public class RedisListHandler {
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
 
-    //Generate list of all object locations in the system for orchestration
-    private static void listObjectInSystem(ObjectGenerator OG) throws IOException {
-        String tmpFolder = "";
-        if(SystemUtils.IS_OS_WINDOWS)
-            tmpFolder = SimSettings.getInstance().getOutputFolder() + "../service_rate/";
-        else
-            tmpFolder = "/tmp/";
-        Path pLoc = Paths.get("/tmp/Object_Locations.txt");
-        Path pDist = Paths.get("/tmp/OBJECT_DISTRIBUTION.txt");
-        if(Files.exists(pLoc) && Files.exists(pDist) && SystemUtils.IS_OS_LINUX){
-            SimLogger.print("Object locations and distribution files exist"+"\n");
-            return;
-        }
-        File objectFile = new File(tmpFolder,"Object_Locations.txt");
-        File objectDistFile = new File(tmpFolder,"OBJECT_DISTRIBUTION.txt");
-        FileWriter objectFW = new FileWriter(objectFile, false),
-                objectDistFW = new FileWriter(objectDistFile, false);
-        BufferedWriter objectBW = new BufferedWriter(objectFW),
-                objectDistBW = new BufferedWriter(objectDistFW);
-
-
-        objectBW.write("object,locations\n");
-        objectDistBW.write("Object Name,Object Type,Occurrences");
-        objectDistBW.newLine();
-        for (Map<String,String> KV : OG.getListOfObjects()) {
-            if(KV.get("type").equals("metadata"))
-                continue;
-            objectBW.write("object:" + KV.get("id")+","+KV.get("locations"));
-            objectBW.newLine();
-
-            //OBJECT_DISTRIBUTION
-            String locations = (String)KV.get("locations");
-            StringTokenizer st= new StringTokenizer(locations, " "); // Space as delimiter
-            Set<String> locationsSet = new HashSet<String>();
-            while (st.hasMoreTokens())
-                locationsSet.add(st.nextToken());
-            objectDistBW.write(KV.get("id")+","+KV.get("type")+","+locationsSet.size());
-            objectDistBW.newLine();
-        }
-        objectBW.close();
-        objectDistBW.close();
-    }
-
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
     public static void orbitCreateList(String objectPlacementPolicy, String currentHost){
         Jedis jedis;
@@ -114,12 +71,12 @@ public class RedisListHandler {
 //            jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
-        try {
-            listObjectInSystem(OG);
+/*        try {
+            OG.listObjectInSystem();
         }
         catch (Exception e){
             System.out.println("Failed to generate object list");
-        }
+        }*/
 
         SimLogger.print("Created Redis KV on host: " + currentHost + " with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
@@ -163,9 +120,8 @@ public class RedisListHandler {
 
     }
 
-    public static List<String> getObjectLocations(String objectID){
-        List<String> locations = OG.getObjectLocation(objectID);
-        return locations;
+    public static List<Integer> getObjectLocations(String objectID){
+        return OG.getObjectLocation(objectID);
     }
 
     public static String getObjectSize(String objectID){
