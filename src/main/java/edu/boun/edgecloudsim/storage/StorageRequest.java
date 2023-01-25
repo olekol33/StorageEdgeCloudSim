@@ -78,5 +78,10 @@ public class StorageRequest {
     public int getIoTaskID() {
         return ioTaskID;
     }
+
+
+    public void setIoTaskID(int ioTaskID) {
+        this.ioTaskID = ioTaskID;
+    }
 }
 //This section has been written by Harel

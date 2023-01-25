@@ -115,18 +115,13 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
         OG.resetNewObjectRandomGenerator(SimSettings.getInstance().getCurrentServiceRateIteration());
         //Calculate lambdas for NSF experiment
-
         for(int i=0; i<numberOfMobileDevices; i++) {
             int randomTaskType = -1;
-
-
-            if(SimSettings.getInstance().isNsfExperiment()) {
+            if(SimSettings.getInstance().isNsfExperiment())
                 randomTaskType = i%2;
-            }
             else
                 randomTaskType = random.nextInt(SimSettings.getInstance().getTaskLookUpTable().length);
             taskTypeOfDevices[i] = randomTaskType;
-
             double poissonMean = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][POISSON_INTERARRIVAL];
             double activePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][ACTIVE_PERIOD];
             double idlePeriod = SimSettings.getInstance().getTaskLookUpTable()[randomTaskType][IDLE_PERIOD];
@@ -155,14 +150,12 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     virtualTime = activePeriodStartTime;
                     continue;
                 }
-//                requests++;
                 String objectID="";
-//                String objectID = OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(),"objects");
                 if(SimSettings.getInstance().isNsfExperiment()) {
                     //odd/even tasks will read only odd/even objects
-                    while (1==1){
+                    while (true){
                         objectID = OG.getDataObjectID();
-                        int objectNum = Integer.valueOf(objectID.replaceAll("[^\\d.]", ""));
+                        int objectNum = Integer.parseInt(objectID.replaceAll("[^\\d.]", ""));
                         if(objectNum%2 == randomTaskType) {
                             if(virtualTime>=SimSettings.getInstance().getWarmUpPeriod()) {
                                 if (randomTaskType == 0)
@@ -183,7 +176,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                         objectNum = objectRanks[currentIteration][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(), "objects", dist)];
                     else
                         objectNum = locationBasedPlacement(i,OG);
-                    objectID = "d" + String.valueOf(objectNum);
+                    objectID = "d" + objectNum;
 
                     //count
                     if(virtualTime>=SimSettings.getInstance().getWarmUpPeriod()){
@@ -210,36 +203,45 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
     private void resetSimulationFailed(){
         int intervalDuration = SimSettings.getInstance().getTraceIntervalDuration();
         if (intervalDuration == 0) {
-            SimSettings.getInstance().resetSimulationFailed(1);
+            SimSettings.getInstance().resetSimulationFailed();
+            SimSettings.getInstance().setSimulationCompleted(0);
             return;
         }
-        double runTime = SimSettings.getInstance().getSimulationTime() - SimSettings.getInstance().getWarmUpPeriod();
-        int numOfIntervals = (int) Math.ceil(runTime / intervalDuration);
-        SimSettings.getInstance().resetSimulationFailed(numOfIntervals);
+//        double runTime = SimSettings.getInstance().getSimulationTime() - SimSettings.getInstance().getWarmUpPeriod();
+//        int numOfIntervals = (int) Math.ceil(runTime / intervalDuration);
+        SimSettings.getInstance().resetSimulationFailed();
     }
 
     private void analyzeServiceRate(double[] objectRequests, double totalRuntime){
         //normalize to mu
-        int servedReqsPerSec = SimSettings.getInstance().getServedReqsPerSec();
         double measuredDuration = totalRuntime - SimSettings.getInstance().getWarmUpPeriod();
-//        int totalReqsPerSec = 0;
-        for(int a = 0; a < objectRequests.length; a++)
-        {
-//            totalReqsPerSec += objectRequests[a];
-            objectRequests[a] = objectRequests[a]/(servedReqsPerSec*measuredDuration);
-        }
-//        totalReqsPerSec /= measuredDuration;
+        convertRequestArrayToDemandVector(objectRequests, measuredDuration);
         double objectRequestsSum = Arrays.stream(objectRequests).sum();
         double objectRequestsAvg = objectRequestsSum / objectRequests.length;
         double dataObjectsInNodes = (double)SimSettings.getInstance().getNumOfDataObjects() / SimSettings.getInstance().getNumOfEdgeDatacenters();
-        System.out.println("Avg object request rate: " +String.valueOf(objectRequestsAvg) + "  mu for " +
+        System.out.println("Avg object request rate: " + objectRequestsAvg + "  mu for " +
                 String.valueOf(dataObjectsInNodes) + " objects in node");
         double objectRequestsMax = Arrays.stream(objectRequests).max().getAsDouble();
-        System.out.println("Max object request rate: " +String.valueOf(objectRequestsMax) + "  mu");
+        System.out.println("Max object request rate: " + objectRequestsMax + "  mu");
         SimSettings.getInstance().setObjectRequestRateArray(objectRequests);
         SimSettings.getInstance().setReqRatePerSec((int)((numOfValidIOTasks / measuredDuration)/SimSettings.getInstance().getNumOfEdgeDatacenters()));
         if(!SimSettings.getInstance().isNsfExperiment())
             printObjectRank();
+    }
+
+    public static String convertRequestArrayToDemandVector(double[] objectRequests, double totalRuntime){
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(4);
+        StringBuilder objectRequestsString = new StringBuilder();
+        int servedReqsPerSec = SimSettings.getInstance().getServedReqsPerSec();
+        for(int a = 0; a < objectRequests.length-1; a++) {
+            objectRequests[a] = objectRequests[a] / (servedReqsPerSec * totalRuntime);
+            objectRequestsString.append(df.format(objectRequests[a])).append(",");
+        }
+        objectRequests[objectRequests.length-1] = objectRequests[objectRequests.length-1] /
+                (servedReqsPerSec * totalRuntime);
+        objectRequestsString.append(df.format(objectRequests[objectRequests.length-1]));
+        return objectRequestsString.toString();
     }
 
     /**

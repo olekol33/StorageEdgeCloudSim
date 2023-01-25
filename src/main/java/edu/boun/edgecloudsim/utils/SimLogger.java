@@ -50,7 +50,7 @@ public class SimLogger {
 	private String hostType;
 	private int hostID;
 	private long startTime;
-	private Map<Integer, LogItem> taskMap;
+	private HashMap<Integer, LogItem> taskMap;
 	private LinkedList<VmLoadLogItem> vmLoadList;
 	//TRUE if generate graphs in Matlab, FALSE if python
 	Boolean MATLAB = Boolean.FALSE;
@@ -132,8 +132,11 @@ public class SimLogger {
 	public void simStarted(String outFolder, String fileName) {
 		filePrefix = fileName;
 		outputFolder = outFolder;
-		taskMap = new HashMap<Integer, LogItem>();
-		vmLoadList = new LinkedList<VmLoadLogItem>();
+		if (SimSettings.getInstance().isExternalRequests())
+			taskMap = new HashMap<>(SimSettings.getInstance().getNumOfExternalTasks());
+		else
+			taskMap = new HashMap<>();
+		vmLoadList = new LinkedList<>();
 	}
 
 	public void simStarted(String outFolder, String fileName, String _hostType, int _hostID, long currentTime) {
@@ -484,6 +487,7 @@ public class SimLogger {
 			numOfObjectsInStripe = SimSettings.getInstance().getNumOfDataInStripe()+
 				SimSettings.getInstance().getNumOfParityInStripe();
 		LoadGeneratorModel loadGeneratorModel = SimManager.getInstance().getLoadGeneratorModel();
+		//TODO: use more afficient data structure
 		String [] objectID = new String[taskMap.size()];
 		int [] hostID = new int[taskMap.size()];
 		int [] ioTaskID = new int[taskMap.size()];
@@ -507,6 +511,7 @@ public class SimLogger {
 //		Arrays.fill(objectsReadFromStripe,0);
 		Map<Integer, ArrayList<Double>> timeToReadStripe = new HashMap<Integer, ArrayList<Double>>();
 		Map<Integer, String> nameToReadStripe = new HashMap<Integer, String>();
+		//TODO: use enum instead of this
 		final double NOT_FINISHED = -1;
 		final double REJECTED = -2;
 		final double FINISHED_ON_CLOUD = -3;
@@ -581,15 +586,12 @@ public class SimLogger {
 		}
 
 		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
-
 			Integer key = entry.getKey();
 			LogItem value = entry.getValue();
-
-
 			if (value.isInWarmUpPeriod())
 			{
 //				ioTaskID[key-1] = value.getIoTaskID(); //not really needed, just for debug below
-				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
+				ArrayList<Double> delays = new ArrayList<>(numOfObjectsInStripe);
 				if (timeToReadStripe.get(value.getIoTaskID()) != null)
 					delays = timeToReadStripe.get(value.getIoTaskID());
 				else //placeholder
@@ -603,8 +605,6 @@ public class SimLogger {
 				timeToReadStripe.put(value.getIoTaskID(),delays);
 				continue;
 			}
-
-
 			if (value.getStatus() == SimLogger.TASK_STATUS.COMPLETED) {
 				completedTask[value.getTaskType()]++;
 
@@ -623,11 +623,7 @@ public class SimLogger {
 				isParity[key-1] = value.getIsParity();
 				isParityToRead[key-1] = value.getParitiesToRead();
 				objectReadDelay[key-1] = value.getNetworkDelay();
-//				objectStatusID[key-1] = SimLogger.TASK_STATUS.COMPLETED;
-				if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
-					readSource[key-1] = "Cloud";
-				else if (value.getDatacenterId()==SimSettings.GENERIC_EDGE_DEVICE_ID)
-					readSource[key-1] = "Edge";
+				readSource[key-1] = "Edge";
 
 				//KV pairs of IO tasks and list of latencies
 				ArrayList<Double> delays = new ArrayList<Double>(numOfObjectsInStripe);
@@ -639,8 +635,8 @@ public class SimLogger {
 					//put at location 0
 //					delays.set(0, value.getNetworkDelay());
 					delays.set(0, value.getServiceTime());
-					if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
-						delays.add(1, FINISHED_ON_CLOUD);
+//					if (value.getDatacenterId()==SimSettings.CLOUD_DATACENTER_ID)
+//						delays.add(1, FINISHED_ON_CLOUD);
 				}
 				else
 					//or append
@@ -666,7 +662,6 @@ public class SimLogger {
 					//or append
 					delays.add(1, NOT_FINISHED);
 				timeToReadStripe.put(value.getIoTaskID(),delays);
-//				nameToReadStripe.put(value.getIoTaskID(),value.getStripeID());
 
 
 				uncompletedTask[value.getTaskType()]++;
@@ -676,8 +671,6 @@ public class SimLogger {
 					uncompletedTaskOnMobile[value.getTaskType()]++;
 				else
 					uncompletedTaskOnEdge[value.getTaskType()]++;
-				//Oleg
-//				objectStatusID[key-1] = value.getStatus();
 			}
 			else {
 				//rejected
@@ -702,8 +695,6 @@ public class SimLogger {
 					failedTaskOnMobile[value.getTaskType()]++;
 				else
 					failedTaskOnEdge[value.getTaskType()]++;
-				//Oleg
-//				objectStatusID[key-1] = value.getStatus();
 			}
 
 			if (value.getStatus() == SimLogger.TASK_STATUS.COMPLETED) {
@@ -726,7 +717,6 @@ public class SimLogger {
 					wanDelay[value.getTaskType()] += value.getNetworkDelay(NETWORK_DELAY_TYPES.WAN_DELAY);
 				}
 
-				//TODO: check why networkDelay not sum of delays
 				if (value.getVmType() == SimSettings.VM_TYPES.CLOUD_VM.ordinal()) {
 					serviceTimeOnCloud[value.getTaskType()] += value.getServiceTime();
 					processingTimeOnCloud[value.getTaskType()] += (value.getServiceTime() - value.getNetworkDelay());
@@ -841,8 +831,6 @@ public class SimLogger {
 			totalVmLoadOnEdge += entry.getEdgeLoad();
 			totalVmLoadOnCloud += entry.getCloudLoad();
 			totalVmLoadOnMobile += entry.getMobileLoad();
-/*			if (fileLogEnabled)
-				appendToFile(vmLoadBW, entry.toString());*/
 		}
 
 		if (fileLogEnabled) {
@@ -857,9 +845,7 @@ public class SimLogger {
 
 				if(time < 10)
 					continue;
-
 				for (int i = 0; i < SimManager.getInstance().getNumOfMobileDevice(); i++) {
-
 					Location loc = SimManager.getInstance().getMobilityModel().getLocation(i, time);
 					int placeTypeIndex = loc.getPlaceTypeIndex();
 					locationInfo[placeTypeIndex]++;
@@ -867,7 +853,6 @@ public class SimLogger {
 				locationBW.write(Double.toString(time));
 				for (int i = 0; i < locationInfo.length; i++)
 					locationBW.write(SimSettings.DELIMITER + locationInfo[i]);
-
 				locationBW.newLine();
 			}
 
@@ -879,39 +864,23 @@ public class SimLogger {
 					gridLocationBW.write("Host" + SimSettings.DELIMITER + host.getId() + SimSettings.DELIMITER +
 							host.getLocation().getXPos() + SimSettings.DELIMITER + host.getLocation().getYPos());
 					gridLocationBW.newLine();
-
 				}
 			}
 			for (int i = 0; i < SimManager.getInstance().getNumOfMobileDevice(); i++) {
-
-				//TODO: added by Harel! - oleg needs to check!!!
-//				if(SimSettings.getInstance().getWarmUpPeriod() < 10)
-//					continue;
-
 				Location loc = SimManager.getInstance().getMobilityModel().getLocation(i, SimSettings.getInstance().getWarmUpPeriod());
-
 				gridLocationBW.write("Mobile" + SimSettings.DELIMITER + i + SimSettings.DELIMITER + loc.getXPos() +
 						SimSettings.DELIMITER + loc.getYPos());
 				gridLocationBW.newLine();
 			}
-
-			//Oleg:Create list of objects reads
-//			for (int i = 0; i < numOfIOTasks; i++) {
 			for (int i = 0; i < taskMap.size(); i++) {
-//				if (ioTaskID[i] == -1) failing for tasks not in taskMap (generated near run finish)
-//					throw new IllegalStateException("SimLogger: Illegal value for item " + String.valueOf(i));
 				if (objectID[i] == null)
 					continue;
-
 				objectsBW.write((ioTaskID[i] + SimSettings.DELIMITER + objectID[i] + SimSettings.DELIMITER + isParity[i] +
 						SimSettings.DELIMITER + isParityToRead[i] + SimSettings.DELIMITER + hostID[i] + SimSettings.DELIMITER + accessID[i] +
 						SimSettings.DELIMITER + readSource[i] + SimSettings.DELIMITER + df.format(objectReadDelay[i])));
-//						SimSettings.DELIMITER + objectStatusID[i]));
 				objectsBW.newLine();
 			}
 			//Oleg: Analyze readObjects
-//			Iterator it = timeToReadStripe.entrySet().iterator();
-//			while (it.hasNext()){
 			int notFinished=0;
 			int totalObjectsRead = 0;
 			double countedTasks = 0;
@@ -920,20 +889,13 @@ public class SimLogger {
 				double readCost=0;
 				int objectsRead=0;
 				String dataTypeRead = "data";
-//				Map<Integer, SortedSet<Double>> pair = it.next();
-//				Map<Integer, SortedSet<Double>> pair = (Map.Entry)it.next();
-//				SortedSet<Double> set = pair.getValue();
-//				TreeSet<Double> set = new TreeSet<Double>();
 				ArrayList<Double> objectReadFinished = timeToReadStripe.get(key);
 				if (objectReadFinished.size()>numOfObjectsInStripe) {
 					throw new IllegalStateException("ERROR: Illegal number of objects in stripe");
 				}
-
 				//warm up period
 				if (objectReadFinished.contains(REJECTED))
 					continue;
-				//TODO: support case of not finished
-				//TODO: check case one element and NOT_FINISHED
 				//if one of the tasks hasn't finished
 				if (objectReadFinished.contains(NOT_FINISHED))
 				{
@@ -964,7 +926,6 @@ public class SimLogger {
 							readCost += d;
 							objectsRead++;
 						}
-
 					}
 				}
 				//if only one object read
@@ -990,16 +951,13 @@ public class SimLogger {
 				}
 				else {
 					try {
-						for(Double d : objectReadFinished) {
+						for(Double d : objectReadFinished)
 							readCost += d;
-						}
 						objectsRead=objectReadFinished.size();
 						//if data and parity were read, take the best one
 						//parity delay
 						readDelay = Collections.max(objectReadFinished.subList(1, numOfObjectsInStripe));
-
 						if (readDelay > objectReadFinished.get(0)) {
-//							System.out.println("ioTaskID = " + key + ", data = " + list.get(0) + ", parity = " + readDelay + ", read data");
 							readDelay = objectReadFinished.get(0);
 							dataTypeRead = "data";
 						}
@@ -1021,13 +979,10 @@ public class SimLogger {
 					throw new IllegalStateException("Unexpected value of objectsRead");
 				totalObjectsRead += objectsRead;
 				countedTasks++;
-
 				readObjectsBW.write((key + SimSettings.DELIMITER + df.format(readDelay))+
 						SimSettings.DELIMITER +  df.format(readCost)+  SimSettings.DELIMITER +dataTypeRead +
 						SimSettings.DELIMITER + objectsRead);
 				readObjectsBW.newLine();
-//				it.remove(); // avoids a ConcurrentModificationException
-
 			}
 			SimSettings.getInstance().setServiceCost((totalObjectsRead / countedTasks) * SimSettings.getInstance().getObjectRequestRateTotal() );
 			System.out.println("Not finished: " + notFinished);
@@ -1062,77 +1017,77 @@ public class SimLogger {
 						: (wanDelay[i] / (double) wanUsage[i]);
 
 				// write generic results
-				String genericResult1 = Integer.toString(completedTask[i]) + SimSettings.DELIMITER
-						+ Integer.toString(parityTask[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTask[i]) + SimSettings.DELIMITER 
-						+ Integer.toString(uncompletedTask[i]) + SimSettings.DELIMITER 
-						+ Integer.toString(failedTaskDuetoBw[i]) + SimSettings.DELIMITER
-						+ Double.toString(_serviceTime) + SimSettings.DELIMITER 
-						+ Double.toString(_processingTime) + SimSettings.DELIMITER 
-						+ Double.toString(_networkDelay) + SimSettings.DELIMITER
+				String genericResult1 = completedTask[i] + SimSettings.DELIMITER
+						+ parityTask[i] + SimSettings.DELIMITER
+						+ failedTask[i] + SimSettings.DELIMITER
+						+ uncompletedTask[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoBw[i] + SimSettings.DELIMITER
+						+ _serviceTime + SimSettings.DELIMITER
+						+ _processingTime + SimSettings.DELIMITER
+						+ _networkDelay + SimSettings.DELIMITER
 						+ Double.toString(0) + SimSettings.DELIMITER 
-						+ Double.toString(_cost) + SimSettings.DELIMITER 
-						+ Integer.toString(failedTaskDueToVmCapacity[i]) + SimSettings.DELIMITER 
-						+ Integer.toString(failedTaskDuetoMobility[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskDuetoPolicy[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskDuetoQueue[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskDuetoInaccessibility[i]);
+						+ _cost + SimSettings.DELIMITER
+						+ failedTaskDueToVmCapacity[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoMobility[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoPolicy[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoQueue[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoInaccessibility[i];
 
 				// check if the divisor is zero in order to avoid division by zero problem
 				double _serviceTimeOnEdge = (completedTaskOnEdge[i] == 0) ? 0.0
 						: (serviceTimeOnEdge[i] / (double) completedTaskOnEdge[i]);
 				double _processingTimeOnEdge = (completedTaskOnEdge[i] == 0) ? 0.0
 						: (processingTimeOnEdge[i] / (double) completedTaskOnEdge[i]);
-				String genericResult2 = Integer.toString(completedTaskOnEdge[i]) + SimSettings.DELIMITER
-						+ Integer.toString(parityTask[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskOnEdge[i]) + SimSettings.DELIMITER
-						+ Integer.toString(uncompletedTaskOnEdge[i]) + SimSettings.DELIMITER
-						+ Integer.toString(0) + SimSettings.DELIMITER
-						+ Double.toString(_serviceTimeOnEdge) + SimSettings.DELIMITER
-						+ Double.toString(_processingTimeOnEdge) + SimSettings.DELIMITER
-						+ Double.toString(0.0) + SimSettings.DELIMITER 
-						+ Double.toString(_vmLoadOnEdge) + SimSettings.DELIMITER 
-						+ Integer.toString(failedTaskDueToVmCapacityOnEdge[i]);
+				String genericResult2 = completedTaskOnEdge[i] + SimSettings.DELIMITER
+						+ parityTask[i] + SimSettings.DELIMITER
+						+ failedTaskOnEdge[i] + SimSettings.DELIMITER
+						+ uncompletedTaskOnEdge[i] + SimSettings.DELIMITER
+						+ 0 + SimSettings.DELIMITER
+						+ _serviceTimeOnEdge + SimSettings.DELIMITER
+						+ _processingTimeOnEdge + SimSettings.DELIMITER
+						+ 0.0 + SimSettings.DELIMITER
+						+ _vmLoadOnEdge + SimSettings.DELIMITER
+						+ failedTaskDueToVmCapacityOnEdge[i];
 
 				// check if the divisor is zero in order to avoid division by zero problem
 				double _serviceTimeOnCloud = (completedTaskOnCloud[i] == 0) ? 0.0
 						: (serviceTimeOnCloud[i] / (double) completedTaskOnCloud[i]);
 				double _processingTimeOnCloud = (completedTaskOnCloud[i] == 0) ? 0.0
 						: (processingTimeOnCloud[i] / (double) completedTaskOnCloud[i]);
-				String genericResult3 = Integer.toString(completedTaskOnCloud[i]) + SimSettings.DELIMITER
-						+ Integer.toString(parityTask[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskOnCloud[i]) + SimSettings.DELIMITER
-						+ Integer.toString(uncompletedTaskOnCloud[i]) + SimSettings.DELIMITER
-						+ Integer.toString(0) + SimSettings.DELIMITER
-						+ Double.toString(_serviceTimeOnCloud) + SimSettings.DELIMITER
-						+ Double.toString(_processingTimeOnCloud) + SimSettings.DELIMITER 
-						+ Double.toString(0.0) + SimSettings.DELIMITER
-						+ Double.toString(_vmLoadOnClould) + SimSettings.DELIMITER 
-						+ Integer.toString(failedTaskDueToVmCapacityOnCloud[i]);
+				String genericResult3 = completedTaskOnCloud[i] + SimSettings.DELIMITER
+						+ parityTask[i] + SimSettings.DELIMITER
+						+ failedTaskOnCloud[i] + SimSettings.DELIMITER
+						+ uncompletedTaskOnCloud[i] + SimSettings.DELIMITER
+						+ 0 + SimSettings.DELIMITER
+						+ _serviceTimeOnCloud + SimSettings.DELIMITER
+						+ _processingTimeOnCloud + SimSettings.DELIMITER
+						+ 0.0 + SimSettings.DELIMITER
+						+ _vmLoadOnClould + SimSettings.DELIMITER
+						+ failedTaskDueToVmCapacityOnCloud[i];
 				
 				// check if the divisor is zero in order to avoid division by zero problem
 				double _serviceTimeOnMobile = (completedTaskOnMobile[i] == 0) ? 0.0
 						: (serviceTimeOnMobile[i] / (double) completedTaskOnMobile[i]);
 				double _processingTimeOnMobile = (completedTaskOnMobile[i] == 0) ? 0.0
 						: (processingTimeOnMobile[i] / (double) completedTaskOnMobile[i]);
-				String genericResult4 = Integer.toString(completedTaskOnMobile[i]) + SimSettings.DELIMITER
-						+ Integer.toString(parityTask[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskOnMobile[i]) + SimSettings.DELIMITER
-						+ Integer.toString(uncompletedTaskOnMobile[i]) + SimSettings.DELIMITER
-						+ Integer.toString(0) + SimSettings.DELIMITER
-						+ Double.toString(_serviceTimeOnMobile) + SimSettings.DELIMITER
-						+ Double.toString(_processingTimeOnMobile) + SimSettings.DELIMITER 
-						+ Double.toString(0.0) + SimSettings.DELIMITER
-						+ Double.toString(_vmLoadOnMobile) + SimSettings.DELIMITER 
-						+ Integer.toString(failedTaskDueToVmCapacityOnMobile[i]);
+				String genericResult4 = completedTaskOnMobile[i] + SimSettings.DELIMITER
+						+ parityTask[i] + SimSettings.DELIMITER
+						+ failedTaskOnMobile[i] + SimSettings.DELIMITER
+						+ uncompletedTaskOnMobile[i] + SimSettings.DELIMITER
+						+ 0 + SimSettings.DELIMITER
+						+ _serviceTimeOnMobile + SimSettings.DELIMITER
+						+ _processingTimeOnMobile + SimSettings.DELIMITER
+						+ 0.0 + SimSettings.DELIMITER
+						+ _vmLoadOnMobile + SimSettings.DELIMITER
+						+ failedTaskDueToVmCapacityOnMobile[i];
 				
-				String genericResult5 = Double.toString(_lanDelay) + SimSettings.DELIMITER
-						+ Double.toString(_manDelay) + SimSettings.DELIMITER
-						+ Double.toString(_wanDelay) + SimSettings.DELIMITER
+				String genericResult5 = _lanDelay + SimSettings.DELIMITER
+						+ _manDelay + SimSettings.DELIMITER
+						+ _wanDelay + SimSettings.DELIMITER
 						+ 0 + SimSettings.DELIMITER //for future use
-						+ Integer.toString(failedTaskDuetoLanBw[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskDuetoManBw[i]) + SimSettings.DELIMITER
-						+ Integer.toString(failedTaskDuetoWanBw[i]);
+						+ failedTaskDuetoLanBw[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoManBw[i] + SimSettings.DELIMITER
+						+ failedTaskDuetoWanBw[i];
 				if(MATLAB) {
 					appendToFile(genericBWs[i], genericResult1);
 					appendToFile(genericBWs[i], genericResult2);
@@ -1289,17 +1244,6 @@ public class SimLogger {
 			meanObjectsUsed = (double) objectsUsed / requestsServed;
 		SimSettings.getInstance().setServiceCost(meanObjectsUsed * SimSettings.getInstance().getObjectRequestRateTotal());
 	}
-
-	public int hostOfOriginalData(int ioTaskID){
-		for (Map.Entry<Integer, LogItem> entry : taskMap.entrySet()) {
-			Integer key = entry.getKey();
-			LogItem value = entry.getValue();
-			if (value.getIoTaskID()==ioTaskID && value.getIsParity()==0)
-				return value.getHostId();
-		}
-		return -1;
-
-	}
 }
 
 class VmLoadLogItem {
@@ -1339,15 +1283,15 @@ class VmLoadLogItem {
 
 class LogItem implements Serializable{
 	private SimLogger.TASK_STATUS status;
-	private SimLogger.NETWORK_ERRORS networkError;
-	private int datacenterId;
+//	private SimLogger.NETWORK_ERRORS networkError;
+//	private int datacenterId;
 	private int hostId;
-	private int vmId;
+//	private int vmId;
 	private int vmType;
 	private int taskType;
-	private int taskLenght;
-	private int taskInputType;
-	private int taskOutputSize;
+//	private int taskLenght;
+//	private int taskInputType;
+//	private int taskOutputSize;
 	private double taskStartTime;
 	private double taskEndTime;
 	private double lanUploadDelay;
@@ -1356,11 +1300,9 @@ class LogItem implements Serializable{
 	private double lanDownloadDelay;
 	private double manDownloadDelay;
 	private double wanDownloadDelay;
-	private double bwCost;
-	private double cpuCost;
+//	private double bwCost;
+//	private double cpuCost;
 	private boolean isInWarmUpPeriod;
-	//storage
-//	private String stripeID;
 	private String objectRead;
 	private int paritiesToRead;
 	private int ioTaskID;
@@ -1369,10 +1311,10 @@ class LogItem implements Serializable{
 
 	LogItem(int _taskType, int _taskLenght, int _taskInputType, int _taskOutputSize) {
 		taskType = _taskType;
-		taskLenght = _taskLenght;
-		taskInputType = _taskInputType;
-		taskOutputSize = _taskOutputSize;
-		networkError = NETWORK_ERRORS.NONE;
+//		taskLenght = _taskLenght;
+//		taskInputType = _taskInputType;
+//		taskOutputSize = _taskOutputSize;
+//		networkError = NETWORK_ERRORS.NONE;
 		status = SimLogger.TASK_STATUS.CREATED;
 		taskEndTime = 0;
 	}
@@ -1381,8 +1323,8 @@ class LogItem implements Serializable{
 			int _isParity, int _paritiesToRead, int _accessHostID) {
 		taskType = _taskType;
 //		taskLenght = _taskLenght;
-		taskInputType = _taskInputType;
-		taskOutputSize = _taskOutputSize;
+//		taskInputType = _taskInputType;
+//		taskOutputSize = _taskOutputSize;
 //		networkError = NETWORK_ERRORS.NONE;
 		status = SimLogger.TASK_STATUS.CREATED;
 		taskEndTime = 0;
@@ -1392,54 +1334,6 @@ class LogItem implements Serializable{
 		isParity = _isParity;
 		paritiesToRead = _paritiesToRead;
 		accessHostID = _accessHostID;
-	}
-
-	public static LogItem deserialize(String filepath){
-		LogItem object = null;
-		try {
-//			String filepath = SimSettings.getInstance().getSerializableFolder() + "/" + String.valueOf(task.getIoTaskID());
-
-			// Reading the object from a file
-			FileInputStream file = new FileInputStream(filepath);
-			ObjectInputStream in = new ObjectInputStream(file);
-
-			// Method for deserialization of object
-			object = (LogItem)in.readObject();
-
-			in.close();
-			file.close();
-		}
-		catch(IOException ex)
-		{
-			System.out.println("IOException is caught");
-		}
-		catch(ClassNotFoundException ex)
-		{
-			System.out.println("ClassNotFoundException is caught");
-		}
-		return object;
-	}
-	public void serialize(){
-		try {
-			String suffix = String.valueOf(this.getIoTaskID()) + "_" + this.getObjectRead() + "_" + String.valueOf(this.hostId);
-			String filepath = SimSettings.getInstance().getSerializableFolder() + "/" + suffix;
-			File fileToCheck = new File(filepath);
-			if(fileToCheck.exists())
-				throw new IllegalStateException(filepath + " exists");
-			FileOutputStream file = new FileOutputStream(filepath);
-			ObjectOutputStream out = new ObjectOutputStream(file);
-
-
-			// Method for serialization of object
-			out.writeObject(this);
-
-			out.close();
-			file.close();
-		}
-		catch(IOException ex)
-		{
-			System.out.println("IOException is caught");
-		}
 	}
 	
 	public void taskStarted(double time) {
@@ -1472,9 +1366,9 @@ class LogItem implements Serializable{
 	
 	public void taskAssigned(int _datacenterId, int _hostId, int _vmId, int _vmType) {
 		status = SimLogger.TASK_STATUS.PROCESSING;
-		datacenterId = _datacenterId;
+//		datacenterId = _datacenterId;
 		hostId = _hostId;
-		vmId = _vmId;
+//		vmId = _vmId;
 		vmType = _vmType;
 	}
 
@@ -1502,12 +1396,12 @@ class LogItem implements Serializable{
 		taskEndTime = time;
 		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_BANDWIDTH;
 		
-		if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY)
-			networkError = NETWORK_ERRORS.LAN_ERROR;
-		else if(delayType == NETWORK_DELAY_TYPES.MAN_DELAY)
-			networkError = NETWORK_ERRORS.MAN_ERROR;
-		else if(delayType == NETWORK_DELAY_TYPES.WAN_DELAY)
-			networkError = NETWORK_ERRORS.WAN_ERROR;
+//		if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY)
+//			networkError = NETWORK_ERRORS.LAN_ERROR;
+//		else if(delayType == NETWORK_DELAY_TYPES.MAN_DELAY)
+//			networkError = NETWORK_ERRORS.MAN_ERROR;
+//		else if(delayType == NETWORK_DELAY_TYPES.WAN_DELAY)
+//			networkError = NETWORK_ERRORS.WAN_ERROR;
 	}
 
 
@@ -1532,12 +1426,12 @@ class LogItem implements Serializable{
 		taskEndTime = time;
 		status = SimLogger.TASK_STATUS.UNFINISHED_DUE_TO_BANDWIDTH;
 		
-		if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY)
+/*		if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY)
 			networkError = NETWORK_ERRORS.LAN_ERROR;
 		else if(delayType == NETWORK_DELAY_TYPES.MAN_DELAY)
 			networkError = NETWORK_ERRORS.MAN_ERROR;
 		else if(delayType == NETWORK_DELAY_TYPES.WAN_DELAY)
-			networkError = NETWORK_ERRORS.WAN_ERROR;
+			networkError = NETWORK_ERRORS.WAN_ERROR;*/
 	}
 
 	public void taskFailedDueToMobility(double time) {
@@ -1545,10 +1439,10 @@ class LogItem implements Serializable{
 		status = SimLogger.TASK_STATUS.UNFINISHED_DUE_TO_MOBILITY;
 	}
 
-	public void setCost(double _bwCost, double _cpuCos) {
+/*	public void setCost(double _bwCost, double _cpuCos) {
 		bwCost = _bwCost;
 		cpuCost = _cpuCos;
-	}
+	}*/
 
 
 
@@ -1557,7 +1451,8 @@ class LogItem implements Serializable{
 	}
 
 	public double getCost() {
-		return bwCost + cpuCost;
+//		return bwCost + cpuCost;
+		return 0;
 	}
 
 	public int getIoTaskID() {
@@ -1572,9 +1467,9 @@ class LogItem implements Serializable{
 		return accessHostID;
 	}
 
-	public int getDatacenterId() {
+/*	public int getDatacenterId() {
 		return datacenterId;
-	}
+	}*/
 
 	public int getParitiesToRead() {
 		return paritiesToRead;
@@ -1643,7 +1538,8 @@ class LogItem implements Serializable{
 	}
 
 	public SimLogger.NETWORK_ERRORS getNetworkError() {
-		return networkError;
+//		return networkError;
+		return NETWORK_ERRORS.NONE;
 	}
 	
 	public int getVmType() {
@@ -1667,6 +1563,11 @@ class LogItem implements Serializable{
 	}
 
 	public String toString(int taskId) {
+		int vmId = 0;
+		int taskLenght = 0;
+		int datacenterId = 0;
+		int taskOutputSize = 0;
+		int taskInputType = 0;
 		String result = taskId + SimSettings.DELIMITER + datacenterId + SimSettings.DELIMITER + hostId
 				+ SimSettings.DELIMITER + vmId + SimSettings.DELIMITER + vmType + SimSettings.DELIMITER + taskType
 				+ SimSettings.DELIMITER + taskLenght + SimSettings.DELIMITER + taskInputType + SimSettings.DELIMITER

@@ -103,6 +103,8 @@ public class StaticRangeMobility extends MobilityModel {
                     e.printStackTrace();
                 }
                 treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, placedDevice);
+                if (SimSettings.getInstance().isUserInNodes())
+                    staticLocationHash.put(i, placedDevice);
             }
             if (SimSettings.getInstance().isExportRunFiles()) {
                 try {
@@ -332,10 +334,8 @@ public class StaticRangeMobility extends MobilityModel {
         int minDCLocationID = -1;
         if(hosts.size() == 1)
             return hosts.get(0);
-
         for (int host : hosts) {
             double distance = getGridDistance(deviceLocation, getDCLocation(host));
-            //best possible
             if (distance == 0)
                 return host;
             if (distance < minDistance) {

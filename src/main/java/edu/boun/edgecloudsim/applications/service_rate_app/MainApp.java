@@ -12,8 +12,11 @@ package edu.boun.edgecloudsim.applications.service_rate_app;
 import edu.boun.edgecloudsim.core.ScenarioFactory;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
+import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
+import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
 import edu.boun.edgecloudsim.storage.OrbitReader;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
+import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
@@ -149,6 +152,7 @@ public class MainApp {
 		String objectPlacementPolicy = SS.getObjectPlacement()[0];
 		SimSettings.getInstance().printServiceRate(users);
 		serviceRatePath = new File(parent,"/service_rate");
+		SimSettings.getInstance().setServiceRatePath(serviceRatePath);
 		String srFilename = "";
 		SS.setOutputFolder(outputFolderPath);
 
@@ -185,11 +189,10 @@ public class MainApp {
 		}
 
 		if (!SS.isOrbitMode()) {
-			String fileHeader = "";
+			StringBuilder fileHeader = new StringBuilder();
 			for (int i = 0; i < SS.getNumOfDataObjects(); i++)
-				fileHeader += String.valueOf(i) + ",";
-			fileHeader += "type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval," +
-					"simServiceCost,completed";
+				fileHeader.append(i).append(",");
+			fileHeader.append("type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval," + "simServiceCost,completed");
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
@@ -197,7 +200,7 @@ public class MainApp {
 				serviceRateFileFW = new FileWriter(serviceRateFile, true);
 				serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
 				SS.setServiceRateFileBW(serviceRateFileBW);
-				SimLogger.appendToFile(serviceRateFileBW, fileHeader);
+				SimLogger.appendToFile(serviceRateFileBW, fileHeader.toString());
 				serviceRateFileBW.close();
 			}
 		}
@@ -221,12 +224,9 @@ public class MainApp {
 			reqsPerSec = Math.round(Math.abs(reqsPerSec)); //half-gaussian
 			SS.setPoissonInTaskLookUpTable(0,1/reqsPerSec);
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
-//				SS.setSimulationFailed(false);
-
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 
 				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
-//				String filePrefix = srFilename + "_ITE_" + Integer.toString(i);
 				String filePrefix = srFilename;
 
 				Date ScenarioStartDate = Calendar.getInstance().getTime();
@@ -281,8 +281,9 @@ public class MainApp {
 				serviceRateFile = new File(serviceRatePath, srFilename + "_DEMAND.csv");
 				serviceRateFileFW = new FileWriter(serviceRateFile, true);
 				serviceRateFileBW = new BufferedWriter(serviceRateFileFW);
-				for (int interval=0; interval<SS.isSimulationFailed().length; interval++) {
-					if (SS.isSimulationFailed()[interval])
+				String objectDemandVector = SS.getObjectRequestRateArray();
+				for (int interval=0; interval<SS.isSimulationFailed().size(); interval++) {
+					if (SS.isSimulationFailed().get(interval))
 						completed = "false";
 					else
 						completed = "true";
@@ -291,9 +292,22 @@ public class MainApp {
 						policy = "coding";
 					else
 						policy = "replication";
-					int tasksPerInterval = SS.getTasksInInterval(interval);
-					int failedTasksPerInterval = SS.getFailedTasksInInterval(interval);
-					SimLogger.appendToFile(serviceRateFileBW, SS.getObjectRequestRateArray() + "," + policy + "," +
+					int tasksPerInterval = 0;
+					int failedTasksPerInterval = 0;
+					if (SS.getTraceIntervalDuration()>0 && SS.isSplitDemandVector()) {
+						objectDemandVector = SS.getObjectDemandIntervalVector(interval);
+						tasksPerInterval = SS.getTasksInInterval(interval);
+						failedTasksPerInterval = SS.getFailedTasksInInterval(interval);
+					}
+					else{
+						tasksPerInterval = IdleActiveStorageLoadGenerator.getNumOfValidIOTasks();
+						MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
+						failedTasksPerInterval = ((StorageMobileDeviceManager) mobileDeviceManager).getValidFailed();
+//						tasksPerInterval = numOfIOTasks;
+//						failedTasksPerInterval = validFailed;
+//						SimSettings.getInstance().setTasksInInterval(0, numOfIOTasks, validFailed);
+					}
+					SimLogger.appendToFile(serviceRateFileBW, objectDemandVector + "," + policy + "," +
 							SS.getReqRatePerSec() + "," + SS.getServedReqsPerSec() + "," + i + "," + interval + "," +
 							tasksPerInterval + "," +failedTasksPerInterval+ "," + SS.getServiceCost() + "," + completed);
 				}

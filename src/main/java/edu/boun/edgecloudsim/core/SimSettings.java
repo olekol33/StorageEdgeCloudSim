@@ -84,18 +84,22 @@ public class SimSettings {
 	private boolean APPLY_SIGNAL_ATTENUATION;
 
 	private boolean MEASURE_FUNCTION_TIME;
+	private boolean QUEUE_ORACLE;
 	private boolean OVERHEAD_SCAN;
-	private boolean[] SIMULATION_FAILED;
-	private int[] TASKS_IN_INTERVAL;
-	private int[] FAILED_TASKS_IN_INTERVAL;
+	private ArrayList<Boolean> SIMULATION_FAILED;
+	private ArrayList<Integer> TASKS_IN_INTERVAL;
+	private ArrayList<Integer> FAILED_TASKS_IN_INTERVAL;
 
 	private boolean SERVICE_RATE_SCAN;
 	private boolean SR_EXP_SAME_OVERHEAD;
+
+	private File SERVICE_RATE_PATH;
 
 	private boolean SHIFT_DEVICE_LOCATION;
 	private int SERVICE_RATE_ITERATIONS;
 	private int CURRENT_SERVICE_RATE_ITERATION;
 	private int REQUESTED_OBJECT_LOCATION;
+	private int OBJECT_SIZE_KB;
 	private boolean KEEP_SERVICE_RATE_FILE;
 	private BufferedWriter serviceRateFileBW;
 	private double FAIL_THRESHOLD;
@@ -131,6 +135,7 @@ public class SimSettings {
     
     private double WAN_PROPOGATION_DELAY; //seconds unit in properties file
     private double LAN_INTERNAL_DELAY; //seconds unit in properties file
+    private double QUEUE_TIMEOUT; //seconds unit in properties file
 	private double DELAY_TO_USER;
 
     private int BANDWITH_WLAN; //Mbps unit in properties file
@@ -188,6 +193,7 @@ public class SimSettings {
 	private int NUM_OF_PARITY_IN_STRIPE;
 	private double REDUNDANCY_SHARE;
 	private String objectRequestRateArray;
+	private ArrayList<String> objectDemandIntervalVector;
 	private int reqRatePerSec;
 	private double objectRequestRateTotal;
 
@@ -200,6 +206,7 @@ public class SimSettings {
 	private double HOST_FAILURE_TIME;
 
 	private boolean VARIABILITY_RUN;
+	private boolean SPLIT_DEMAND_VECTOR;
 	private boolean MMPP;
 	private int VARIABILITY_ITERATIONS;
 
@@ -214,9 +221,13 @@ public class SimSettings {
 	private boolean EXTERNAL_NODES_INPUT;
 	private boolean EXTERNAL_DEVICES_INPUT;
 	private boolean EXTERNAL_OBJECTS_INPUT;
+	private boolean EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV;
 	private boolean EXTERNAL_REQUESTS_INPUT;
 	private boolean EXPORT_RUN_FILES;
 	private boolean TEST_USING_INT;
+	private boolean SMOOTH_EXTERNAL_REQUESTS;
+	private boolean AVOID_SPIKES_IN_EXTERNAL_REQUESTS;
+	private double AVOID_SPIKES_UTILIZATION;
 	private String NODES_DIRECT_PATH;
 	private String DEVICES_DIRECT_PATH;
 	private String OBJECTS_DIRECT_PATH;
@@ -358,6 +369,7 @@ public class SimSettings {
 	public boolean initialize(String propertiesFile, String edgeDevicesFile, String applicationsFile) throws ParserConfigurationException, IOException, SAXException, TransformerException {
 		boolean result = false;
 		InputStream input = null;
+		objectDemandIntervalVector = new ArrayList<>();
 		try {
 			input = new FileInputStream(propertiesFile);
 
@@ -382,6 +394,7 @@ public class SimSettings {
 				COUNT_FAILEDDUETOINACCESSIBILITY = toBoolean(prop.getProperty("count_failedDueToInaccessibility"));
 				APPLY_SIGNAL_ATTENUATION = toBoolean(prop.getProperty("applySignalAttenuation"));
 				MEASURE_FUNCTION_TIME = toBoolean(prop.getProperty("measure_function_time"));
+				QUEUE_ORACLE = toBoolean(prop.getProperty("queue_oracle"));
 				OVERHEAD_SCAN = toBoolean(prop.getProperty("overhead_scan"));
 				SERVICE_RATE_SCAN = toBoolean(prop.getProperty("service_rate_scan"));
 				SR_EXP_SAME_OVERHEAD = toBoolean(prop.getProperty("sr_exp_same_overhead"));
@@ -402,6 +415,7 @@ public class SimSettings {
 
 				WAN_PROPOGATION_DELAY = Double.parseDouble(prop.getProperty("wan_propogation_delay"));
 				LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("lan_internal_delay"));
+				QUEUE_TIMEOUT = Double.parseDouble(prop.getProperty("queue_timeout"));
 				DELAY_TO_USER = Double.parseDouble(prop.getProperty("delay_to_user"));
 				FAIL_THRESHOLD = Double.parseDouble(prop.getProperty("fail_threshold"));
 //				BANDWITH_WLAN = 1000 * Integer.parseInt(prop.getProperty("wlan_bandwidth"));
@@ -442,6 +456,7 @@ public class SimSettings {
 				ORBIT_MODE = toBoolean(prop.getProperty("orbit_mode"));
 				SIMULATE_ORBIT_MODE = toBoolean(prop.getProperty("simulate_orbit_mode"));
 				VARIABILITY_RUN = toBoolean(prop.getProperty("variability_run"));
+				SPLIT_DEMAND_VECTOR = toBoolean(prop.getProperty("split_demand_vector"));
 				MMPP = toBoolean(prop.getProperty("mmpp"));
 				VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 				NUM_OF_EDGE_DATACENTERS = Integer.parseInt(prop.getProperty("number_of_edge_datacenters"));
@@ -464,9 +479,16 @@ public class SimSettings {
 				EXTERNAL_NODES_INPUT = Boolean.parseBoolean(prop.getProperty("external_nodes_input"));
 				EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
 				EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
+				EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV = Boolean.parseBoolean(prop.getProperty("external_objects_input_from_placement_csv"));
 				EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
 				EXPORT_RUN_FILES = Boolean.parseBoolean(prop.getProperty("export_run_files"));
 				TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
+				SMOOTH_EXTERNAL_REQUESTS = Boolean.parseBoolean(prop.getProperty("smooth_external_requests"));
+				AVOID_SPIKES_IN_EXTERNAL_REQUESTS = Boolean.parseBoolean(prop.getProperty("avoid_spikes_in_external_requests"));
+				AVOID_SPIKES_UTILIZATION = Double.parseDouble(prop.getProperty("avoid_spikes_utilization"));
+				if (SMOOTH_EXTERNAL_REQUESTS && AVOID_SPIKES_IN_EXTERNAL_REQUESTS)
+					throw new IllegalStateException("Can't support SMOOTH_EXTERNAL_REQUESTS and" +
+							" AVOID_SPIKES_IN_EXTERNAL_REQUESTS ");
 				NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
 				DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
 				OBJECTS_DIRECT_PATH = prop.getProperty("objects_direct_path");
@@ -741,6 +763,9 @@ public class SimSettings {
 		return LAN_INTERNAL_DELAY;
 	}
 
+	public double getQueueTimeout() {
+		return QUEUE_TIMEOUT;
+	}
 
 	public double getDelayToUser() {
 		return DELAY_TO_USER;
@@ -770,7 +795,7 @@ public class SimSettings {
 		return OVERHEAD;
 	}
 
-	public int getREADRATE() {
+	public int getReadRate() {
 		return READRATE;
 	}
 
@@ -949,6 +974,9 @@ public class SimSettings {
 		return APPLY_SIGNAL_ATTENUATION;
 	}
 
+	public boolean isQueueOracle() {
+		return QUEUE_ORACLE;
+	}
 
 	public boolean isMeasurefunctionTime() {
 		return MEASURE_FUNCTION_TIME;
@@ -973,34 +1001,42 @@ public class SimSettings {
 	}
 
 
-	public boolean[] isSimulationFailed() {
+	public ArrayList<Boolean> isSimulationFailed() {
 		return SIMULATION_FAILED;
 	}
 
 	public int getTasksInInterval(int interval) {
-		return TASKS_IN_INTERVAL[interval];
+		return TASKS_IN_INTERVAL.get(interval);
 	}
 
 	public int getFailedTasksInInterval(int interval) {
-		return FAILED_TASKS_IN_INTERVAL[interval];
+		return FAILED_TASKS_IN_INTERVAL.get(interval);
 	}
 
 	public void setSimulationFailed(int interval) {
-		this.SIMULATION_FAILED[interval] = true;
+		this.SIMULATION_FAILED.add(interval, true);
+	}
+
+	public void setSimulationCompleted(int interval) {
+		this.SIMULATION_FAILED.add(interval, false);
+	}
+
+	public void setEntireSimulationFailed() {
+		this.SIMULATION_FAILED.set(0, true);
 	}
 
 	public void setTasksInInterval(int interval, int tasksInInterval, int failedTasksInInterval) {
-		this.TASKS_IN_INTERVAL[interval] = tasksInInterval;
-		this.FAILED_TASKS_IN_INTERVAL[interval] = failedTasksInInterval;
+		this.TASKS_IN_INTERVAL.add(interval, tasksInInterval);
+		this.FAILED_TASKS_IN_INTERVAL.add(interval, failedTasksInInterval);
 	}
 
-	public void resetSimulationFailed(int intervals){
-		SIMULATION_FAILED = new boolean[intervals];
-		TASKS_IN_INTERVAL = new int[intervals];
-		FAILED_TASKS_IN_INTERVAL = new int[intervals];
-		Arrays.fill(SIMULATION_FAILED, false);
-		Arrays.fill(TASKS_IN_INTERVAL, 0);
-		Arrays.fill(FAILED_TASKS_IN_INTERVAL, 0);
+	public void resetSimulationFailed(){
+		SIMULATION_FAILED = new ArrayList<>();
+		TASKS_IN_INTERVAL = new ArrayList<>();
+		FAILED_TASKS_IN_INTERVAL = new ArrayList<>();
+//		Arrays.fill(SIMULATION_FAILED, false);
+//		Arrays.fill(TASKS_IN_INTERVAL, 0);
+//		Arrays.fill(FAILED_TASKS_IN_INTERVAL, 0);
 	}
 
 	public int getServiceRateIterations() {
@@ -1018,6 +1054,13 @@ public class SimSettings {
 		return REQUESTED_OBJECT_LOCATION;
 	}
 
+	public int getObjectSize() {
+		return OBJECT_SIZE_KB;
+	}
+
+	public void setObjectSize(int OBJECT_SIZE_KB) {
+		this.OBJECT_SIZE_KB = OBJECT_SIZE_KB;
+	}
 
 	public boolean isKeepServiceRateFile() {
 		return KEEP_SERVICE_RATE_FILE;
@@ -1028,16 +1071,8 @@ public class SimSettings {
 		this.CURRENT_SERVICE_RATE_ITERATION = CURRENT_SERVICE_RATE_ITERATION;
 	}
 
-	public BufferedWriter getServiceRateFileBW() {
-		return serviceRateFileBW;
-	}
-
 	public void setServiceRateFileBW(BufferedWriter serviceRateFileBW) {
 		this.serviceRateFileBW = serviceRateFileBW;
-	}
-
-	public boolean isSrExpSameOverhead() {
-		return SR_EXP_SAME_OVERHEAD;
 	}
 
 	public boolean isShiftDeviceLocation() {
@@ -1046,6 +1081,14 @@ public class SimSettings {
 
 	public boolean isServiceRateScan() {
 		return SERVICE_RATE_SCAN;
+	}
+
+	public File getServiceratePath() {
+		return SERVICE_RATE_PATH;
+	}
+
+	public void setServiceRatePath(File SERVICE_RATE_PATH) {
+		this.SERVICE_RATE_PATH = SERVICE_RATE_PATH;
 	}
 
 	public boolean isGenEdgeDevicesXML() {
@@ -1124,7 +1167,9 @@ public class SimSettings {
 	public boolean isExternalObjects(){
 		return EXTERNAL_OBJECTS_INPUT;
 	}
-
+	public boolean isExternalObjectsFromPlacementCSV(){
+		return EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV;
+	}
 	public boolean isExternalRequests(){
 		return EXTERNAL_REQUESTS_INPUT;
 	}
@@ -1136,6 +1181,19 @@ public class SimSettings {
 
 	public boolean isItIntTest(){
 		return TEST_USING_INT;
+	}
+
+
+	public boolean isSmoothExternalRequests() {
+		return SMOOTH_EXTERNAL_REQUESTS;
+	}
+
+	public boolean isAvoidSpikesInExternalRequests() {
+		return AVOID_SPIKES_IN_EXTERNAL_REQUESTS;
+	}
+
+	public double getAvoidSpikesUtilization() {
+		return AVOID_SPIKES_UTILIZATION;
 	}
 
 	public String getPathOfNodesFile(){
@@ -1160,7 +1218,17 @@ public class SimSettings {
 		}else{
 			return OBJECTS_DIRECT_PATH;
 		}
+	}
 
+	public String getPathOfObjectsCsvFile(boolean coding){
+		if(OBJECTS_DIRECT_PATH.equals("")) {
+			if (coding)
+				return "scripts/" + rundir+ "/input_files/SIMRESULT_SERVICE_RATE_CODING_PLACE_PLACEMENT_ORBIT.csv";
+			else
+				return "scripts/" + rundir+ "/input_files/SIMRESULT_SERVICE_RATE_REPLICATION_PLACE_PLACEMENT_ORBIT.csv";
+		}else{
+			return OBJECTS_DIRECT_PATH;
+		}
 	}
 
 	public String getPathOfRequestsFile(){
@@ -1173,6 +1241,10 @@ public class SimSettings {
 
 	public boolean isVariabilityRun() {
 		return VARIABILITY_RUN;
+	}
+
+	public boolean isSplitDemandVector() {
+		return SPLIT_DEMAND_VECTOR;
 	}
 
 	public boolean isMMPP() {
@@ -1437,6 +1509,13 @@ public class SimSettings {
 		return objectRequestRateArray;
 	}
 
+	public String getObjectDemandIntervalVector(int interval) {
+		return objectDemandIntervalVector.get(interval);
+	}
+
+	public void appendDemandVector(String demandVector) {
+		this.objectDemandIntervalVector.add(demandVector);
+	}
 
 	public double getObjectRequestRateTotal() {
 		return objectRequestRateTotal;
@@ -1474,7 +1553,7 @@ public class SimSettings {
 		objectRequestRateTotal=0;
 		for (int i=0; i<objectRequestRateDoubleArray.length-1;i++){
 			objectRequestRateTotal += objectRequestRateDoubleArray[i];
-			objectRequestRateArray += String.valueOf(df.format(objectRequestRateDoubleArray[i])) + ",";
+			objectRequestRateArray += df.format(objectRequestRateDoubleArray[i]) + ",";
 		}
 		objectRequestRateArray += String.valueOf(df.format(objectRequestRateDoubleArray[objectRequestRateDoubleArray.length-1]));
 	}
@@ -1590,7 +1669,7 @@ public class SimSettings {
 	public void printServiceRate(int numOfUsers){
 		double objectSize = taskLookUpTable[0][DATA_DOWNLOAD]/1000; //MB
 		double reqsPerSec = 1/taskLookUpTable[0][POISSON_INTERARRIVAL];
-		double systemServiceRate = getNumOfEdgeDatacenters() * getREADRATE();
+		double systemServiceRate = getNumOfEdgeDatacenters() * getReadRate();
 		double systemRequestRate = numOfUsers*objectSize*reqsPerSec;
 		double serviceRate = systemRequestRate/systemServiceRate;
 		System.out.println("Total request rate: " +String.valueOf(serviceRate) + "  mu-total");
@@ -1611,7 +1690,7 @@ public class SimSettings {
 		if(maxCapPerNode % objectSize >0)
 			storedInNode += objectSize - maxCapPerNode % objectSize; //round up to fit all
 		int storage = (int)storedInNode;
-		int readRate = SimSettings.getInstance().getREADRATE();
+		int readRate = SimSettings.getInstance().getReadRate();
 		int taskProcessingMbps = SimSettings.getInstance().getTaskProcessingMbps();
 		int hostRadius = 2*SimSettings.getInstance().getHostRadius()+1; //such that each device in one node
 		int x_pos=hostRadius;

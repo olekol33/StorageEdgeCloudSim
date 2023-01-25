@@ -285,9 +285,6 @@ public class SimManager extends SimEntity {
 	}
 	//Oleg: create single task in mid sim run
 	public void createNewTask(TaskProperty newTask){
-//		List<TaskProperty> taskList = loadGeneratorModel.getTaskList();
-//		loadGeneratorModel.addTaskToList(newTask);
-//		TaskProperty lastTask = taskList.get(taskList.size() - 1);
 		schedule(getId(), 0, CREATE_TASK, newTask);
 	}
 
@@ -299,7 +296,6 @@ public class SimManager extends SimEntity {
 				try {
 					TaskProperty edgeTask = (TaskProperty) ev.getData();
 					mobileDeviceManager.submitTask(edgeTask);
-
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(0);

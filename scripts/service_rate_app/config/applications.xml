@@ -4,7 +4,7 @@
 	<application name="APP">
 		<usage_percentage>100</usage_percentage>
 <!--		<prob_cloud_selection>20</prob_cloud_selection>-->
-		<req_per_sec>20</req_per_sec>
+		<req_per_sec>8000</req_per_sec>
 		<active_period>60</active_period>
 		<idle_period>0</idle_period>
 		<data_upload>200</data_upload>

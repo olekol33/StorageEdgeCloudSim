@@ -5,6 +5,7 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.CpuUtilizationModel_Custom;
 import edu.boun.edgecloudsim.edge_client.Task;
+import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeVM;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.network.NetworkModel;
@@ -57,8 +58,9 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     private void decreaseParityProb(int hostID){
         double prevParityProb=parityProbVector.get(hostID);
         double parityProbStep = SimSettings.getInstance().getParityProbStep();
-        if(prevParityProb>=2*parityProbStep) {
-            prevParityProb = prevParityProb - 2 * parityProbStep;
+        int decreaseRate = 2;
+        if(prevParityProb >= decreaseRate*parityProbStep) {
+            prevParityProb = prevParityProb - decreaseRate * parityProbStep;
             prevParityProb = BigDecimal.valueOf(prevParityProb).setScale(3, RoundingMode.HALF_UP).doubleValue();
             parityProbVector.set(hostID, prevParityProb);
         }
@@ -70,8 +72,10 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     }
 
     private int selectNearestHostToRead(ArrayList<Integer> locations, Location deviceLocation) {
-        StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
-        return staticMobility.getNearestHost(locations, deviceLocation);
+        if (SimSettings.getInstance().isUserInNodes())
+            return deviceLocation.getServingWlanId();
+        else
+            return ((StaticRangeMobility)SimManager.getInstance().getMobilityModel()).getNearestHost(locations, deviceLocation);
     }
 
     private boolean isNodeInList(ArrayList<Integer> locations, int node){
@@ -83,14 +87,14 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     }
 
 
-    private int getHostWithShortestQueueForDevice(ArrayList<Integer> objectLocations) {
+    private int getHostWithShortestQueueForDevice(int srcNode, ArrayList<Integer> objectLocations) {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         double minQueueSize = Double.MAX_VALUE;
         int minQueueHost=-1;
         if (objectLocations.size()==1)
             return objectLocations.get(0);
         for(Integer host : objectLocations){
-            double queueSize = ((StorageNetworkModel) networkModel).getEdge2EdgeDelay(host);
+            double queueSize = ((StorageNetworkModel) networkModel).getEdge2EdgeDelay(srcNode, host);
             if (minQueueSize > queueSize) {
                 minQueueSize = queueSize;
                 minQueueHost = host;
@@ -100,7 +104,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     }
 
     //Returns node id with shortest queue (index 0) and queue size (index 1)
-    private Object[] getHostWithShortestQueue(List<Integer> locations) {
+    private Object[] getHostWithShortestQueue(int srcNode, List<Integer> locations) {
         Object[] returnValues = new Object[2];
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         int minQueuesize = Integer.MAX_VALUE;
@@ -110,11 +114,11 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         //only one location exists
         if (objectLocations.size()==1) {
             returnValues[0] = objectLocations.get(0);
-            returnValues[1] = ((StorageNetworkModel) networkModel).getEdge2EdgeDelay(objectLocations.get(0));
+            returnValues[1] = ((StorageNetworkModel) networkModel).getEdge2EdgeDelay(srcNode, objectLocations.get(0));
             return returnValues;
         }
         for(int i=0; i<objectLocations.size();i++){
-            int queueSize = (int)((StorageNetworkModel) networkModel).getEdge2EdgeDelay(objectLocations.get(i));
+            int queueSize = (int)((StorageNetworkModel) networkModel).getEdge2EdgeDelay(srcNode, objectLocations.get(i));
             if (minQueuesize > queueSize) {
                 minQueuesize = queueSize;
                 minQueueHost = i;
@@ -130,12 +134,11 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     @Override
     public EdgeVM selectVmOnHost(Task task) {
         EdgeVM selectedVM = null;
+        EdgeServerManager serverManager = SimManager.getInstance().getEdgeServerManager();
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
         List<Integer> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
-
         List<Integer> objectLocations = RedisListHandler.getObjectLocations(task.getObjectRead());
-
         for (int host : nonOperateHosts)
             objectLocations.remove(host);
         if (task.getIsParity()==1){
@@ -152,8 +155,9 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                             SimSettings.VM_TYPES.EDGE_VM.ordinal(),task);
                     return selectedVM;
                 }
-                int relatedHostId= getHostWithShortestQueueForDevice(operativeHosts);
-                List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+                int relatedHostId= getHostWithShortestQueueForDevice(task.getSubmittedLocation().getServingWlanId(), 
+                        operativeHosts);
+                List<EdgeVM> vmArray = serverManager.getVmList(relatedHostId);
                 selectedVM = vmArray.get(0);
             }
             else { //not parity
@@ -166,37 +170,29 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                     return selectedVM;
                 }
                 int relatedHostId;
-                if (isNodeInList(operativeHosts, deviceLocation.getServingWlanId()))
-                    relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
+                if (isNodeInList(operativeHosts, deviceLocation.getServingWlanId())) {
+                    relatedHostId = selectNearestHostToRead(operativeHosts, deviceLocation);
+                }
                 else
                     relatedHostId = -1;
                 //if not nearest host contains object or host is congested, read from it - read on grid
-//                if (relatedHostId!=deviceLocation.getServingWlanId() || queueSize >= SimSettings.getInstance().getManThreshold()){ //mind the threshold
                 if (relatedHostId!=deviceLocation.getServingWlanId()){ //if object not in the nearest host
                     //select host with min queue from grid
-                    relatedHostId = getHostWithShortestQueueForDevice(operativeHosts);
+                    relatedHostId = getHostWithShortestQueueForDevice(deviceLocation.getServingWlanId(), operativeHosts);
                     //always try to use parity if it's faster by a factor
                     task.setHostID(relatedHostId);
                     boolean parityGenerated = createParityTask(task, relatedHostId);
                     if (parityGenerated) {
                         //return null
                         SimLogger.getInstance().setHostId(task.getCloudletId(),relatedHostId);
-                        SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),SimSettings.VM_TYPES.EDGE_VM.ordinal(), task);
+                        SimLogger.getInstance().taskRejectedDueToPolicy(task.getCloudletId(), CloudSim.clock(),
+                                SimSettings.VM_TYPES.EDGE_VM.ordinal(), task);
                         return selectedVM;
                     }
                 }
-                List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+                List<EdgeVM> vmArray = serverManager.getVmList(relatedHostId);
                 selectedVM = vmArray.get(0);
             }
-        }
-        //if access point doesn't contain the object, pick one randomly
-        else if(policy.equalsIgnoreCase("NEAREST_HOST") || policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED")){
-            int relatedHostId= selectNearestHostToRead(operativeHosts,deviceLocation);
-            if (relatedHostId != deviceLocation.getServingWlanId()){
-                relatedHostId = randomlySelectHostToRead(operativeHosts);
-            }
-            List<EdgeVM> vmArray = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
-            selectedVM = vmArray.get(0);
         }
         else
         {
@@ -215,16 +211,10 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         List<Integer> nonOperateHosts = ((StorageNetworkModel) networkModel).getNonOperativeHosts();
         boolean replication=false;
-        boolean dataParity=false;
-        boolean coding=false;
         int numOfDataInStripe = SimSettings.getInstance().getNumOfDataInStripe();
         int numOfParityInStripe = SimSettings.getInstance().getNumOfParityInStripe();
         if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("REPLICATION_PLACE"))
             replication=true;
-        else if (SimManager.getInstance().getObjectPlacementPolicy().equalsIgnoreCase("DATA_PARITY_PLACE"))
-            dataParity=true;
-        else
-            coding=true;
         //If replication policy, read the same object, but mark it as parity
         if (replication) {
             List<Integer> objectLocations = RedisListHandler.getObjectLocations(task.getObjectRead());
@@ -250,21 +240,16 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 return true;
             }
         }
-        else if (dataParity || coding){
-//            String locations = RedisListHandler.getObjectLocations(task.getObjectRead());
+        else{
             List<Integer> objectLocations = RedisListHandler.getObjectLocations(task.getObjectRead());
-            Object[] result = getHostWithShortestQueue(objectLocations);
+            Object[] result = getHostWithShortestQueue(task.getSubmittedLocation().getServingWlanId(), objectLocations);
             objectMinQueueSizeHost = (int) result[0];
             objectMinQueueSize = (double) result[1];
-        }
-        else{
-            System.out.println("No policy found");
-            System.exit(1);
         }
         List<String[]> mdObjects = RedisListHandler.getObjects(task.getObjectRead());
         //no parities
         if (mdObjects==null)
-            return false;
+            throw new IllegalStateException("No stripe for data object " + task.getObjectRead());
         int mdObjectIndex;
         String[] minStripeObjects = new String[0];
         List<String> dataObjects = null;
@@ -274,7 +259,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             for (String[] stripe:mdObjects){ //for each stripe
                 ArrayList<String> stripeObjectsList = new ArrayList<>(Arrays.asList(stripe));
                 stripeObjectsList.remove(task.getObjectRead());
-                double stripeQueueSize = getStripeMaxQueueSize(stripeObjectsList,dataObjectLocation);
+                double stripeQueueSize = getStripeMaxQueueSize(task.getSubmittedLocation().getServingWlanId(),
+                        stripeObjectsList,dataObjectLocation);
                 if(stripeQueueSize<minStripeQueueSize && stripeQueueSize!=-1){ //compare queue size for each stripe
                     minStripeQueueSize=stripeQueueSize;
                     minStripeObjects=stripe;
@@ -312,16 +298,16 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 }
             }
             //get object from stripe with min queue
-            dataObjects = new ArrayList<String>(Arrays.asList(minStripeObjects).subList(0, numOfDataInStripe));
-            parityObjects = new ArrayList<String>(Arrays.asList(minStripeObjects).subList(numOfDataInStripe, minStripeObjects.length));
+            dataObjects = new ArrayList<>(Arrays.asList(minStripeObjects).subList(0, numOfDataInStripe));
+            parityObjects = new ArrayList<>(Arrays.asList(minStripeObjects).subList(numOfDataInStripe, minStripeObjects.length));
         }
         else { //There are inactive nodes
             boolean stripeFound=false;
             while (mdObjects.size() > 0) { //Check that stripe objects are available
                 mdObjectIndex = loadGeneratorModel.getParityRandom().nextInt(mdObjects.size());
                 String[] randomMdObject = mdObjects.get(mdObjectIndex);
-                dataObjects = new ArrayList<String>(Arrays.asList(randomMdObject).subList(0, numOfDataInStripe));
-                parityObjects = new ArrayList<String>(Arrays.asList(randomMdObject).subList(numOfDataInStripe, minStripeObjects.length));
+                dataObjects = new ArrayList<>(Arrays.asList(randomMdObject).subList(0, numOfDataInStripe));
+                parityObjects = new ArrayList<>(Arrays.asList(randomMdObject).subList(numOfDataInStripe, minStripeObjects.length));
                 List<String> stripeParities = Stream.concat(dataObjects.stream(), parityObjects.stream())
                         .collect(Collectors.toList());
                 stripeParities.remove(task.getObjectRead());
@@ -361,16 +347,16 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
     }
 
     //Returns min queue size for stripe
-    private double getStripeMaxQueueSize(ArrayList<String> stripeObjects, int dataObjectLocation){
+    private double getStripeMaxQueueSize(int srcNode, ArrayList<String> stripeObjects, int dataObjectLocation){
         double stripeQueueSize=0;
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         for (String objectID:stripeObjects){ //For each stripe object
             List<Integer> objectLocations = RedisListHandler.getObjectLocations(objectID);
             double objectQueueSize=Double.MAX_VALUE;
-            for (int location:objectLocations){  //for each object location
-                double queue = ((StorageNetworkModel) networkModel).getEdge2EdgeDelay(location);
+            for (int objLocation:objectLocations){  //for each object location
+                double queue = ((StorageNetworkModel) networkModel).getEdge2EdgeDelay(srcNode, objLocation);
                 //if min host so far and not dataObjectLocation
-                if(queue<objectQueueSize && location != dataObjectLocation){
+                if(queue<objectQueueSize && objLocation != dataObjectLocation){
                     objectQueueSize=queue;
                 }
             }
@@ -429,7 +415,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
     @Override
     public Vm getVmToOffload(Task task, int deviceId) {
-        Vm selectedVM = null;
+/*        Vm selectedVM = null;
 
         if(deviceId == SimSettings.CLOUD_DATACENTER_ID){
             //Select VM on cloud devices via Least Loaded algorithm!
@@ -447,10 +433,12 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 }
             }
         }
-        else
+        else {
             selectedVM = selectVmOnHost(task);
+        }*/
 
-        return selectedVM;
+        return selectVmOnHost(task);
+
     }
 
     public String getPolicy() {
