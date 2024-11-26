@@ -637,6 +637,8 @@ class EdgeQueue{
     }
 
     double getQueueDownloadDelay(int objectLocation, double dataSize, int readOnGrid, int userLocation) {
+        DecimalFormat df5 = new DecimalFormat();
+        df5.setMaximumFractionDigits(5);
         double propagationDelay = readOnGrid * SimSettings.getInstance().getInternalLanDelay();
         dataSize /= SimSettings.getInstance().getObjectSize();
         hostTotalTaskSize[objectLocation] += dataSize;
@@ -653,7 +655,6 @@ class EdgeQueue{
             return -1;
         }
         double averageHostTotalTaskSize = (hostTotalTaskSize[objectLocation] + previousHostTotalTaskSize[objectLocation]) / 2;
-//        double result = calculateMM1(propagationDelay, mu, previousHostTotalTaskSize[objectLocation]);
         double result = calculateMM1(propagationDelay, mu, averageHostTotalTaskSize);
         numOfTasks++;
 
@@ -661,14 +662,16 @@ class EdgeQueue{
         if (result > SimSettings.getInstance().getQueueTimeout()) {
             numOfFails++;
             hostTotalTaskSize[objectLocation] -= dataSize;
+            if (objectLocation != userLocation)
+                failedFromRemote[objectLocation]++;
+            else
+                failedFromLocal[objectLocation]++;
             result = -1;
         }
         return result;
     }
 
     private void setLatestDelay(int srcNode, int dstNode, double result, boolean isQueueFull){
-        double guardBandSize = 0.2;
-        double guardBand = guardBandSize * mu;
         double backoffValue = 100;
         if (isQueueFull)
             latestDelay[srcNode][dstNode] = backoffValue;
@@ -677,22 +680,6 @@ class EdgeQueue{
                 latestDelay[srcNode][dstNode] = SimSettings.getInstance().getQueueTimeout();
             latestDelay[srcNode][dstNode] = (latestDelay[srcNode][dstNode] + result) / 2;
         }
-    }
-
-    private double getTotalCurrentTaskSize(){
-        return Arrays.stream(hostTotalTaskSize).sum();
-    }
-
-    private double getMedianTaskSizeInHost(){
-        double median;
-        if (hostTotalTaskSize.length % 2 == 0) {
-            // If the length of the array is even, the median is the average of the two middle elements
-            median = (hostTotalTaskSize[hostTotalTaskSize.length / 2 - 1] + hostTotalTaskSize[hostTotalTaskSize.length / 2]) / 2;
-        } else {
-            // If the length of the array is odd, the median is the middle element
-            median = hostTotalTaskSize[hostTotalTaskSize.length / 2];
-        }
-        return median;
     }
 
     //scaled version of little's law - use num of objects for queue (scale by object size)

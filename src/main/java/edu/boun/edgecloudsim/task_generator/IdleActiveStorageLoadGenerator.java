@@ -89,7 +89,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         parityRandom.setSeed(ObjectGenerator.getSeed());
         taskList = new ArrayList<TaskProperty>();
 
-//        ObjectGenerator OG = new ObjectGenerator(objectPlacementPolicy);
         ObjectGenerator OG = SimManager.getInstance().getObjectGenerator();
         resetSimulationFailed();
 
@@ -142,9 +141,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     SimLogger.printLine("Impossible has occurred! interval is " + interval + " for device " + i + " time " + virtualTime);
                     continue;
                 }
-                //SimLogger.printLine(virtualTime + " -> " + interval + " for device " + i + " time ");
                 virtualTime += interval;
-                //if activePeriod has passed, wait (add idlePeriod)
                 if(virtualTime > activePeriodStartTime + activePeriod){
                     activePeriodStartTime = activePeriodStartTime + activePeriod + idlePeriod;
                     virtualTime = activePeriodStartTime;
@@ -152,7 +149,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                 }
                 String objectID="";
                 if(SimSettings.getInstance().isNsfExperiment()) {
-                    //odd/even tasks will read only odd/even objects
                     while (true){
                         objectID = OG.getDataObjectID();
                         int objectNum = Integer.parseInt(objectID.replaceAll("[^\\d.]", ""));
@@ -172,8 +168,14 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
                     String dist = SimSettings.getInstance().getObjectDistRead();
                     int currentIteration = SimSettings.getInstance().getCurrentServiceRateIteration();
                     int objectNum=-1;
-                    if(SimSettings.getInstance().getRequestedObjectLocation()==0) //non-location-based draw
-                        objectNum = objectRanks[currentIteration][OG.getObjectID(SimSettings.getInstance().getNumOfDataObjects(), "objects", dist)];
+                    if(SimSettings.getInstance().getRequestedObjectLocation()==0) { //non-location-based draw
+                        int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+                        if (SimSettings.getInstance().isMapLargeObjectInputToSmall())
+                            numOfDataObjects = OG.getNumOfLargeObjectSet();
+                        objectNum = objectRanks[currentIteration][OG.getObjectID(numOfDataObjects, "objects", dist)];
+                        if (SimSettings.getInstance().isMapLargeObjectInputToSmall())
+                            objectNum = OG.getLarge2smallMap(objectNum);
+                    }
                     else
                         objectNum = locationBasedPlacement(i,OG);
                     objectID = "d" + objectNum;
@@ -574,11 +576,14 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
 
     //Creates n permutations of size numOfDataObjects
     private void createZipfPermutations(int n){
+        ObjectGenerator OG = SimManager.getInstance().getObjectGenerator();
         if(n==0)
             n++;
         Random DynamicZipfRandom = new Random();
         DynamicZipfRandom.setSeed(SimSettings.getInstance().getRandomSeed());
         int numOfDataObjects = SimSettings.getInstance().getNumOfDataObjects();
+        if (SimSettings.getInstance().isMapLargeObjectInputToSmall())
+            numOfDataObjects = OG.getNumOfLargeObjectSet();
         objectRanks = new int[n][numOfDataObjects];
 
         for (int i=0;i<n;i++){

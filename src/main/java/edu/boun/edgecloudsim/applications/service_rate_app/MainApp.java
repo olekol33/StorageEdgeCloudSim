@@ -223,6 +223,8 @@ public class MainApp {
 			double reqsPerSec = lambdaGenerator.sample();
 			reqsPerSec = Math.round(Math.abs(reqsPerSec)); //half-gaussian
 			SS.setPoissonInTaskLookUpTable(0,1/reqsPerSec);
+//			if (i!=3)
+//				continue;
 			for(int p=0;p<SS.getObjectPlacement().length;p++) {
 				objectPlacementPolicy = SS.getObjectPlacement()[p];
 
@@ -303,9 +305,6 @@ public class MainApp {
 						tasksPerInterval = IdleActiveStorageLoadGenerator.getNumOfValidIOTasks();
 						MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
 						failedTasksPerInterval = ((StorageMobileDeviceManager) mobileDeviceManager).getValidFailed();
-//						tasksPerInterval = numOfIOTasks;
-//						failedTasksPerInterval = validFailed;
-//						SimSettings.getInstance().setTasksInInterval(0, numOfIOTasks, validFailed);
 					}
 					SimLogger.appendToFile(serviceRateFileBW, objectDemandVector + "," + policy + "," +
 							SS.getReqRatePerSec() + "," + SS.getServedReqsPerSec() + "," + i + "," + interval + "," +
@@ -313,7 +312,6 @@ public class MainApp {
 				}
 				Date ScenarioEndDate = Calendar.getInstance().getTime();
 				now = df.format(ScenarioEndDate);
-//				System.exit(0);
 				SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
 				SimLogger.printLine("----------------------------------------------------------------------");
 				serviceRateFileBW.close();

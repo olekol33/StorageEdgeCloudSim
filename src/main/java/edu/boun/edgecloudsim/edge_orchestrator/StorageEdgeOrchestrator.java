@@ -288,8 +288,8 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
             else { //create parity only if queue lower
                 increaseParityProb(dataObjectLocation);
                 double randomVal = random.nextDouble();
-                //if uniformly not in parityProb - rerun same task again (mark as parity to avoid same node usage)
                 if(randomVal>parityProbVector.get(dataObjectLocation)){
+//                if(randomVal>parityProbVector.get(dataObjectLocation)){
                     TaskProperty newTask = new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
                             task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getLength(),
                             task.getHostID());

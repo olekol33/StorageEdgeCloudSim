@@ -7,9 +7,9 @@
             <wlan_id>0</wlan_id>
         </location>
         <host>
-            <storage>960000</storage>
-            <readRate>149760000</readRate>
-            <taskProcessingMbps>2500</taskProcessingMbps>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
         </host>
     </datacenter>
     <datacenter>
@@ -19,9 +19,9 @@
             <wlan_id>1</wlan_id>
         </location>
         <host>
-            <storage>960000</storage>
-            <readRate>149760000</readRate>
-            <taskProcessingMbps>2500</taskProcessingMbps>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
         </host>
     </datacenter>
     <datacenter>
@@ -31,9 +31,9 @@
             <wlan_id>2</wlan_id>
         </location>
         <host>
-            <storage>960000</storage>
-            <readRate>149760000</readRate>
-            <taskProcessingMbps>2500</taskProcessingMbps>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
         </host>
     </datacenter>
     <datacenter>
@@ -43,9 +43,9 @@
             <wlan_id>3</wlan_id>
         </location>
         <host>
-            <storage>960000</storage>
-            <readRate>149760000</readRate>
-            <taskProcessingMbps>2500</taskProcessingMbps>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
         </host>
     </datacenter>
     <datacenter>
@@ -55,9 +55,9 @@
             <wlan_id>4</wlan_id>
         </location>
         <host>
-            <storage>960000</storage>
-            <readRate>149760000</readRate>
-            <taskProcessingMbps>2500</taskProcessingMbps>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
         </host>
     </datacenter>
     <datacenter>
@@ -67,9 +67,57 @@
             <wlan_id>5</wlan_id>
         </location>
         <host>
-            <storage>960000</storage>
-            <readRate>149760000</readRate>
-            <taskProcessingMbps>2500</taskProcessingMbps>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
+        </host>
+    </datacenter>
+    <datacenter>
+        <location>
+            <x_pos>147</x_pos>
+            <y_pos>147</y_pos>
+            <wlan_id>6</wlan_id>
+        </location>
+        <host>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
+        </host>
+    </datacenter>
+    <datacenter>
+        <location>
+            <x_pos>168</x_pos>
+            <y_pos>168</y_pos>
+            <wlan_id>7</wlan_id>
+        </location>
+        <host>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
+        </host>
+    </datacenter>
+    <datacenter>
+        <location>
+            <x_pos>189</x_pos>
+            <y_pos>189</y_pos>
+            <wlan_id>8</wlan_id>
+        </location>
+        <host>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
+        </host>
+    </datacenter>
+    <datacenter>
+        <location>
+            <x_pos>210</x_pos>
+            <y_pos>210</y_pos>
+            <wlan_id>9</wlan_id>
+        </location>
+        <host>
+            <storage>3968000</storage>
+            <readRate>0</readRate>
+            <taskProcessingMbps>99000</taskProcessingMbps>
         </host>
     </datacenter>
 </edge_devices>

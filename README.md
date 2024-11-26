@@ -1,114 +1,53 @@
-# EdgeCloudSim
+# StorageEdgeCloudSim
 
-EdgeCloudSim provides a simulation environment specific to Edge Computing scenarios where it is possible to conduct experiments that considers both computational and networking resources. EdgeCloudSim is based on CloudSim but adds considerable functionality so that it can be efficiently used for Edge Computing scenarios. EdgeCloudSim is an open source tool and any contributions are welcome. If you want to contribute EdgeCloudSim, please check below feature list and the [contributing guidelines](/CONTRIBUTING.md). If you want to use EdgeCloudSim in your research work, please cite our paper [[3]](https://onlinelibrary.wiley.com/doi/abs/10.1002/ett.3493).
+StorageEdgeCloudSim (SECS) provides a simulation environment for a edge storage scenario of N nodes hosting K users which generate requests at every time stamp. SECS was built upon EdgeCloudSim (see [README](/README_ECS.md)). The main goal of SECS is to evaluate the performance of edge storage systems under different scenarios.
+It was used as the main simulator in "Theory vs. practice in modeling edge storage systems", 2023 IEEE International Performance, Computing, and Communications Conference (IPCCC).
 
-## Discussion Forum
+## Structure
+### General Structure
+See EdgeCloudSim  [README](/README_ECS.md)  and [SECS Report](/SECS_Report.pd) for the detailed structure.
 
-The discussion forum for EdgeCloudSim can be found [here](https://groups.google.com/forum/#!forum/edgecloudsim).
-We hope to meet with all interested parties in this forum.
-Please feel free to join and let us discuss issues, share ideas related to EdgeCloudSim all togerther.
+SECS supports multiple scenarios, each defined as an application.
+The configuration files are stored in `scripts/<application>/config` folder. Main applications:
+- **service_rate_app:** The main scenario used for the paper to simulate requests inserted from an external source.
+- **NSF_BSF_app1:** The code used to generate "simulated" toy scenario for the paper (Fig. 6).
+- **param_scan_app:** Also code for toy scenario, probably older version of the code.
 
-## Needed Features
+External input files are located in `scripts/<application>/input_files`. 
 
-* Mist computing features (executing tasks on mobile device)
-* Incorporating cellular access network model into EdgeCloudSim (3G/4G/5G)
-* Task migration among the Edge or Cloud VMs
-* Energy consumption model for the mobile and edge devices as well as the cloud datacenters
-* Adding probabilistic network failure model by considering the congestion or other parameters such as the distance between mobile device and the WiFi access point.
-* Visual tool for displaying the network topology
-
-# EdgeCloudSim: An Environment for Performance Evaluation of Edge Computing Systems
-
-EdgeCloudSim provides a modular architecture to provide support for a variety of crucial functionalities such as network modeling specific to WLAN and WAN, device mobility model, realistic and tunable load generator. As depicted in Figure 2, the current EdgeCloudSim version has five main modules available: Core Simulation, Networking, Load Generator, Mobility and Edge Orchestrator. To ease fast prototyping efforts, each module contains a default implementation that can be easily extended.
-
-<p align="center">
-  <img src="/doc/images/edgecloudsim_diagram.png" width="55%">
-  <p align="center">
-    Figure 1: Relationship between EdgeCloudSim modules.
-  </p>
-</p>
-
-## Mobility Module
-The mobility module manages the location of edge devices and clients. Since CloudSim focuses on the conventional cloud computing principles, the mobility is not considered in the framework. In our design, each mobile device has x and y coordinates which are updated according to the dynamically managed hash table. By default, we provide a nomadic mobility model, but different mobility models can be implemented by extending abstract MobilityModel class.
-
-<p align="center">
-  <img src="/doc/images/mobility_module.png" width="55%">
-</p>
-
-## Load Generator Module
-The load generator module is responsible for generating tasks for the given configuration. By default, the tasks are generated according to a Poisson distribution via active/idle task generation pattern. If other task generation patterns are required, abstract LoadGeneratorModel class should be extended.
-
-<p align="center">
-  <img src="/doc/images/task_generator_module.png" width="50%">
-</p>
-
-## Networking Module
-The networking module particularly handles the transmission delay in the WLAN and WAN by considering both upload and download data. The default implementation of the networking module is based on a single server queue model. Users of EdgeCloudSim can incorporate their own network behavior models by extending abstract NetworkModel class.
-
-<p align="center">
-  <img src="/doc/images/network_module.png" width="55%">
-</p>
-
-## Edge Orchestrator Module
-The edge orchestrator module is the decision maker of the system. It uses the information collected from the other modules to decide how and where to handle incoming client requests. In the first version, we simply use a probabilistic approach to decide where to handle incoming tasks, but more realistic edge orchestrator can be added by extending abstract EdgeOrchestrator class.
-
-<p align="center">
-  <img src="/doc/images/edge_orchestrator_module.png" width="65%">
-</p>
-
-## Core Simulation Module
-The core simulation module is responsible for loading and running the Edge Computing scenarios from the configuration files. In addition, it offers a logging mechanism to save the simulation results into the files. The results are saved in comma-separated value (CSV) data format by default, but it can be changed to any format.
-
-## Extensibility
-EdgeCloudSim uses a factory pattern making easier to integrate new models mentioned above. As shown in Figure 2, EdgeCloudsim requires a scenario factory class which knows the creation logic of the abstract modules. If you want to use different mobility, load generator, networking and edge orchestrator module, you can use your own scenario factory which provides the concrete implementation of your custom modules.
-
-<p align="center">
-  <img src="/doc/images/class_diagram.png" width="100%">
-  <p align="center">
-    Figure 2: Class Diagram of Important Modules
-  </p>
-</p>
-
-## Ease of Use
-At the beginning of our study, we observed that too many parameters are used in the simulations and managing these parameters programmatically is difficult.
-As a solution, we propose to use configuration files to manage the parameters.
-EdgeCloudSim reads parameters dynamically from the following files:
-- **config.properties:** Simulation settings are managed in configuration file
+### Configuration Files
+- **default_config.properties:** Simulation settings are managed in configuration file
 - **applications.xml:** Application properties are stored in xml file
 - **edge_devices.xml:** Edge devices (datacenters, hosts, VMs etc.) are defined in xml file
 
-<p align="center">
-  <img src="/doc/images/ease_of_use.png" width="60%">
-</p>
+The latter two are not used when external input files are inserted.
 
-## Compilation and Running
-To compile sample application, *compile.sh* script which is located in *scripts/sample_application* folder can be used. You can rewrite similar script for your own application by modifying the arguments of javac command in way to declare the java file which includes your main method. Please note that this script can run on Linux based systems, including Mac OS. You can also use your favorite IDE (eclipse, netbeans etc.) to compile your project.
+### Input Files
+- **devices.csv:** Defines users (devices) in the system. A CSV with the format `deviceName,xPos,yPos,time`. `time` is not used in the simulator.
+- **nodes.csv:** Defines edge storage nodes in the system. A CSV with the format `nodeName,xPos,yPos,serviceClass,capacity,serviceRate`.  Only `nodeName,xPos,yPos` are used in the simulator. SECS uses the coordinated to associate each device to the nearest node. `capacity,serviceRate` are overridden in runtime.
+- **objects.csv:**: Defines the objects that can be requested by devices and stored in the nodes. A CSV with the format `objectName,size,locationVector,locationProbVector,class,popularityShare`. Only name and size are relevant.
+- **requests.csv:** Maps requests from devices to objects, each with a time stamp and a unique ID. A CSV with the format `deviceName,time,object,ioTaskID,taskPriority,taskDeadline`.
 
-In order to run multiple sample_application scenarios in parallel, you can use *run_scenarios.sh* script which is located in *scripts/sample_application* folder. To run your own application, modify the java command in *runner.sh* script in a way to declare the java class which includes your main method. The details of using this script is explained in [this](/wiki/How-to-run-EdgeCloudSim-application-in-parallel) wiki page.
-
-You can also monitor each process via the output files located under *scripts/sample_application/output/date* folder. For example:
+Activate this mode in the configuration file:
 ```
-./run_scenarios.sh 8 10
-tail -f output/date/ite_1.log
+external_nodes_input=true
+external_devices_input=true
+external_objects_input=true
+external_requests_input=true
 ```
 
-## Analyzing the Results
-At the end of each iteration, simulation results will be compressed in the *output/date/ite_n.tgz* files. When you extract these tgz files, you will see lots of log file in csv format. You can find matlab files which can plot graphics by using these files under *scripts/sample_application/matlab* folder. You can also write other scripts (e.g. python scripts) with the same manner of matlab plotter files.
+See explanation below on generating these files.
 
-## Example Output of EdgeCloudSim
-You can plot lots of graphics by using the result of EdgeCloudSim. Some examples are given below:
+### Execution
+To execute the code, run `MainApp` for the relevant application under `src.main.java.edu.boun.edgecloudsim.applications` 
 
-![Alt text](/doc/images/result1.png?raw=true) ![Alt text](/doc/images/result2.png?raw=true)
+### Results
+Written to `sim_results`. `ite1` contains the run dump, usually used for debug.
+`service_rate` contains service rate results for the main application by redundancy policy (coding/replication).
+- **PLACEMENT.csv:** Contains the placement of objects in the nodes. Has the header `object1,object2,node`. When `object2` is indicated, this represents a coding object (`object1+object2`), otherwise `object1` indicates a data object.
+- **DEMAND.csv:** Contains the service rate for each object. Header is `<object_enumeration>,type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval,simServiceCost,completed`. The main indicator is `completed` which shows the iterations that completed successfully (indicating load was managable).
 
-![Alt text](/doc/images/result4.png?raw=true) ![Alt text](/doc/images/result5.png?raw=true)
 
-![Alt text](/doc/images/result6.png?raw=true) ![Alt text](/doc/images/result3.png?raw=true)
+## Generating Input Files
+TODO
 
-![Alt text](/doc/images/result7.png?raw=true) ![Alt text](/doc/images/result8.png?raw=true)
-
-## Publications
-**[1]** C. Sonmez, A. Ozgovde and C. Ersoy, "[EdgeCloudSim: An environment for performance evaluation of Edge Computing systems](http://ieeexplore.ieee.org/document/7946405/)," *2017 Second International Conference on Fog and Mobile Edge Computing (FMEC)*, Valencia, 2017, pp. 39-44.
-
-**[2]** C. Sonmez, A. Ozgovde and C. Ersoy, "[Performance evaluation of single-tier and two-tier cloudlet assisted applications](http://ieeexplore.ieee.org/document/7962674/)," *2017 IEEE International Conference on Communications Workshops (ICC Workshops)*, Paris, 2017, pp. 302-307.
-
-**[3]** Sonmez C, Ozgovde A, Ersoy C. "[EdgeCloudSim: An environment for performance evaluation of Edge Computing systems](https://onlinelibrary.wiley.com/doi/abs/10.1002/ett.3493)," *Transactions on Emerging Telecommunications Technologies*, 2018;e3493.

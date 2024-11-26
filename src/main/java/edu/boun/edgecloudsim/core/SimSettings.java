@@ -222,6 +222,7 @@ public class SimSettings {
 	private boolean EXTERNAL_DEVICES_INPUT;
 	private boolean EXTERNAL_OBJECTS_INPUT;
 	private boolean EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV;
+	private boolean MAP_LARGE_OBJECT_INPUT_TO_SMALL;
 	private boolean EXTERNAL_REQUESTS_INPUT;
 	private boolean EXPORT_RUN_FILES;
 	private boolean TEST_USING_INT;
@@ -480,6 +481,9 @@ public class SimSettings {
 				EXTERNAL_DEVICES_INPUT = Boolean.parseBoolean(prop.getProperty("external_devices_input"));
 				EXTERNAL_OBJECTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_objects_input"));
 				EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV = Boolean.parseBoolean(prop.getProperty("external_objects_input_from_placement_csv"));
+				MAP_LARGE_OBJECT_INPUT_TO_SMALL = Boolean.parseBoolean(prop.getProperty("map_large_object_input_to_small"));
+				if (MAP_LARGE_OBJECT_INPUT_TO_SMALL)
+					EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV = false;
 				EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
 				EXPORT_RUN_FILES = Boolean.parseBoolean(prop.getProperty("export_run_files"));
 				TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
@@ -1170,6 +1174,14 @@ public class SimSettings {
 	public boolean isExternalObjectsFromPlacementCSV(){
 		return EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV;
 	}
+	public boolean isMapLargeObjectInputToSmall(){
+		return MAP_LARGE_OBJECT_INPUT_TO_SMALL;
+	}
+
+	public boolean getExternalObjectLocationCSV(){
+		return (EXTERNAL_OBJECTS_INPUT_FROM_PLACEMENT_CSV || MAP_LARGE_OBJECT_INPUT_TO_SMALL);
+	}
+
 	public boolean isExternalRequests(){
 		return EXTERNAL_REQUESTS_INPUT;
 	}
@@ -1221,11 +1233,16 @@ public class SimSettings {
 	}
 
 	public String getPathOfObjectsCsvFile(boolean coding){
+		String suffix = "ORBIT";
+		if (SimSettings.getInstance().isMapLargeObjectInputToSmall())
+			suffix = "LARGE";
 		if(OBJECTS_DIRECT_PATH.equals("")) {
 			if (coding)
-				return "scripts/" + rundir+ "/input_files/SIMRESULT_SERVICE_RATE_CODING_PLACE_PLACEMENT_ORBIT.csv";
+				return "scripts/" + rundir+ "/input_files/SIMRESULT_SERVICE_RATE_CODING_PLACE_PLACEMENT_" + suffix +
+						".csv";
 			else
-				return "scripts/" + rundir+ "/input_files/SIMRESULT_SERVICE_RATE_REPLICATION_PLACE_PLACEMENT_ORBIT.csv";
+				return "scripts/" + rundir+ "/input_files/SIMRESULT_SERVICE_RATE_REPLICATION_PLACE_PLACEMENT_" + suffix
+						+".csv";
 		}else{
 			return OBJECTS_DIRECT_PATH;
 		}

@@ -1,11 +1,9 @@
 package edu.boun.edgecloudsim.mobility;
 
 import edu.boun.edgecloudsim.core.SimSettings;
-import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.StorageDevice;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
-//import edu.boun.edgecloudsim.utils.deviceProperty;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -15,7 +13,6 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 
-//changed by Harel
 
 public class StaticRangeMobility extends MobilityModel {
     private List<TreeMap<Double, Location>> treeMapArray;
@@ -33,7 +30,6 @@ public class StaticRangeMobility extends MobilityModel {
         DCLocationArray = new HashMap<>();
         staticLocationHash = new HashMap<>();
 
-//        ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
 
         //create random number generator for each place
         Random random = new Random();
@@ -159,31 +155,12 @@ public class StaticRangeMobility extends MobilityModel {
 
     //In case location is updated (mostly for host update) - only static
     public void setLocation(int deviceId, Location deviceLocation) {
-//        Map.Entry<Double, Location> e = treeMap.floorEntry(time);
         treeMapArray.get(deviceId).put(SimSettings.CLIENT_ACTIVITY_START_TIME, deviceLocation);
-
-/*        if(e == null){
-            SimLogger.printLine("impossible is occured! no location is found for the device '" + deviceId + "' at " + time);
-            System.exit(0);
-        }
-
-        return e.getValue();*/
     }
+
 //    public static Location getDCLocation(int DatacenterId) {
     //TODO: remove this wrapper
     public Location getDCLocation(int DatacenterId) {
-/*        Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
-        NodeList datacenterList = doc.getElementsByTagName("datacenter");
-        Node datacenterNode = datacenterList.item(DatacenterId);
-        Element datacenterElement = (Element) datacenterNode;
-        Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
-        String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-        int placeTypeIndex = Integer.parseInt(attractiveness);
-        int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
-        int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
-        int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-
-        return new Location(placeTypeIndex, wlan_id, x_pos, y_pos);*/
         return DCLocationArray.get(DatacenterId);
     }
 
@@ -194,8 +171,6 @@ public class StaticRangeMobility extends MobilityModel {
             Node datacenterNode = datacenterList.item(DatacenterId);
             Element datacenterElement = (Element) datacenterNode;
             Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
-//            String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-//            int placeTypeIndex = Integer.parseInt(attractiveness);
             int placeTypeIndex = 0;
             int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
             int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
@@ -205,22 +180,6 @@ public class StaticRangeMobility extends MobilityModel {
         }
 
     }
-
-/*    private void createDCLocationList(){
-        Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
-        NodeList datacenterList = doc.getElementsByTagName("datacenter");
-        for (int i =0; i<SimSettings.getInstance().getNumOfEdgeDatacenters() ; i++){
-            Node datacenterNode = datacenterList.item(i);
-            Element datacenterElement = (Element) datacenterNode;
-            Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
-            String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-            int placeTypeIndex = Integer.parseInt(attractiveness);
-            int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
-            int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
-            int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-            dcLocations.add(new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
-        }
-    }*/
 
     //If device in range of host - returns host location. If not, returns nearest access point.
     public Location getAccessPoint(Location deviceLocation, Location hostLocation){
@@ -267,14 +226,6 @@ public class StaticRangeMobility extends MobilityModel {
 
     //Returns euclidean distance assuming slot size is 100m
     public static double getEuclideanDistance(Location srcLocation, Location destLocation){
-/*        //size of box in grid
-        double boxSizeMeters = 100; //meters
-        double boxSizeGrid = 6; //max box size in grid
-        int xDist = Math.abs(srcLocation.getXPos()-destLocation.getXPos());
-        int yDist = Math.abs(srcLocation.getYPos()-destLocation.getYPos());
-        double xyDistance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2));
-        double gridDistanceUnit = boxSizeMeters / boxSizeGrid;
-        return xyDistance*gridDistanceUnit;*/
         double xDist = Math.abs(srcLocation.getXPos()-destLocation.getXPos());
         double yDist = Math.abs(srcLocation.getYPos()-destLocation.getYPos());
         double xyDistance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2));
@@ -295,36 +246,6 @@ public class StaticRangeMobility extends MobilityModel {
             double r = distance /steadySignalRange;
             return 1/Math.pow(r,n);
         }
-    }
-/*    public static double getDistance(Location srcLocation, Location destLocation){
-        double x0 = 0;
-        double x1 = 100;
-        //devided y by 2 compared to paper
-        double y0 = 100;
-        double y1 = 5;
-        double m = (y0-y1) / (x0-x1);
-        return getEuclideanDistance(srcLocation,destLocation);
-    }*/
-    public static void logDistanceDegradation(Location srcLocation, Location destLocation, double distance, double degradation) throws FileNotFoundException {
-        String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_DISTANCE_DEGRADATION.log";
-        File f = new File(savestr);
-
-        PrintWriter out = null;
-        if ( f.exists() && !f.isDirectory() ) {
-            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
-        }
-        else {
-            out = new PrintWriter(savestr);
-            out.append("srcX;srcY;dstX;dstY;distance;degradation");
-            out.append("\n");
-        }
-
-        out.append(srcLocation.getXPos()+ SimSettings.DELIMITER +srcLocation.getYPos()+ SimSettings.DELIMITER +destLocation.getXPos()+ SimSettings.DELIMITER +
-                destLocation.getYPos()+ SimSettings.DELIMITER +distance+ SimSettings.DELIMITER +degradation);
-        out.append("\n");
-
-
-        out.close();
     }
 
 
@@ -373,15 +294,12 @@ public class StaticRangeMobility extends MobilityModel {
         //When one host in range it's the only element in the list
         if (hosts.size()==1) {
             Location host = getDCLocation(hosts.get(0));
-//            Location host = dcLocations.get(hosts.get(0));
             return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
         }
         //When several hosts in range, take nearest
         else {
             Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
-//            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
             return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
-//            return host;
         }
     }
 
@@ -408,9 +326,7 @@ public class StaticRangeMobility extends MobilityModel {
         //When several hosts in range, take nearest
         else {
             Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,(int)s1.getxPos(),(int)s1.getyPos())));
-//            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
             return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), (int)s1.getxPos(), (int)s1.getyPos(),hosts);
-//            return host;
         }
     }
 
@@ -420,41 +336,7 @@ public class StaticRangeMobility extends MobilityModel {
      * @return
      */
     private Location orbitPlaceDevice(int host){
-/*        //get grid size
-        int xRange = SimSettings.getInstance().getXRange();
-        int yRange = SimSettings.getInstance().getYRange();
-        int xPos = 0;
-        int yPos = 0;
-        List<Integer> hosts = new ArrayList<Integer>();
-//        Location deviceLocation;
-        int host = host.nextInt(SimSettings.getInstance().getNumOfEdgeDatacenters());
-        hosts.add(host);
-        Location deviceLocation = getDCLocation(host);
-        return new Location(deviceLocation.getPlaceTypeIndex(), deviceLocation.getServingWlanId(), xPos, yPos,hosts);*/
         return getDCLocation(host);
-
-
-        //Initialize list of hosts in proximity of device
-/*        while (hosts.size() == 0){
-            xPos = random.nextInt(xRange)+1;
-            yPos = random.nextInt(yRange)+1;
-            deviceLocation = new Location(0,0,xPos,yPos);
-            //Returns list of hosts for which device is in range
-            hosts = checkLegalPlacement(deviceLocation);
-        }
-        //When one host in range it's the only element in the list
-        if (hosts.size()==1) {
-            Location host = getDCLocation(hosts.get(0));
-//            Location host = dcLocations.get(hosts.get(0));
-            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
-        }
-        //When several hosts in range, take nearest
-        else {
-            Location host = getDCLocation(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
-//            Location host = dcLocations.get(getNearestHost(hosts, new Location(0,0,xPos,yPos)));
-            return new Location(host.getPlaceTypeIndex(), host.getServingWlanId(), xPos, yPos,hosts);
-//            return host;
-        }*/
     }
 
 
