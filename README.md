@@ -22,7 +22,8 @@ External input files are located in `scripts/<application>/input_files`.
 
 The latter two are not used when external input files are inserted.
 
-### Input Files
+### service_rate_app
+#### Input Files
 - **devices.csv:** Defines users (devices) in the system. A CSV with the format `deviceName,xPos,yPos,time`. `time` is not used in the simulator.
 - **nodes.csv:** Defines edge storage nodes in the system. A CSV with the format `nodeName,xPos,yPos,serviceClass,capacity,serviceRate`.  Only `nodeName,xPos,yPos` are used in the simulator. SECS uses the coordinated to associate each device to the nearest node. `capacity,serviceRate` are overridden in runtime.
 - **objects.csv:**: Defines the objects that can be requested by devices and stored in the nodes. A CSV with the format `objectName,size,locationVector,locationProbVector,class,popularityShare`. Only name and size are relevant.
@@ -38,15 +39,28 @@ external_requests_input=true
 
 See explanation below on generating these files.
 
-### Execution
-To execute the code, run `MainApp` for the relevant application under `src.main.java.edu.boun.edgecloudsim.applications` 
-
-### Results
+#### Results
 Written to `sim_results`. `ite1` contains the run dump, usually used for debug.
 `service_rate` contains service rate results for the main application by redundancy policy (coding/replication).
 - **PLACEMENT.csv:** Contains the placement of objects in the nodes. Has the header `object1,object2,node`. When `object2` is indicated, this represents a coding object (`object1+object2`), otherwise `object1` indicates a data object.
 - **DEMAND.csv:** Contains the service rate for each object. Header is `<object_enumeration>,type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval,simServiceCost,completed`. The main indicator is `completed` which shows the iterations that completed successfully (indicating load was managable).
 
+### NSF_BSF_app1
+Output written to `sim_results/ite1`. Parses generate file to determine for each lambda1, lambda2 tuple if run completed or not. For example: `SIMRESULT_<lam1>_<lam2_SINGLE_TIER_IF_CONGESTED_READ_PARITY_CODING_PLACE_6DEVICES_TASK_FAILED` indicates failed, while `SIMRESULT_<lam1>_<lam2_SINGLE_TIER_IF_CONGESTED_READ_PARITY_CODING_PLACE_6DEVICES_NODE_QUEUE` indicates completed.
+
+
+## Building and Running
+### Build
+SECS uses Maven for build. `pom.xml` contains the dependencies and build instructions.
+The compiled app is set under `mainClass` in `pom.xml`.
+
+### Running
+
+1. Download the code and (optionally) import it to your IDE
+2. Install and use Java 11
+3. Running the code:
+- (From IDE) Run `MainApp` for the relevant application under `src.main.java.edu.boun.edgecloudsim.applications`
+- (From terminal) Run `mvn clean install` to build the project. Copy `StorageEdgeCloudSim.jar` from `target/` to main dir, then run `java -jar StorageEdgeCloudSim.jar`
 
 ## Generating Input Files
 TODO

@@ -268,7 +268,7 @@ public class MainApp {
 					SimManager manager = new SimManager(sampleFactory, users, simScenario, orchestratorPolicy, objectPlacementPolicy);
 
 					// Storage: Generate Redis KV list
-					RedisListHandler.closeConnection();
+//					RedisListHandler.closeConnection();
 					RedisListHandler.createList(objectPlacementPolicy);
 
 					// Start simulation
@@ -320,31 +320,9 @@ public class MainApp {
 
 
 		// Remove KV list
-		RedisListHandler.closeConnection();
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 		SimLogger.measureDuration(startTime, "Total runtime");
-		//touch to mark run has finished
-/*		String hostname = "Unknown";
-		try
-		{
-			InetAddress addr;
-			addr = InetAddress.getLocalHost();
-			hostname = addr.getHostName();
-		}
-		catch (UnknownHostException ex)
-		{
-			System.out.println("Hostname can not be resolved");
-		}
-		try
-		{
-			File file = new File(outputFolder+"/done_"+hostname);
-			if (!file.exists())
-				new FileOutputStream(file).close();
-		}
-		catch (IOException e)
-		{
-		}*/
 	}
 }

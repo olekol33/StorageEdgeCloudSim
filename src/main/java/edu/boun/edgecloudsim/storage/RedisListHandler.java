@@ -42,18 +42,15 @@ public class RedisListHandler {
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis
     public static void createList(String objectPlacementPolicy){
-        Jedis jedis = new Jedis(localhost, 6379);
         OG = SimManager.getInstance().getObjectGenerator();
-//        for (Map<String,String> KV : OG.getListOfObjects())
-//            jedis.hmset("object:"+KV.get("id"),KV);
-//        jedis.close();
-        SimLogger.print("Created Redis KV with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
+        SimLogger.print("Created with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
     }
 
     //Takes list from ObjectGenerator and creates KV pairs in Redis for specific host
     public static void orbitCreateList(String objectPlacementPolicy, String currentHost){
         Jedis jedis;
+        closeConnection();
         jedis = new Jedis(localhost, 6379);
 
         OG = new ObjectGenerator(objectPlacementPolicy);
@@ -68,15 +65,8 @@ public class RedisListHandler {
                 locationsSet.add(st.nextToken());
             if (locationsSet.contains(currentHost))
                 jedis.hmset("object:" + KV.get("id"), KV);
-//            jedis.expire("object:" + KV.get("id"),100000);
         }
         jedis.close();
-/*        try {
-            OG.listObjectInSystem();
-        }
-        catch (Exception e){
-            System.out.println("Failed to generate object list");
-        }*/
 
         SimLogger.print("Created Redis KV on host: " + currentHost + " with stripes: " + numOfStripes +" , Data objects: " + numOfDataObjects +
                 ", in each stripe: " + numOfDataInStripe + " + " + numOfParityInStripe + "\n");
@@ -94,30 +84,15 @@ public class RedisListHandler {
     public static void closeConnection(){
         Jedis jedis = new Jedis(localhost, 6379);
         jedis.flushAll();
-//        jedis.shutdown();
         jedis.quit();
     }
     //Get key list by pattern
     public static List<String[]> getObjects(String objectID){
         return OG.getMdObjectHash(objectID);
-/*        List<String> listOfObjects = new ArrayList<>();
-        List<String> mdObjects = OG.getMdObjectNames();
-        for(String object:mdObjects){
-            if(object.contains(objectID+"_"))
-                listOfObjects.add(object);
-        }
-        return listOfObjects;*/
-
-
     }
 
     public static String getObjectLocationsFromMetadata(String hostname, String[] mdObjectID, String readObjectID){
         throw new UnsupportedOperationException("Should use this");
-/*        Jedis jedis = new Jedis(hostname, 6379);
-        String locations =  jedis.hget(mdObjectID,readObjectID);
-        jedis.close();
-        return locations;*/
-
     }
 
     public static List<Integer> getObjectLocations(String objectID){

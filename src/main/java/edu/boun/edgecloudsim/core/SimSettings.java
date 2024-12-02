@@ -382,8 +382,6 @@ public class SimSettings {
 				WARM_UP_PERIOD = (double)60 * Double.parseDouble(prop.getProperty("warm_up_period")); //seconds
 				MM1_QUEUE_MODEL_UPDATE_INTERVAL = Double.parseDouble(prop.getProperty("mm1_queue_model_update_interval")); //seconds
 				REQUEST_PROCESSING_TIME = Double.parseDouble(prop.getProperty("request_processing_time")); //seconds
-//				INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_load_check_interval")); //seconds
-//				INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * Double.parseDouble(prop.getProperty("vm_location_check_interval")); //seconds
 				INTERVAL_TO_GET_VM_LOAD_LOG = (double)60 * 0.1; //seconds
 				INTERVAL_TO_GET_VM_LOCATION_LOG = (double)60 * 0.1; //seconds
 				FILE_LOG_ENABLED = toBoolean(prop.getProperty("file_log_enabled"));
