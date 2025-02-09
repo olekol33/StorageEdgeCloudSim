@@ -24,6 +24,8 @@ The latter two are not used when external input files are inserted.
 
 ### service_rate_app
 #### Input Files
+<mark>Note: input files are to be used only when external input is required (i.e., non-synthetic dataset). Otherwise, disable all.</mark>
+
 - **devices.csv:** Defines users (devices) in the system. A CSV with the format `deviceName,xPos,yPos,time`. `time` is not used in the simulator.
 - **nodes.csv:** Defines edge storage nodes in the system. A CSV with the format `nodeName,xPos,yPos,serviceClass,capacity,serviceRate`.  Only `nodeName,xPos,yPos` are used in the simulator. SECS uses the coordinated to associate each device to the nearest node. `capacity,serviceRate` are overridden in runtime.
 - **objects.csv:**: Defines the objects that can be requested by devices and stored in the nodes. A CSV with the format `objectName,size,locationVector,locationProbVector,class,popularityShare`. Only name and size are relevant.

@@ -948,7 +948,9 @@ public class ObjectGenerator {
     }
 
     private void mapObjectToLargeSet(int object, int host){
-        int aggregatedObjects = (int) (replicationCsvPlace.size() / SimSettings.getInstance().getNumOfDataObjects());
+        if (!SimSettings.getInstance().getExternalObjectLocationCSV())
+            return;
+        int aggregatedObjects = (replicationCsvPlace.size() / SimSettings.getInstance().getNumOfDataObjects());
         if (!SimSettings.getInstance().isMapLargeObjectInputToSmall())
             return;
         List<Integer> hostsObjects = host2largeObjectInput.get(host);
