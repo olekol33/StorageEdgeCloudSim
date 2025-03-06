@@ -10,8 +10,7 @@ See EdgeCloudSim  [README](/README_ECS.md)  and [SECS Report](/SECS_Report.pd) f
 SECS supports multiple scenarios, each defined as an application.
 The configuration files are stored in `scripts/<application>/config` folder. Main applications:
 - **service_rate_app:** The main scenario used for the paper to simulate requests inserted from an external source.
-- **NSF_BSF_app1:** The code used to generate "simulated" toy scenario for the paper (Fig. 6).
-- **param_scan_app:** Also code for toy scenario, probably older version of the code.
+- **lambda_scan_app:** The code used to generate "simulated" toy scenario for the paper (Fig. 6).
 
 External input files are located in `scripts/<application>/input_files`. 
 
@@ -47,7 +46,7 @@ Written to `sim_results`. `ite1` contains the run dump, usually used for debug.
 - **PLACEMENT.csv:** Contains the placement of objects in the nodes. Has the header `object1,object2,node`. When `object2` is indicated, this represents a coding object (`object1+object2`), otherwise `object1` indicates a data object.
 - **DEMAND.csv:** Contains the service rate for each object. Header is `<object_enumeration>,type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval,simServiceCost,completed`. The main indicator is `completed` which shows the iterations that completed successfully (indicating load was managable).
 
-### NSF_BSF_app1
+### lambda_scan_app
 Output written to `sim_results/ite1`. Parses generate file to determine for each lambda1, lambda2 tuple if run completed or not. For example: `SIMRESULT_<lam1>_<lam2_SINGLE_TIER_IF_CONGESTED_READ_PARITY_CODING_PLACE_6DEVICES_TASK_FAILED` indicates failed, while `SIMRESULT_<lam1>_<lam2_SINGLE_TIER_IF_CONGESTED_READ_PARITY_CODING_PLACE_6DEVICES_NODE_QUEUE` indicates completed.
 
 
@@ -64,6 +63,4 @@ The compiled app is set under `mainClass` in `pom.xml`.
 - (From IDE) Run `MainApp` for the relevant application under `src.main.java.edu.boun.edgecloudsim.applications`
 - (From terminal) Run `mvn clean install` to build the project. Copy `StorageEdgeCloudSim.jar` from `target/` to main dir, then run `java -jar StorageEdgeCloudSim.jar`
 
-## Generating Input Files
-TODO
 
