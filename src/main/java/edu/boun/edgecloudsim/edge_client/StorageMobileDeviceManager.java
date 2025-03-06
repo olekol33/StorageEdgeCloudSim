@@ -178,7 +178,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
         switch (ev.getTag()) {
             case UPDATE_MM1_QUEUE_MODEL:
             {
-                ((SampleNetworkModel)networkModel).updateMM1QueeuModel();
+                ((SampleNetworkModel)networkModel).updateMM1QueueModel();
                 schedule(getId(), MM1_QUEUE_MODEL_UPDATE_INTERVAL, UPDATE_MM1_QUEUE_MODEL);
                 break;
             }
@@ -358,8 +358,6 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
             double delay = networkModel.getDownloadDelay(task.getAssociatedHostId(), task.getMobileDeviceId(), task);
             if (delay == ((StorageNetworkModel) networkModel).MAN_DELAY)
                 delayType = SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY;
-//            EdgeHost host = (EdgeHost)(SimManager.getInstance().getEdgeServerManager().
-//                    getDatacenterList().get(task.getAssociatedHostId()).getHostList().get(0));
 
             if(delay < 0 && delayType != SimSettings.NETWORK_DELAY_TYPES.MAN_DELAY) { //access point is full in this case, no point to continue
                 SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), delayType, task);
@@ -421,10 +419,7 @@ public class StorageMobileDeviceManager extends SampleMobileDeviceManager {
                     else
                         fail="NOFAIL";
                     Pattern pattern;
-                    if (SimSettings.getInstance().isOverheadScan())
-                        pattern = Pattern.compile("SIMRESULT_(.*)_OH.*");
-                    else
-                        pattern = Pattern.compile("SIMRESULT_(.*)_SINGLE.*");
+                    pattern = Pattern.compile("SIMRESULT_(.*)_SINGLE.*");
                     Matcher matcher = pattern.matcher(SimLogger.getInstance().getFilePrefix());
                     matcher.find();
                     SimManager.getInstance().setLambda0(Double.valueOf(matcher.group(1)));

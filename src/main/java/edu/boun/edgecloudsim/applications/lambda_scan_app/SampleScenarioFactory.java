@@ -8,7 +8,7 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.applications.NSF_BSF_app1;
+package edu.boun.edgecloudsim.applications.lambda_scan_app;
 
 import edu.boun.edgecloudsim.cloud_server.CloudServerManager;
 import edu.boun.edgecloudsim.cloud_server.DefaultCloudServerManager;
@@ -22,7 +22,6 @@ import edu.boun.edgecloudsim.edge_orchestrator.StorageEdgeOrchestrator;
 import edu.boun.edgecloudsim.edge_server.DefaultEdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
-import edu.boun.edgecloudsim.mobility.StaticMobility;
 import edu.boun.edgecloudsim.mobility.StaticRangeMobility;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.network.StorageNetworkModel;

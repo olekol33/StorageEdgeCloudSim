@@ -242,7 +242,6 @@ public class StorageNetworkModel extends SampleNetworkModel {
 
 
         //cloud server to mobile device
-        //TODO: update for cloud
         if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
             assert true; //do nothing
         }
@@ -343,32 +342,8 @@ public class StorageNetworkModel extends SampleNetworkModel {
         out.close();
     }
 
-    //Logs queue in all hosts in each interval
-    public void logManQueue() throws FileNotFoundException {
-        String savestr = SimLogger.getInstance().getOutputFolder()+ "/" + SimLogger.getInstance().getFilePrefix() + "_MAN_QUEUE.log";
-        File f = new File(savestr);
-
-        PrintWriter out = null;
-        if ( f.exists() && !f.isDirectory() ) {
-            out = new PrintWriter(new FileOutputStream(new File(savestr), true));
-        }
-        else {
-            out = new PrintWriter(savestr);
-            out.append("Time;HostID;Requests");
-            out.append("\n");
-        }
-        DecimalFormat df1 = new DecimalFormat();
-        df1.setMaximumFractionDigits(1);
-        for (int i=0;i<SimSettings.getInstance().getNumOfEdgeHosts();i++){
-            out.append(df1.format(CloudSim.clock()) + SimSettings.DELIMITER + Integer.toString(i)
-                    + SimSettings.DELIMITER + Integer.toString(manHostClients[i]));
-            out.append("\n");
-        }
-        out.close();
-    }
-
     @Override
-    public void updateMM1QueeuModel(){
+    public void updateMM1QueueModel(){
         double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
         int numOfEdgeDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
         lastMM1QueeuUpdateTime = CloudSim.clock();
@@ -377,7 +352,6 @@ public class StorageNetworkModel extends SampleNetworkModel {
         try {
             if (SimSettings.getInstance().isStorageLogEnabled()) {
                 logNodeQueue();
-//                logManQueue();
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -435,7 +409,6 @@ public class StorageNetworkModel extends SampleNetworkModel {
         totalManTaskInputSize = 0;
         numOfManTaskForUpload = 0;
 
-        //TODO: use a function for Man and wlan
         if(numOfWlanTaskForDownload != 0){
             wlanPoissonMeanForDownload = lastInterval / (numOfWlanTaskForDownload / (double)numberOfMobileDevices);
             avgWlanTaskOutputSize = totalWlanTaskOutputSize / numOfWlanTaskForDownload;
@@ -548,34 +521,21 @@ public class StorageNetworkModel extends SampleNetworkModel {
             SimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
             System.exit(0);
         }
-/*        if((100<CloudSim.clock()) && (CloudSim.clock()<105))
-            System.out.println(hostIndex);*/
-
-//		System.out.println("Users in " + accessPointLocation.getServingWlanId() + ": " + wlanClients[accessPointLocation.getServingWlanId()]); //TO remove
     }
 
     public int getWlanQueueSize(int hostID){
         return wlanClients[hostID];
     }
 
-    public int getWanQueueSize(int hostID) {
-        return wanClients[hostID];
-    }
-
-    public int getManQueueSize(int hostID) {
-        return manHostClients[hostID];
-    }
 
     /** Get queue size in input to remote edge node
      * No need to check MAN delay because it's on node output -> identical to all sent requests
      * Calculate by current queue size (and not previous) to get more updated result
      */
     public double getEdge2EdgeDelay(int srcNode, int dstNode){
-        if (SimSettings.getInstance().isQueueOracle())
-            return wlanQueue.getHostTotalTaskSize(dstNode);
-        else
-            return wlanQueue.getLatestDelay(srcNode, dstNode) + manQueue.getLatestDelay(srcNode, dstNode);
+        return wlanQueue.getLatestDelay(srcNode, dstNode) + manQueue.getLatestDelay(srcNode, dstNode);
     }
+
     public List<Integer> getNonOperativeHosts() {
         List<Integer> nonOperativeHosts = new ArrayList<>();
         if(!SimSettings.getInstance().isHostFailureScenario())
@@ -592,7 +552,6 @@ class EdgeQueue{
     protected double[] hostTotalTaskSize;
     protected int[] failedFromRemote;
     protected int[] failedFromLocal;
-    protected int[] hostOperativity;
 
     protected double[] previousHostTotalTaskSize;
     protected double[][] latestDelay;
@@ -700,12 +659,6 @@ class EdgeQueue{
             }
         }
         numOfTasks = 0;
-/*        if(CloudSim.clock()>=60 && CloudSim.clock()<61){
-            System.out.println("Failed from remote " + Arrays.stream(failedFromRemote).sum() +
-                    ", failed from local " + Arrays.stream(failedFromLocal).sum());
-        }*/
-//        Arrays.fill(failedFromRemote, 0);
-//        Arrays.fill(failedFromLocal, 0);
     }
 
 }

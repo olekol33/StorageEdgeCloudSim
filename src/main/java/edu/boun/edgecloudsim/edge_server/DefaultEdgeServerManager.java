@@ -103,24 +103,8 @@ public class DefaultEdgeServerManager extends EdgeServerManager{
 				Node hostNode = hostNodeList.item(j);
 				Element hostElement = (Element) hostNode;
 				NodeList vmNodeList = hostElement.getElementsByTagName("VM");
-				//Oleg: single VM in host
-//				for (int k = 0; k < vmNodeList.getLength(); k++) {
 				for (int k = 0; k < 1; k++) {
-					Node vmNode = vmNodeList.item(k);
-					Element vmElement = (Element) vmNode;
-
-//					String vmm = vmElement.getAttribute("vmm");
-//					int numOfCores = Integer.parseInt(vmElement.getElementsByTagName("core").item(0).getTextContent());
-//					double mips = Double.parseDouble(vmElement.getElementsByTagName("mips").item(0).getTextContent());
-//					int ram = Integer.parseInt(vmElement.getElementsByTagName("ram").item(0).getTextContent());
-//					int readRate = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
-//					int taskProcessingTimeUS = Integer.parseInt(vmElement.getElementsByTagName("taskProcessingTimeUS").item(0).getTextContent());
-//					int readRate = Integer.parseInt(vmElement.getElementsByTagName("readRate").item(0).getTextContent());
-//					long storage = Long.parseLong(vmElement.getElementsByTagName("storage").item(0).getTextContent());
-//					long bandwidth = SimSettings.getInstance().getWlanBandwidth() / (hostNodeList.getLength()+vmNodeList.getLength());
 					int numOfCores = 1;
-//					double mips = Integer.MAX_VALUE;
-					//used to set next event to half of time between event checks (Datacenter.java)
 					double mips = 1/SimSettings.getInstance().getRequestProcessingTime();
 					int ram = Integer.MAX_VALUE;
 					String vmm = null;

@@ -48,6 +48,28 @@ public class SimSettings {
 
 	//enumarations for the VM types
 	public enum VM_TYPES { MOBILE_VM, EDGE_VM, CLOUD_VM }
+
+//	public enum REDUNDANCY_TYPES { CODING, REPLICATION, BOTH }
+	public enum REDUNDANCY_TYPES {
+		CODING(0, new String[]{"CODING_PLACE"}),
+		REPLICATION(1, new String[]{"REPLICATION_PLACE"}),
+		BOTH(2, new String[]{"CODING_PLACE", "REPLICATION_PLACE"});
+
+		private final int number;
+		private final String[] values;
+
+	REDUNDANCY_TYPES(int number, String[] values) {
+			this.number = number;
+			this.values = values;
+		}
+
+		public static String[] getValuesByNumber(int num) {
+			for (REDUNDANCY_TYPES e : values()) if (e.number == num) return e.values;
+			System.out.println("ERROR: REDUNDANCY_TYPES not found");
+			System.exit(1);
+			return new String[]{};
+		}
+	}
 	
 	//enumarations for the VM types
 	public enum NETWORK_DELAY_TYPES { WLAN_DELAY, MAN_DELAY, WAN_DELAY }
@@ -77,21 +99,16 @@ public class SimSettings {
     private boolean DEEP_FILE_LOG_ENABLED; //boolean to check deep file logging option
 	private boolean STORAGE_LOG_ENABLED;
 	private boolean TERMINATE_FAILED_RUN; //boolean to check deep file logging option
-	private boolean COUNT_FAILEDDUETOINACCESSIBILITY;
 
 	private boolean USER_IN_NODES;
-	private boolean SCALE_MM1;
 	private boolean APPLY_SIGNAL_ATTENUATION;
 
-	private boolean MEASURE_FUNCTION_TIME;
-	private boolean QUEUE_ORACLE;
-	private boolean OVERHEAD_SCAN;
+	private boolean MEASURE_SIMULATION_RUNTIME;
 	private ArrayList<Boolean> SIMULATION_FAILED;
 	private ArrayList<Integer> TASKS_IN_INTERVAL;
 	private ArrayList<Integer> FAILED_TASKS_IN_INTERVAL;
 
 	private boolean SERVICE_RATE_SCAN;
-	private boolean SR_EXP_SAME_OVERHEAD;
 
 	private File SERVICE_RATE_PATH;
 
@@ -104,7 +121,7 @@ public class SimSettings {
 	private BufferedWriter serviceRateFileBW;
 	private double FAIL_THRESHOLD;
 	private double codingRepReqRatio;
-	private double REQUEST_RATE_PERCENTAGE_OF_CAPACITY;
+	private double REQUEST_RATE_UTILIZATION;
 
 
 	private double OVERHEAD_SCAN_STD;
@@ -118,13 +135,10 @@ public class SimSettings {
 	private int READRATE;
 	private int SERVED_REQS_PER_SEC;
 
-	private double SIM2ORBIT_READRATE_RATIO;
-
 	private int TASKPROCESSINGMBPS;
 
 
-	private int MIN_NUM_OF_MOBILE_DEVICES;
-    private int MAX_NUM_OF_MOBILE_DEVICES;
+	private int NUM_OF_MOBILE_DEVICES;
     private int MOBILE_DEVICE_COUNTER_SIZE;
 	private int THIS_MOBILE_DEVICE;
 
@@ -133,14 +147,12 @@ public class SimSettings {
     private int NUM_OF_EDGE_VMS;
     private int NUM_OF_PLACE_TYPES;
     
-    private double WAN_PROPOGATION_DELAY; //seconds unit in properties file
     private double LAN_INTERNAL_DELAY; //seconds unit in properties file
     private double QUEUE_TIMEOUT; //seconds unit in properties file
 	private double DELAY_TO_USER;
 
     private int BANDWITH_WLAN; //Mbps unit in properties file
     private int BANDWITH_WAN; //Mbps unit in properties file
-//    private int BANDWITH_GSM; //Mbps unit in properties file
 
     private int NUM_OF_HOST_ON_CLOUD_DATACENTER;
     private int NUM_OF_VM_ON_CLOUD_HOST;
@@ -149,19 +161,11 @@ public class SimSettings {
     private int RAM_FOR_CLOUD_VM; //MB
 	private int STORAGE_FOR_CLOUD_VM; //Byte
     
-//    private int CORE_FOR_VM;
-//    private int MIPS_FOR_VM; //MIPS
-//    private int RAM_FOR_VM; //MB
-//    private int STORAGE_FOR_VM; //Byte
-    
-    private String[] SIMULATION_SCENARIOS;
-    private String[] ORCHESTRATOR_POLICIES;
 
-	private String[] OBJECT_PLACEMENT;
 
-	private String currentObjectPlacementPolicy;
+	private int REDUNDANCY_POLICY_ENUM;
+	private String[] REDUNDANCY_POLICY;
 
-	private String[] FAIL_SCENARIOS;
 
     // mean waiting time (minute) is stored for each place types
     private double[] mobilityLookUpTable;
@@ -177,8 +181,6 @@ public class SimSettings {
 	private Boolean HOT_COLD_UNIFORM;
 	private String[] HOT_COLD_OBJECTS;
 	private String[] HOT_COLD_POPULARITY;
-	private int CONGESTED_THRESHOLD;
-	private int TRACE_INTERVAL_DURATION;
 	private double PARITY_PROB_STEP;
 
 //	private int MAX_CLOUD_REQUESTS;
@@ -189,9 +191,6 @@ public class SimSettings {
 	private double ZIPF_EXPONENT;
 	private int NUM_OF_DATA_OBJECTS;
 	private int NUM_OF_STRIPES;
-	private int NUM_OF_DATA_IN_STRIPE;
-	private int NUM_OF_PARITY_IN_STRIPE;
-	private double REDUNDANCY_SHARE;
 	private String objectRequestRateArray;
 	private ArrayList<String> objectDemandIntervalVector;
 	private int reqRatePerSec;
@@ -205,15 +204,10 @@ public class SimSettings {
 	private String HOST_FAILURE_ID;
 	private double HOST_FAILURE_TIME;
 
-	private boolean VARIABILITY_RUN;
-	private boolean SPLIT_DEMAND_VECTOR;
-	private boolean MMPP;
-	private int VARIABILITY_ITERATIONS;
 
 
 	//ORBIT
 	private boolean ORBIT_MODE;
-	private boolean SIMULATE_ORBIT_MODE;
 	private boolean PARAM_SCAN_MODE;
 
 	//Input properties
@@ -226,9 +220,6 @@ public class SimSettings {
 	private boolean EXTERNAL_REQUESTS_INPUT;
 	private boolean EXPORT_RUN_FILES;
 	private boolean TEST_USING_INT;
-	private boolean SMOOTH_EXTERNAL_REQUESTS;
-	private boolean AVOID_SPIKES_IN_EXTERNAL_REQUESTS;
-	private double AVOID_SPIKES_UTILIZATION;
 	private String NODES_DIRECT_PATH;
 	private String DEVICES_DIRECT_PATH;
 	private String OBJECTS_DIRECT_PATH;
@@ -389,17 +380,11 @@ public class SimSettings {
 				STORAGE_LOG_ENABLED = toBoolean(prop.getProperty("storage_log_enabled"));
 				TERMINATE_FAILED_RUN = toBoolean(prop.getProperty("terminate_failed_run"));
 				USER_IN_NODES = toBoolean(prop.getProperty("user_in_nodes"));
-				SCALE_MM1 = toBoolean(prop.getProperty("scale_mm1"));
-				COUNT_FAILEDDUETOINACCESSIBILITY = toBoolean(prop.getProperty("count_failedDueToInaccessibility"));
 				APPLY_SIGNAL_ATTENUATION = toBoolean(prop.getProperty("applySignalAttenuation"));
-				MEASURE_FUNCTION_TIME = toBoolean(prop.getProperty("measure_function_time"));
-				QUEUE_ORACLE = toBoolean(prop.getProperty("queue_oracle"));
-				OVERHEAD_SCAN = toBoolean(prop.getProperty("overhead_scan"));
-				SERVICE_RATE_SCAN = toBoolean(prop.getProperty("service_rate_scan"));
-				SR_EXP_SAME_OVERHEAD = toBoolean(prop.getProperty("sr_exp_same_overhead"));
+				MEASURE_SIMULATION_RUNTIME = toBoolean(prop.getProperty("measure_simulation_runtime"));
 				SHIFT_DEVICE_LOCATION = toBoolean(prop.getProperty("shift_device_location"));
-				SIM2ORBIT_READRATE_RATIO = Double.parseDouble(prop.getProperty("sim2orbit_readrate_ratio"));
-
+				SERVICE_RATE_SCAN = toBoolean(prop.getProperty("service_rate_scan"));
+//				NSF_EXPERIMENT = toBoolean(prop.getProperty("lam_scan_exp"));
 				//Generate edge devices xml
 				GEN_EDGE_DEVICES_XML = toBoolean(prop.getProperty("gen_edge_devices_xml"));
 				if(isGenEdgeDevicesXML()) {
@@ -408,25 +393,11 @@ public class SimSettings {
 					TASKPROCESSINGMBPS = Integer.parseInt(prop.getProperty("taskProcessingMbps"));
 				}
 
-				MIN_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("min_number_of_mobile_devices"));
-				MAX_NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("max_number_of_mobile_devices"));
-				MOBILE_DEVICE_COUNTER_SIZE = Integer.parseInt(prop.getProperty("mobile_device_counter_size"));
-
-				WAN_PROPOGATION_DELAY = Double.parseDouble(prop.getProperty("wan_propogation_delay"));
-				LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("lan_internal_delay"));
+				NUM_OF_MOBILE_DEVICES = Integer.parseInt(prop.getProperty("num_of_mobile_devices"));
+				LAN_INTERNAL_DELAY = Double.parseDouble(prop.getProperty("network_delay"));
 				QUEUE_TIMEOUT = Double.parseDouble(prop.getProperty("queue_timeout"));
 				DELAY_TO_USER = Double.parseDouble(prop.getProperty("delay_to_user"));
 				FAIL_THRESHOLD = Double.parseDouble(prop.getProperty("fail_threshold"));
-//				BANDWITH_WLAN = 1000 * Integer.parseInt(prop.getProperty("wlan_bandwidth"));
-//				BANDWITH_WAN = 1000 * Integer.parseInt(prop.getProperty("wan_bandwidth"));
-//				BANDWITH_GSM =  1000 * Integer.parseInt(prop.getProperty("gsm_bandwidth"));
-
-//				NUM_OF_HOST_ON_CLOUD_DATACENTER = Integer.parseInt(prop.getProperty("number_of_host_on_cloud_datacenter"));
-//				NUM_OF_VM_ON_CLOUD_HOST = Integer.parseInt(prop.getProperty("number_of_vm_on_cloud_host"));
-//				CORE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("core_for_cloud_vm"));
-//				MIPS_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("mips_for_cloud_vm"));
-//				RAM_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("ram_for_cloud_vm"));
-//				STORAGE_FOR_CLOUD_VM = Integer.parseInt(prop.getProperty("storage_for_cloud_vm"));
 				BANDWITH_WLAN = 1000 * 300;
 				BANDWITH_WAN = 1000 * 20;
 				NUM_OF_HOST_ON_CLOUD_DATACENTER = 1;
@@ -436,34 +407,22 @@ public class SimSettings {
 				RAM_FOR_CLOUD_VM = 128000;
 				STORAGE_FOR_CLOUD_VM = 4000000;
 
-//				RAM_FOR_VM = Integer.parseInt(prop.getProperty("ram_for_mobile_vm"));
-//				CORE_FOR_VM = Integer.parseInt(prop.getProperty("core_for_mobile_vm"));
-//				MIPS_FOR_VM = Integer.parseInt(prop.getProperty("mips_for_mobile_vm"));
-//				STORAGE_FOR_VM = Integer.parseInt(prop.getProperty("storage_for_mobile_vm"));
 
-				ORCHESTRATOR_POLICIES = prop.getProperty("orchestrator_policies").split(",");
-
-				SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
-				OBJECT_PLACEMENT = prop.getProperty("object_placement").split(",");
-				FAIL_SCENARIOS = prop.getProperty("fail_scenarios").split(",");
+				REDUNDANCY_POLICY_ENUM = Integer.parseInt(prop.getProperty("redundancy_policy"));
+				REDUNDANCY_POLICY = SimSettings.REDUNDANCY_TYPES.getValuesByNumber(REDUNDANCY_POLICY_ENUM);
 
 				HOST_FAILURE_SCENARIO = toBoolean(prop.getProperty("host_failure_scenario"));
-				DYNAMIC_FAILURE = toBoolean(prop.getProperty("dynamic_failure"));
+				DYNAMIC_FAILURE = toBoolean(prop.getProperty("probabilistic_failure"));
 				HOST_FAILURE_ID = prop.getProperty("host_failure_id");
 				HOST_FAILURE_TIME = (double)60 * Double.parseDouble(prop.getProperty("host_failure_time")); //seconds;
 
 				ORBIT_MODE = toBoolean(prop.getProperty("orbit_mode"));
-				SIMULATE_ORBIT_MODE = toBoolean(prop.getProperty("simulate_orbit_mode"));
-				VARIABILITY_RUN = toBoolean(prop.getProperty("variability_run"));
-				SPLIT_DEMAND_VECTOR = toBoolean(prop.getProperty("split_demand_vector"));
-				MMPP = toBoolean(prop.getProperty("mmpp"));
-				VARIABILITY_ITERATIONS = Integer.parseInt(prop.getProperty("variability_iterations"));
 				NUM_OF_EDGE_DATACENTERS = Integer.parseInt(prop.getProperty("number_of_edge_datacenters"));
 
 				if(SERVICE_RATE_SCAN) {
 					rundir = "service_rate_app";
 					SERVICE_RATE_ITERATIONS = Integer.parseInt(prop.getProperty("service_rate_iterations"));
-					REQUEST_RATE_PERCENTAGE_OF_CAPACITY = Double.parseDouble(prop.getProperty("request_rate_percentage_of_capacity"));
+					REQUEST_RATE_UTILIZATION = Double.parseDouble(prop.getProperty("request_rate_utilization"));
 					OVERHEAD_SCAN_MEAN_RATIO = Double.parseDouble(prop.getProperty("overhead_scan_mean_ratio"));
 					OVERHEAD_SCAN_STD = Double.parseDouble(prop.getProperty("overhead_scan_std"));
 					REQUESTED_OBJECT_LOCATION = Integer.parseInt(prop.getProperty("requested_object_location"));
@@ -485,12 +444,6 @@ public class SimSettings {
 				EXTERNAL_REQUESTS_INPUT = Boolean.parseBoolean(prop.getProperty("external_requests_input"));
 				EXPORT_RUN_FILES = Boolean.parseBoolean(prop.getProperty("export_run_files"));
 				TEST_USING_INT = Boolean.parseBoolean(prop.getProperty("test_using_int"));
-				SMOOTH_EXTERNAL_REQUESTS = Boolean.parseBoolean(prop.getProperty("smooth_external_requests"));
-				AVOID_SPIKES_IN_EXTERNAL_REQUESTS = Boolean.parseBoolean(prop.getProperty("avoid_spikes_in_external_requests"));
-				AVOID_SPIKES_UTILIZATION = Double.parseDouble(prop.getProperty("avoid_spikes_utilization"));
-				if (SMOOTH_EXTERNAL_REQUESTS && AVOID_SPIKES_IN_EXTERNAL_REQUESTS)
-					throw new IllegalStateException("Can't support SMOOTH_EXTERNAL_REQUESTS and" +
-							" AVOID_SPIKES_IN_EXTERNAL_REQUESTS ");
 				NODES_DIRECT_PATH = prop.getProperty("nodes_direct_path");
 				DEVICES_DIRECT_PATH = prop.getProperty("devices_direct_path");
 				OBJECTS_DIRECT_PATH = prop.getProperty("objects_direct_path");
@@ -500,8 +453,9 @@ public class SimSettings {
 				serviceCost=0;
 
 
-				NSF_EXPERIMENT = toBoolean(prop.getProperty("nsf"));
-				if(NSF_EXPERIMENT) {
+				if(!SERVICE_RATE_SCAN) {
+					NSF_EXPERIMENT = true;
+					MOBILE_DEVICE_COUNTER_SIZE = Integer.parseInt(prop.getProperty("mobile_device_counter_size"));
 					RAID = Integer.parseInt(prop.getProperty("raid"));
 					LAMBDA0_MIN = Double.parseDouble(prop.getProperty("lambda0_min"));
 					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
@@ -513,9 +467,7 @@ public class SimSettings {
 					LAMBDA0_MAX = Double.parseDouble(prop.getProperty("lambda0_max"));
 					LAMBDA0_STEP = Double.parseDouble(prop.getProperty("lambda0_step"));
 				}
-				else{
-					REDUNDANCY_SHARE = Double.parseDouble(prop.getProperty("redundancy_share"));
-				}
+
 
 
 				X_RANGE = Integer.parseInt(prop.getProperty("x_range"));
@@ -525,19 +477,14 @@ public class SimSettings {
 				HOT_COLD_UNIFORM = toBoolean(prop.getProperty("hot_cold_uniform"));
 				if(HOT_COLD_UNIFORM) {
 					OBJECT_DIST_READ = "UNIFORM";
-					HOT_COLD_OBJECTS = prop.getProperty("hot_cold_objects").split(",");
-					HOT_COLD_POPULARITY = prop.getProperty("hot_cold_popularity").split(",");
+					HOT_COLD_OBJECTS = prop.getProperty("hot_to_cold_object_ratio").split(",");
+					HOT_COLD_POPULARITY = prop.getProperty("hot_to_cold_popularity_ratio").split(",");
 				}
 				OBJECT_DIST_PLACE = prop.getProperty("object_dist_place");
-				CONGESTED_THRESHOLD = Integer.parseInt(prop.getProperty("congested_threshold"));
 				PARITY_PROB_STEP = Double.parseDouble(prop.getProperty("parityProbStep"));
-				TRACE_INTERVAL_DURATION = Integer.parseInt(prop.getProperty("trace_interval_duration"));
-//				MAX_CLOUD_REQUESTS = Integer.parseInt(prop.getProperty("max_cloud_requests"));
 				RANDOM_SEED = Integer.parseInt(prop.getProperty("random_seed"));
 				ZIPF_EXPONENT = Double.parseDouble(prop.getProperty("zipf_exponent"));
 				NUM_OF_DATA_OBJECTS = Integer.parseInt(prop.getProperty("num_of_data_objects"));
-				NUM_OF_DATA_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_data_in_stripe"));
-				NUM_OF_PARITY_IN_STRIPE = Integer.parseInt(prop.getProperty("num_of_parity_in_stripe"));
 				NUM_OF_STRIPES = Integer.parseInt(prop.getProperty("num_of_stripes"));
 
 
@@ -548,17 +495,6 @@ public class SimSettings {
 				System.exit(1);
 			}
 
-
-//			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
-//			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
-//			double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
-			//mean waiting time (minute)
-//			mobilityLookUpTable = new double[]{
-//				place1_mean_waiting_time, //ATTRACTIVENESS_L1
-//				place2_mean_waiting_time, //ATTRACTIVENESS_L2
-//				place3_mean_waiting_time  //ATTRACTIVENESS_L3
-//		    };
-			
 
 		} catch (IOException ex) {
 			ex.printStackTrace();
@@ -574,32 +510,27 @@ public class SimSettings {
 		}
 		parseApplicatinosXML(applicationsFile);
 
-
-
 		//Service rate experiment
 		this.codingRepReqRatio=1;
-		if(SERVICE_RATE_SCAN && !SR_EXP_SAME_OVERHEAD) {
-			int basicNumberOfNodes = NUM_OF_EDGE_DATACENTERS;
-			System.out.println("Different overhead experiment");
-			if(!GEN_EDGE_DEVICES_XML || NUM_OF_EDGE_DATACENTERS != 6 || OBJECT_PLACEMENT.length>1 || OVERHEAD != 2)
-				throw new IllegalStateException("This mode currently not supported");
-//			if(OVERHEAD%1 != 0)
-//				throw new IllegalStateException("Overhead is not integer");
-//			int ecNodes = (int) (basicNumberOfNodes*((OVERHEAD/2)*1.5));
-			if(SimSettings.getInstance().getObjectPlacement()[0].equals("CODING_PLACE")) {
-				OVERHEAD = 1.5;
-				NUM_OF_STRIPES = NUM_OF_DATA_OBJECTS/2;
-			}
-			int ecNodes = (int) (basicNumberOfNodes*((1.5)));
-			int repNodes = (int) (basicNumberOfNodes*((OVERHEAD)));
-			this.codingRepReqRatio = (double)ecNodes/repNodes;
-			if(OBJECT_PLACEMENT[0].equals("CODING_PLACE")){
-				setNumOfEdgeDatacenters(ecNodes);
-			}
-			else if(OBJECT_PLACEMENT[0].equals("REPLICATION_PLACE")){
-				setNumOfEdgeDatacenters(repNodes);
-			}
-		}
+//		if(SERVICE_RATE_SCAN) {
+//			int basicNumberOfNodes = NUM_OF_EDGE_DATACENTERS;
+//			System.out.println("Different overhead experiment");
+//			if(!GEN_EDGE_DEVICES_XML || NUM_OF_EDGE_DATACENTERS != 6 || REDUNDANCY_POLICY.length>1 || OVERHEAD != 2)
+//				throw new IllegalStateException("This mode currently not supported");
+//			if(SimSettings.getInstance().getRedundancyPolicy()[0].equals("CODING_PLACE")) {
+//				OVERHEAD = 1.5;
+//				NUM_OF_STRIPES = NUM_OF_DATA_OBJECTS/2;
+//			}
+//			int ecNodes = (int) (basicNumberOfNodes*((1.5)));
+//			int repNodes = (int) (basicNumberOfNodes*((OVERHEAD)));
+//			this.codingRepReqRatio = (double)ecNodes/repNodes;
+//			if(REDUNDANCY_POLICY[0].equals("CODING_PLACE")){
+//				setNumOfEdgeDatacenters(ecNodes);
+//			}
+//			else if(REDUNDANCY_POLICY[0].equals("REPLICATION_PLACE")){
+//				setNumOfEdgeDatacenters(repNodes);
+//			}
+//		}
 
 
 
@@ -645,8 +576,7 @@ public class SimSettings {
 				devicesHashVector = deviceParser.prepareDevicesVector(getPathOfDevicesFile(), nodesReturn);
 				reversedHashDevicesVector = reverseHashDevices(devicesHashVector);
 				devicesVector = deviceParser.getDevicesVector();
-				MIN_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
-				MAX_NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
+				NUM_OF_MOBILE_DEVICES = devicesHashVector.size();
 			}catch (Exception e){
 				e.printStackTrace();
 			}
@@ -754,7 +684,8 @@ public class SimSettings {
 	 */
 	public double getWanPropogationDelay()
 	{
-		return WAN_PROPOGATION_DELAY;
+//		return WAN_PROPOGATION_DELAY;
+		return 0.1; //shouldn't be relevant, overridden by another function
 	}
 
 	/**
@@ -807,17 +738,9 @@ public class SimSettings {
 	/**
 	 * returns the minimum number of the mobile devices used in the simulation
 	 */
-	public int getMinNumOfMobileDev()
+	public int getNumOfMobileDev()
 	{
-		return MIN_NUM_OF_MOBILE_DEVICES;
-	}
-
-	/**
-	 * returns the maximunm number of the mobile devices used in the simulation
-	 */
-	public int getMaxNumOfMobileDev()
-	{
-		return MAX_NUM_OF_MOBILE_DEVICES;
+		return NUM_OF_MOBILE_DEVICES;
 	}
 
 	/**
@@ -931,7 +854,8 @@ public class SimSettings {
 	 */
 	public String[] getSimulationScenarios()
 	{
-		return SIMULATION_SCENARIOS;
+//		return SIMULATION_SCENARIOS;
+		return new String[]{"SINGLE_TIER"};  //Shouldn't change
 	}
 
 	/**
@@ -939,17 +863,15 @@ public class SimSettings {
 	 */
 	public String[] getOrchestratorPolicies()
 	{
-		return ORCHESTRATOR_POLICIES;
+//		return ORCHESTRATOR_POLICIES;
+		return new String[]{"IF_CONGESTED_READ_PARITY"};  //Shouldn't change
 	}
 
-	public String[] getObjectPlacement() {
-		return OBJECT_PLACEMENT;
+	public String[] getRedundancyPolicy() {
+		return REDUNDANCY_POLICY;
 	}
 
 
-	public String[] getFailScenarios() {
-		return FAIL_SCENARIOS;
-	}
 
 	public boolean isHostFailureScenario() {
 		return HOST_FAILURE_SCENARIO;
@@ -957,10 +879,6 @@ public class SimSettings {
 
 	public boolean isDynamicFailure() {
 		return DYNAMIC_FAILURE;
-	}
-
-	public void setHostFailureScenario(boolean HOST_FAILURE_SCENARIO) {
-		this.HOST_FAILURE_SCENARIO = HOST_FAILURE_SCENARIO;
 	}
 
 	public int[] getHostFailureID() {
@@ -976,16 +894,8 @@ public class SimSettings {
 		return APPLY_SIGNAL_ATTENUATION;
 	}
 
-	public boolean isQueueOracle() {
-		return QUEUE_ORACLE;
-	}
-
-	public boolean isMeasurefunctionTime() {
-		return MEASURE_FUNCTION_TIME;
-	}
-
-	public boolean isCountFailedduetoinaccessibility() {
-		return COUNT_FAILEDDUETOINACCESSIBILITY;
+	public boolean isMeasureSimulationRuntime() {
+		return MEASURE_SIMULATION_RUNTIME;
 	}
 
 
@@ -993,14 +903,6 @@ public class SimSettings {
 		return USER_IN_NODES;
 	}
 
-
-	public boolean isScaleMm1() {
-		return SCALE_MM1;
-	}
-
-	public boolean isOverheadScan() {
-		return OVERHEAD_SCAN;
-	}
 
 
 	public ArrayList<Boolean> isSimulationFailed() {
@@ -1117,16 +1019,13 @@ public class SimSettings {
 		return OVERHEAD_SCAN_MEAN_RATIO;
 	}
 
-	public double getRequestRatePercentageOfCapacity() {
-		return REQUEST_RATE_PERCENTAGE_OF_CAPACITY;
+	public double getRequestRateUtilization() {
+		return REQUEST_RATE_UTILIZATION;
 	}
 
 
 	public String getOutputFolder() {
 		return outputFolder;
-	}
-	public String getSerializableFolder() {
-		return outputFolder + "/serial";
 	}
 
 	public void setOutputFolder(String outputFolder) {
@@ -1140,15 +1039,6 @@ public class SimSettings {
 	public boolean isOrbitMode() {
 		return ORBIT_MODE;
 	}
-
-
-	public boolean isSimulateOrbitMode() {
-		return SIMULATE_ORBIT_MODE;
-	}
-
-//	public HashMap<String, String> getReversedHashVector() {
-//		return reversedHashVector;
-//	}
 
 	public HashMap<String, Integer> getReversedHashDevicesVector() {
 		return reversedHashDevicesVector;
@@ -1191,19 +1081,6 @@ public class SimSettings {
 
 	public boolean isItIntTest(){
 		return TEST_USING_INT;
-	}
-
-
-	public boolean isSmoothExternalRequests() {
-		return SMOOTH_EXTERNAL_REQUESTS;
-	}
-
-	public boolean isAvoidSpikesInExternalRequests() {
-		return AVOID_SPIKES_IN_EXTERNAL_REQUESTS;
-	}
-
-	public double getAvoidSpikesUtilization() {
-		return AVOID_SPIKES_UTILIZATION;
 	}
 
 	public String getPathOfNodesFile(){
@@ -1254,20 +1131,9 @@ public class SimSettings {
 		}
 	}
 
-	public boolean isVariabilityRun() {
-		return VARIABILITY_RUN;
-	}
-
 	public boolean isSplitDemandVector() {
-		return SPLIT_DEMAND_VECTOR;
-	}
-
-	public boolean isMMPP() {
-		return MMPP;
-	}
-
-	public int getVariabilityIterations() {
-		return VARIABILITY_ITERATIONS;
+//		return SPLIT_DEMAND_VECTOR;
+		return false; //Obsolete
 	}
 
 	public boolean isParamScanMode() {
@@ -1399,11 +1265,6 @@ public class SimSettings {
 		return SERVED_REQS_PER_SEC;
 	}
 
-	public double getSim2orbitReadrateRatio() {
-		return SIM2ORBIT_READRATE_RATIO;
-	}
-
-
 	public String getObjectDistRead() {
 		return OBJECT_DIST_READ;
 	}
@@ -1425,17 +1286,11 @@ public class SimSettings {
 		return HOT_COLD_POPULARITY;
 	}
 
-	public void setObjectDistRead(String OBJECT_DIST_READ) {
-		this.OBJECT_DIST_READ = OBJECT_DIST_READ;
-	}
-
-	public int getCongestedThreshold() {
-		return CONGESTED_THRESHOLD;
-	}
-
 
 	public int getTraceIntervalDuration() {
-		return TRACE_INTERVAL_DURATION;
+		//split trace into small intervals (sec). If 0 - don't split
+//		return TRACE_INTERVAL_DURATION;
+		return 0; //Obsolete
 	}
 
 
@@ -1447,18 +1302,11 @@ public class SimSettings {
 		return RANDOM_SEED;
 	}
 
-	public void setRandomSeed(int RANDOM_SEED) {
-		this.RANDOM_SEED = RANDOM_SEED;
-	}
 
 	public double getZipfExponent() {
 		return ZIPF_EXPONENT;
 	}
 
-
-	public void setZipfExponent(double ZIPF_EXPONENT) {
-		this.ZIPF_EXPONENT = ZIPF_EXPONENT;
-	}
 
 	public int getNumOfDataObjects() {
 		return NUM_OF_DATA_OBJECTS;
@@ -1479,17 +1327,10 @@ public class SimSettings {
 		this.NSF_EXPERIMENT = NSF_EXPERIMENT;
 	}
 
-	public void setParamScanMode(boolean PARAM_SCAN_MODE) {
-		this.PARAM_SCAN_MODE = PARAM_SCAN_MODE;
-	}
-
 	public int getRAID() {
 		return RAID;
 	}
 
-//	public void setRAID(int RAID) {
-//		this.RAID = RAID;
-//	}
 	public void setNumOfStripes(int NUM_OF_STRIPES) {
 		this.NUM_OF_STRIPES = NUM_OF_STRIPES;
 	}
@@ -1499,16 +1340,19 @@ public class SimSettings {
 
 
 	public int getNumOfDataInStripe() {
-		return NUM_OF_DATA_IN_STRIPE;
+//		return NUM_OF_DATA_IN_STRIPE;
+		return 2;
 	}
 
 	public int getNumOfParityInStripe() {
-		return NUM_OF_PARITY_IN_STRIPE;
+//		return NUM_OF_PARITY_IN_STRIPE;
+		return 1;
 	}
 
 
 	public double getRedundancyShare() {
-		return REDUNDANCY_SHARE;
+//		return REDUNDANCY_SHARE;
+		return 1;
 	}
 
 	public double getServiceCost() {

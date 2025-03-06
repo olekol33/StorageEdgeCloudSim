@@ -180,7 +180,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 		switch (ev.getTag()) {
 			case UPDATE_MM1_QUEUE_MODEL:
 			{
-				((SampleNetworkModel)networkModel).updateMM1QueeuModel();
+				((SampleNetworkModel)networkModel).updateMM1QueueModel();
 				schedule(getId(), MM1_QUEUE_MODEL_UPDATE_INTERVAL, UPDATE_MM1_QUEUE_MODEL);
 	
 				break;

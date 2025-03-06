@@ -29,7 +29,6 @@ import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_server.EdgeHost;
 import edu.boun.edgecloudsim.storage.ObjectGenerator;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
-import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
 
@@ -234,20 +233,15 @@ public class SimLogger {
 		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
 	}
 	public void failedDueToBandwidth(int taskId, double time, NETWORK_DELAY_TYPES delayType, Task task) {
-//		taskMap.get(taskId).taskFailedDueToBandwidth(time, delayType);
 		if(SimSettings.getInstance().isStorageLogEnabled()) {
 			LogItem logTask = taskMap.get(taskId);
 			logTask.taskFailedDueToBandwidth(time, delayType);
 		}
-//		logTask.serialize();
-//		taskMap.remove(taskId);
 		clearTask(task);
 
 		//Count if parity and to read (1) or if not parity (0)
 		if (task.getIsParity() == task.getParitiesToRead()) {
 			//Give the system time to warm up
-/*			if (CloudSim.clock() < SimSettings.getInstance().getWarmUpPeriod())
-				return;*/
 			MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
 			//increment by 1
 			((StorageMobileDeviceManager) mobileDeviceManager).incrementFailedDueToBW();
@@ -258,14 +252,12 @@ public class SimLogger {
 	}
 
 	static public void measureDuration(long startTime, String measuredName){
-		if (!SimSettings.getInstance().isMeasurefunctionTime())
+		if (!SimSettings.getInstance().isMeasureSimulationRuntime())
 			return;
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime);
 		double elapsedTimeInSecond = (double) duration / 1_000_000_000;
 		System.out.println(measuredName + ": " + String.valueOf(elapsedTimeInSecond));
-//		long startTime = System.nanoTime();
-//		SimLogger.measureDuration(startTime, "numOfExternalTasks");
 	}
 	public void failedDueToMobility(int taskId, double time) {
 		taskMap.get(taskId).taskFailedDueToMobility(time);
@@ -280,11 +272,6 @@ public class SimLogger {
 	public void taskRejectedDueToQueue(int taskId, double time) {
 		taskMap.get(taskId).taskRejectedDueToQueue(time);
 	}
-/*
-	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType) {
-		taskMap.get(taskId).taskFailedDueToInaccessibility(time, vmType);
-
-	}*/
 
 	public void taskFailedDueToInaccessibility(int taskId, double time, int vmType, Task task) {
 		if(SimSettings.getInstance().isStorageLogEnabled())
@@ -292,8 +279,6 @@ public class SimLogger {
 		//Count if parity and to read (1) or if not parity (0)
 		if (task.getIsParity() == task.getParitiesToRead()) {
 			//Give the system time to warm up
-/*			if (CloudSim.clock() < SimSettings.getInstance().getWarmUpPeriod())
-				return;*/
 			MobileDeviceManager mobileDeviceManager = SimManager.getInstance().getMobileDeviceManager();
 			//increment by 1
 			((StorageMobileDeviceManager) mobileDeviceManager).incrementFailedDueToInaccessibility();

@@ -289,7 +289,6 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                 increaseParityProb(dataObjectLocation);
                 double randomVal = random.nextDouble();
                 if(randomVal>parityProbVector.get(dataObjectLocation)){
-//                if(randomVal>parityProbVector.get(dataObjectLocation)){
                     TaskProperty newTask = new TaskProperty(task.getMobileDeviceId(), taskType, CloudSim.clock(), task.getObjectRead(),
                             task.getIoTaskID(), isParity, 1, task.getCloudletFileSize(), task.getCloudletOutputSize(), task.getLength(),
                             task.getHostID());
@@ -385,10 +384,9 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
     @Override
     //Oleg: Set type of device to offload. When single tier - it's edge host.
-    //TODO: Need both edge and cloud
     public int getDeviceToOffload(Task task) {
         int result = SimSettings.GENERIC_EDGE_DEVICE_ID;
-        if(!simScenario.equals("SINGLE_TIER")){
+/*        if(!simScenario.equals("SINGLE_TIER")){
             if(policy.equalsIgnoreCase("CLOUD_OR_NEAREST_IF_CONGESTED")){
                 Location deviceLocation = task.getSubmittedLocation();
                 NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
@@ -400,14 +398,13 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
                     objectLocations.remove(host);
 
                //if edge node non operative
-                //TODO: check case when wanQueue is congested and task sent to it
                 if (objectLocations.size()==0)
                     result = SimSettings.CLOUD_DATACENTER_ID;
                 //if WLAN queue size larger than threshold
                 else if (wlanQueueSize >= SimSettings.getInstance().getCongestedThreshold())
                     result = SimSettings.CLOUD_DATACENTER_ID;
             }
-        }
+        }*/
 
         return result;
     }
@@ -415,30 +412,7 @@ public class StorageEdgeOrchestrator extends BasicEdgeOrchestrator {
 
     @Override
     public Vm getVmToOffload(Task task, int deviceId) {
-/*        Vm selectedVM = null;
-
-        if(deviceId == SimSettings.CLOUD_DATACENTER_ID){
-            //Select VM on cloud devices via Least Loaded algorithm!
-            double selectedVmCapacity = 0; //start with min value
-            List<Host> list = SimManager.getInstance().getCloudServerManager().getDatacenter().getHostList();
-            for (int hostIndex=0; hostIndex < list.size(); hostIndex++) {
-                List<CloudVM> vmArray = SimManager.getInstance().getCloudServerManager().getVmList(hostIndex);
-                for(int vmIndex=0; vmIndex<vmArray.size(); vmIndex++){
-                    double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(vmIndex).getVmType());
-                    double targetVmCapacity = (double)100 - vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-                    if(requiredCapacity <= targetVmCapacity && targetVmCapacity > selectedVmCapacity){
-                        selectedVM = vmArray.get(vmIndex);
-                        selectedVmCapacity = targetVmCapacity;
-                    }
-                }
-            }
-        }
-        else {
-            selectedVM = selectVmOnHost(task);
-        }*/
-
         return selectVmOnHost(task);
-
     }
 
     public String getPolicy() {

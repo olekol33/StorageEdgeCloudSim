@@ -85,14 +85,10 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 					schedule(getId(), WanDelay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
 				}
 				else
-				{
 					SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
-				}
 			}
 			else
-			{
 				SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), NETWORK_DELAY_TYPES.WAN_DELAY);
-			}
 		}
 		else{
 			//SimLogger.printLine(CloudSim.clock() + ": " + getName() + ": task #" + task.getCloudletId() + " received from edge");
@@ -107,14 +103,10 @@ public class DefaultMobileDeviceManager extends MobileDeviceManager {
 					schedule(getId(), WlanDelay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
 				}
 				else
-				{
 					SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
-				}
 			}
 			else
-			{
 				SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), NETWORK_DELAY_TYPES.WLAN_DELAY);
-			}
 		}
 	}
 	

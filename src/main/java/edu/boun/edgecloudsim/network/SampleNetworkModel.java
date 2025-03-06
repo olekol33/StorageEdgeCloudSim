@@ -716,7 +716,6 @@ public class SampleNetworkModel extends NetworkModel {
 			SimLogger.printLine("Error - unknown device id in downloadStarted(). Terminating simulation...");
 			System.exit(0);
 		}
-//		System.out.println("manClients: " + manClients); //To remove
 	}
 
 	@Override
@@ -732,7 +731,6 @@ public class SampleNetworkModel extends NetworkModel {
 			SimLogger.printLine("Error - unknown device id in downloadFinished(). Terminating simulation...");
 			System.exit(0);
 		}
-//		System.out.println("Users in " + accessPointLocation.getServingWlanId() + ": " + wlanClients[accessPointLocation.getServingWlanId()]); //TO remove
 	}
 
 	double getWlanDownloadDelay(Location accessPointLocation, double dataSize) {
@@ -781,42 +779,13 @@ public class SampleNetworkModel extends NetworkModel {
 		return (result > 1) ? -1 : result;
 	}
 
-/*	double getManDownloadDelay() {
-		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
-				MAN_BW,
-				ManPoissonMeanForDownload,
-				avgManTaskOutputSize,
-				numberOfMobileDevices);
-		totalManTaskOutputSize += avgManTaskOutputSize;
-		numOfManTaskForDownload++;
-//			System.out.println("totalManTaskOutputSize: " + totalManTaskOutputSize + " numOfManTaskForDownload: "+ numOfManTaskForDownload); //TO remove
-		//System.out.println("--> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " +result + " sec");
-		return result;
-	}*/
-	
-/*	private double getManUploadDelay() {
-		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
-				MAN_BW,
-				ManPoissonMeanForUpload,
-				avgManTaskInputSize,
-				numberOfMobileDevices);
-		
-		totalManTaskInputSize += avgManTaskInputSize;
-		numOfManTaskForUpload++;
-
-		//System.out.println(CloudSim.clock() + " -> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " + result + " sec");
-		
-		return result;
-	}*/
-
-	public void updateMM1QueeuModel(){
+	public void updateMM1QueueModel(){
 		double lastInterval = CloudSim.clock() - lastMM1QueeuUpdateTime;
 		lastMM1QueeuUpdateTime = CloudSim.clock();
 
 		if(numOfManTaskForDownload != 0){
 			ManPoissonMeanForDownload = lastInterval / (numOfManTaskForDownload / (double)numberOfMobileDevices);
 			avgManTaskOutputSize = totalManTaskOutputSize / numOfManTaskForDownload;
-//			System.out.println("numOfManTaskForDownload: " + numOfManTaskForDownload + " avgManTaskOutputSize: "+ avgManTaskOutputSize); //TO remove
 		}
 		if(numOfManTaskForUpload != 0){
 			ManPoissonMeanForUpload = lastInterval / (numOfManTaskForUpload / (double)numberOfMobileDevices);

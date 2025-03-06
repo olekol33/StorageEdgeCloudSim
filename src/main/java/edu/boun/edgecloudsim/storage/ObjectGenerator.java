@@ -1171,19 +1171,6 @@ public class ObjectGenerator {
 
     }
 
-    private void placeCodingFromCsv(){
-        if (!SimSettings.getInstance().isExternalObjectsFromPlacementCSV())
-            return;
-        for(Map.Entry<List<Integer>, List<Integer>> kv : codingCsvPlace.entrySet()){
-            int object0 = kv.getKey().get(0);
-            int object1 = kv.getKey().get(1);
-            if(object1 == -1)
-                continue;
-            String objectName = 'p' + object0 + '-' + object1 + "-0";
-
-        }
-    }
-
     /*Used for DATA_PARITY_PLACE to fill remaining capacity up to predefined share of data objects*/
     private void partiallyFillHostsWithDataObjects(){
         double redundancyShare = SimSettings.getInstance().getRedundancyShare();
@@ -1439,20 +1426,10 @@ public class ObjectGenerator {
             if(stripeNotCreated)
                 continue;
             addToStripeList(dataList, null);
-//            List<Map> parityList = createParityObjects(numOfParityInStripe, dataList);
-//            // Concatenate data and parity
-//            List<Map> stripe = Stream.concat(dataList.stream(), parityList.stream())
-//                    .collect(Collectors.toList());
-//
-//            Map<String, String>  metadataObject = createMetadataObject(numOfDataInStripe+numOfParityInStripe,
-//                    stripe);
-//            stripe.add(metadataObject);
-//            this.listOfStripes.put((String)stripe.get(numOfDataInStripe).get("id"),stripe);
         }
-        testCodingObjectOccurrence(); //TODO: convert to unit test
+        testCodingObjectOccurrence();
         if(notGeneratedStripes>0)
             System.out.println("Not generated stripes: " + String.valueOf(notGeneratedStripes));
-        return;
     }
 
     private void createStripesFromCSV(){

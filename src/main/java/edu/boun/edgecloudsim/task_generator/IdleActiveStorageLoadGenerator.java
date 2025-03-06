@@ -252,7 +252,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
      */
     private void shiftDeviceLocation(int deviceID){
         StaticRangeMobility staticMobility = (StaticRangeMobility)SimManager.getInstance().getMobilityModel();
-        Location newLocation =  staticMobility.getDCLocation((deviceID+1)%SimSettings.getInstance().getMaxNumOfMobileDev());
+        Location newLocation =  staticMobility.getDCLocation((deviceID+1)%SimSettings.getInstance().getNumOfMobileDev());
         staticMobility.setLocation(deviceID,newLocation);
     }
 
@@ -354,7 +354,7 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
         if(SimSettings.getInstance().isNsfExperiment()) {
             DecimalFormat df = new DecimalFormat();
             df.setMaximumFractionDigits(3);
-            int users = SimSettings.getInstance().getMinNumOfMobileDev();
+            int users = SimSettings.getInstance().getNumOfMobileDev();
             for(int i=0; i<2; i++) {
                 int randomTaskType = i % 2;
                 double totalRuntime = SimSettings.getInstance().getSimulationTime();
@@ -385,7 +385,6 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             System.exit(0);
 
         if(SimSettings.getInstance().isParamScanMode()){
-//        if(1==1){
             double muTotal = 0;
             Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
             NodeList datacenterList = doc.getElementsByTagName("datacenter");
@@ -411,10 +410,8 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             singleLambda = meanRate / muTotal;
             //double overhead = OG.getOverhead();
             String dist = "";
-            if(SimSettings.getInstance().isMMPP())
-                dist = "MMPP";
-            else
-                dist = SimSettings.getInstance().getObjectDistRead();
+
+            dist = SimSettings.getInstance().getObjectDistRead();
             String fail = "";
             if (SimSettings.getInstance().isHostFailureScenario())
                 fail="WITHFAIL";
@@ -425,19 +422,11 @@ public class IdleActiveStorageLoadGenerator extends LoadGeneratorModel{
             DecimalFormat df2 = new DecimalFormat();
             df.setMaximumFractionDigits(4);
             df2.setMaximumFractionDigits(2);
-            if (SimSettings.getInstance().isOverheadScan()) {
-                System.out.println("\nLambda: " + df.format(singleLambda) + " mu, Overhead: " + df2.format(overhead));
-                SimLogger.getInstance().setFilePrefix("SIMRESULT_" + df.format(singleLambda) + "_OH" + df2.format(overhead) + "_" +
-                        "SEED" + SimSettings.getInstance().getRandomSeed() + "_" + simScenario + "_" + orchestratorPolicy +
-                        "_" + objectPlacementPolicy + "_" + dist + "_" + fail + "_" + numberOfMobileDevices + "DEVICES");
-            }
-            else
-            {
-                System.out.println("\nLambda: " + df.format(singleLambda));
-                SimLogger.getInstance().setFilePrefix("SIMRESULT_" + df.format(singleLambda) + "_" +
-                        simScenario + "_" + orchestratorPolicy +
-                        "_" + objectPlacementPolicy + "_" + dist + "_" + fail + "_" + numberOfMobileDevices + "DEVICES");
-            }
+
+            System.out.println("\nLambda: " + df.format(singleLambda));
+            SimLogger.getInstance().setFilePrefix("SIMRESULT_" + df.format(singleLambda) + "_" +
+                    simScenario + "_" + orchestratorPolicy +
+                    "_" + objectPlacementPolicy + "_" + dist + "_" + fail + "_" + numberOfMobileDevices + "DEVICES");
 
 
         }

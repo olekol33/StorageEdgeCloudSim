@@ -14,7 +14,6 @@ import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.MobileDeviceManager;
 import edu.boun.edgecloudsim.edge_client.StorageMobileDeviceManager;
-import edu.boun.edgecloudsim.storage.OrbitReader;
 import edu.boun.edgecloudsim.storage.RedisListHandler;
 import edu.boun.edgecloudsim.task_generator.IdleActiveStorageLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
@@ -37,10 +36,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
 
 public class MainApp {
 
@@ -72,9 +69,6 @@ public class MainApp {
 		int currentClient=0;
 		String runType = "";
 
-//		String[] codingPolicies = {"IF_CONGESTED_READ_PARITY"};
-//		String[] replicationPolicies = {"IF_CONGESTED_READ_PARITY","NEAREST_HOST","CLOUD_OR_NEAREST_IF_CONGESTED"};
-//		String[] dataParityPolicies = {"IF_CONGESTED_READ_PARITY"};
 		if (args.length == 5){
 			configFile = args[0];
 			edgeDevicesFile = args[1];
@@ -103,9 +97,6 @@ public class MainApp {
 			configFile = "scripts/" + expName + "/config/default_config.properties";
 			applicationsFile = "scripts/" + expName + "/config/applications.xml";
 			edgeDevicesFile = "scripts/" + expName + "/config/edge_devices.xml";
-//			configFile = "scripts/sample_app5/config/default_config.properties";
-//			applicationsFile = "scripts/sample_app5/config/applications.xml";
-//			edgeDevicesFile = "scripts/sample_app5/config/edge_devices.xml";
 			outputFolderPath = "sim_results/ite" + iterationNumber;
 		}
 
@@ -146,10 +137,10 @@ public class MainApp {
 		} else {
 			System.out.println("Output folder exists");
 		}
-		int users = SS.getMinNumOfMobileDev();
+		int users = SS.getNumOfMobileDev();
 		String simScenario = SS.getSimulationScenarios()[0];
 		String orchestratorPolicy = SS.getOrchestratorPolicies()[0];
-		String objectPlacementPolicy = SS.getObjectPlacement()[0];
+		String objectPlacementPolicy = SS.getRedundancyPolicy()[0];
 		SimSettings.getInstance().printServiceRate(users);
 		serviceRatePath = new File(parent,"/service_rate");
 		SimSettings.getInstance().setServiceRatePath(serviceRatePath);
@@ -193,8 +184,8 @@ public class MainApp {
 			for (int i = 0; i < SS.getNumOfDataObjects(); i++)
 				fileHeader.append(i).append(",");
 			fileHeader.append("type,reqsPerUserSec,readRate,iteration,interval,tasksPerInterval,failedPerInterval," + "simServiceCost,completed");
-			for(int p=0;p<SS.getObjectPlacement().length;p++) {
-				objectPlacementPolicy = SS.getObjectPlacement()[p];
+			for(int p = 0; p<SS.getRedundancyPolicy().length; p++) {
+				objectPlacementPolicy = SS.getRedundancyPolicy()[p];
 				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
 				serviceRateFile = new File(serviceRatePath, srFilename + "_DEMAND.csv");
 				serviceRateFileFW = new FileWriter(serviceRateFile, true);
@@ -209,8 +200,8 @@ public class MainApp {
 		double meanSystemServedReqsPerSec = SS.getServedReqsPerSec()*SS.getNumOfEdgeDatacenters()/users;
 		if(objectPlacementPolicy.equals("REPLICATION_PLACE"))
 			meanSystemServedReqsPerSec *= SS.getCodingRepReqRatio(); //adjust replication to same request rate as coding
-		double meanSystemLambda = SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec * SS.getOverheadScanMeanRatio();
-		double meanSystemStd = SS.getOverheadScanStd() * SS.getRequestRatePercentageOfCapacity() * meanSystemServedReqsPerSec;
+		double meanSystemLambda = SS.getRequestRateUtilization() * meanSystemServedReqsPerSec * SS.getOverheadScanMeanRatio();
+		double meanSystemStd = SS.getOverheadScanStd() * SS.getRequestRateUtilization() * meanSystemServedReqsPerSec;
 
 		NormalDistribution lambdaGenerator = new NormalDistribution(rand,meanSystemLambda,meanSystemStd);
 		for (int i = 0; i < SS.getServiceRateIterations(); i++) {
@@ -225,8 +216,8 @@ public class MainApp {
 			SS.setPoissonInTaskLookUpTable(0,1/reqsPerSec);
 //			if (i!=3)
 //				continue;
-			for(int p=0;p<SS.getObjectPlacement().length;p++) {
-				objectPlacementPolicy = SS.getObjectPlacement()[p];
+			for(int p = 0; p<SS.getRedundancyPolicy().length; p++) {
+				objectPlacementPolicy = SS.getRedundancyPolicy()[p];
 
 				srFilename = "SIMRESULT_SERVICE_RATE" + "_" + objectPlacementPolicy;
 				String filePrefix = srFilename;
@@ -268,7 +259,6 @@ public class MainApp {
 					SimManager manager = new SimManager(sampleFactory, users, simScenario, orchestratorPolicy, objectPlacementPolicy);
 
 					// Storage: Generate Redis KV list
-//					RedisListHandler.closeConnection();
 					RedisListHandler.createList(objectPlacementPolicy);
 
 					// Start simulation

@@ -12,19 +12,16 @@ import java.util.*;
  */
 public class ParseStorageRequests {
     private final int[] reqsToHostPerSec = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];
-    private final double utilization = SimSettings.getInstance().getAvoidSpikesUtilization();
     private final int REQUEST_DEVICE_NAME = 0; // object[0]
     private final int REQUEST_TIME = 1; // object[1]
     private final int REQUEST_OBJECT_ID = 2; // object[2]
     private final int REQUEST_IO_TASK_ID = 3; // object[3]
-    private final int REQUEST_TASK_PRIORITY = 4; // object[4]
-    private final int REQUEST_TASK_DEADLINE = 5; // object[5]
 
     private int lastSpikeTrimmerCheckpoint=0;
     private final int throwOverfilledSecToSimEnd=30;
     int queueFactor = 1000;
     private final int intervalSizeSec = 1;
-    private final int readRate = (int) (SimSettings.getInstance().getServedReqsPerSec() * utilization * intervalSizeSec);
+    private final int readRate = (int) (SimSettings.getInstance().getServedReqsPerSec() * intervalSizeSec);
 
     private int maxSpikesQueueSize = (int)SimSettings.getInstance().getSimulationTime()*queueFactor;
 
@@ -102,36 +99,23 @@ public class ParseStorageRequests {
 
                 lineCounter++;
 
-                if (SimSettings.getInstance().isSmoothExternalRequests()) {
-                    countObjectRequest(objectName, req2ObjectsCount, object2DevicesHash,
-                            objects[REQUEST_DEVICE_NAME]);
-                    if (Integer.parseInt(objects[REQUEST_IO_TASK_ID]) == 0)
-                        firstReqTime = reqTime;
-                }
-                else if (SimSettings.getInstance().isAvoidSpikesInExternalRequests()){
-                    StorageRequest sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME], reqTime,
-                            objectName, Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
-                    handleSpikes(sRequest, reqTime, objects, objectName);
-                }
-                else {
-                    StorageRequest sRequest;
-                    sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME], reqTime,
-                            objectName, Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
-                    requestsVector.add(sRequest);
-                }
+                StorageRequest sRequest;
+                sRequest = new StorageRequest(objects[REQUEST_DEVICE_NAME], reqTime,
+                        objectName, Integer.parseInt(objects[REQUEST_IO_TASK_ID]));
+                requestsVector.add(sRequest);
             }
             System.out.println("The requests' vector successfully created!!!");
         }
         catch (Exception e){
             e.printStackTrace();
         }
-        if (SimSettings.getInstance().isSmoothExternalRequests())
-            return createSmoothRequestVector(object2DevicesHash, req2ObjectsCount, firstReqTime);
-        if(SimSettings.getInstance().isAvoidSpikesInExternalRequests()){
-            int numOfDiscarded = requestsDiscarded  + queuedRequests.size();
-            System.out.println("Discarded requests = " + numOfDiscarded);
-            writeNumOfDiscardedToFile(numOfDiscarded, requestsVector.size()-numOfDiscarded);
-        }
+//        if (SimSettings.getInstance().isSmoothExternalRequests())
+//            return createSmoothRequestVector(object2DevicesHash, req2ObjectsCount, firstReqTime);
+//        if(SimSettings.getInstance().isAvoidSpikesInExternalRequests()){
+//            int numOfDiscarded = requestsDiscarded  + queuedRequests.size();
+//            System.out.println("Discarded requests = " + numOfDiscarded);
+//            writeNumOfDiscardedToFile(numOfDiscarded, requestsVector.size()-numOfDiscarded);
+//        }
         return requestsVector;
     }
 
@@ -214,8 +198,6 @@ public class ParseStorageRequests {
 
     private HashMap<Integer, ArrayList<String>> initObject2DevicesHash(int numOfObjects){
         HashMap<Integer, ArrayList<String>> object2DevicesHash = new HashMap<>();
-        if (!SimSettings.getInstance().isSmoothExternalRequests())
-            return object2DevicesHash;
         for (int i=0; i<numOfObjects; i++)
             object2DevicesHash.put(i, new ArrayList<String>());
         return object2DevicesHash;
