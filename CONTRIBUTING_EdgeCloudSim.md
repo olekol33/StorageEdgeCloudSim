@@ -1,3 +1,5 @@
+Note: this file refers to the original tool this repository was build upon and not to StorageEdgeCloudSim.
+
 # Our Philosophy
 
 EdgeCloudSim is an open source project, so every contributor is welcome!
