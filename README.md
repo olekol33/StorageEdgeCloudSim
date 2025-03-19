@@ -10,7 +10,7 @@ Section 5 focuses on the gaps between theory and practice. Specifically, it disc
 
 ## Structure
 ### General Structure
-See EdgeCloudSim  [README](/README_ECS.md)  and [SECS Report](/SECS_Report.pdf) for the detailed structure.
+See EdgeCloudSim  [README](/README_ECS.md) and [SECS Report on external file mechanism](/SECS_Report_Reading_From_External_Files_OUTDATED.pdf) for the detailed structure. Note the SECS report is outdated and may not reflect the current state of the code.
 
 SECS supports multiple scenarios, each defined as an application.
 The configuration files are stored in `scripts/<application>/config` folder. Main applications:
